@@ -3,17 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { useCart } from "@/contexts/CartContext";
+import MiniCart from "@/components/cart/MiniCart";
 
 export default function Navbar() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { state } = useCart();
-
-  const cartItemCount = state.items.reduce(
-    (total, item) => total + item.quantity,
-    0
-  );
 
   const isActive = (path: string) => pathname === path;
 
@@ -48,9 +42,7 @@ export default function Navbar() {
             >
               Products
             </Link>
-            <Link href="/cart" className="text-gray-600 hover:text-blue-600">
-              Cart ({cartItemCount})
-            </Link>
+            <MiniCart />
             <Link href="/sign-in" className="text-gray-600 hover:text-blue-600">
               Sign In
             </Link>
@@ -116,7 +108,7 @@ export default function Navbar() {
               className="block text-gray-600 hover:text-blue-600"
               onClick={() => setIsMenuOpen(false)}
             >
-              Cart ({cartItemCount})
+              Cart
             </Link>
             <Link
               href="/sign-in"

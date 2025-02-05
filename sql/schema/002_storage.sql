@@ -13,4 +13,12 @@ on storage.objects for insert
 with check (
   bucket_id = 'product-images'
   and auth.role() = 'authenticated'
+);
+
+-- Allow authenticated users to delete images
+create policy "Authenticated users can delete images"
+on storage.objects for delete
+using (
+  bucket_id = 'product-images'
+  and auth.role() = 'authenticated'
 ); 

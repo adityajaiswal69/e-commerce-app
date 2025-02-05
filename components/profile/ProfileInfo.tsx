@@ -1,12 +1,28 @@
 "use client";
 
 import { User } from "@supabase/supabase-js";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase/client";
+import Link from "next/link";
 
 export default function ProfileInfo({ user }: { user: User }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    async function checkAdminStatus() {
+      const { data } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      setIsAdmin(data?.role === "admin");
+    }
+
+    checkAdminStatus();
+  }, [user.id]);
 
   const handleSignOut = async () => {
     setLoading(true);
@@ -60,6 +76,15 @@ export default function ProfileInfo({ user }: { user: User }) {
         )}
 
         <div className="space-y-2 pt-4">
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="block w-full rounded-md bg-gray-800 px-4 py-2 text-center text-sm text-white hover:bg-gray-900"
+            >
+              Admin Dashboard
+            </Link>
+          )}
+
           <button
             onClick={handlePasswordReset}
             disabled={loading}

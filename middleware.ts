@@ -11,12 +11,27 @@ export async function middleware(req: NextRequest) {
   } = await supabase.auth.getSession();
 
   // Protected routes
-  if (
-    req.nextUrl.pathname.startsWith("/admin") ||
-    req.nextUrl.pathname.startsWith("/profile")
-  ) {
+  if (req.nextUrl.pathname.startsWith("/profile")) {
     if (!session) {
       return NextResponse.redirect(new URL("/sign-in", req.url));
+    }
+  }
+
+  // Admin routes - check for admin role
+  if (req.nextUrl.pathname.startsWith("/admin")) {
+    if (!session) {
+      return NextResponse.redirect(new URL("/sign-in", req.url));
+    }
+
+    // Check if user has admin role
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", session.user.id)
+      .single();
+
+    if (!profile || profile.role !== "admin") {
+      return NextResponse.redirect(new URL("/", req.url));
     }
   }
 

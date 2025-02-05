@@ -1,47 +1,35 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import OAuthButtons from "./OAuthButtons";
 import Link from "next/link";
 
 export default function SignInForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
 
-  // Handle URL parameters
-  useEffect(() => {
-    const urlError = searchParams.get("error");
-    const urlMessage = searchParams.get("message");
-
-    if (urlError) {
-      setError(decodeURIComponent(urlError));
-    }
-    if (urlMessage) {
-      setMessage(decodeURIComponent(urlMessage));
-    }
-  }, [searchParams]);
-
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: formData.email,
+        password: formData.password,
       });
 
       if (error) throw error;
 
-      router.push("/dashboard");
+      // Redirect to homepage on successful login
+      router.push("/");
       router.refresh();
     } catch (error) {
       setError(error instanceof Error ? error.message : "An error occurred");
@@ -51,10 +39,21 @@ export default function SignInForm() {
   };
 
   return (
-    <div className="space-y-6">
-      <form onSubmit={handleSignIn} className="space-y-4">
-        {error && <div className="text-red-500">{error}</div>}
-        {message && <div className="text-green-500">{message}</div>}
+    <div className="mx-auto max-w-md space-y-6 p-6">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold">Sign In</h1>
+        <p className="mt-2 text-sm text-gray-600">
+          Welcome back! Please sign in to your account.
+        </p>
+      </div>
+
+      {error && (
+        <div className="rounded-md bg-red-50 p-4 text-sm text-red-500">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="email" className="block text-sm font-medium">
             Email
@@ -62,12 +61,15 @@ export default function SignInForm() {
           <input
             id="email"
             type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
             className="mt-1 block w-full rounded-md border p-2"
             required
           />
         </div>
+
         <div>
           <label htmlFor="password" className="block text-sm font-medium">
             Password
@@ -75,12 +77,24 @@ export default function SignInForm() {
           <input
             id="password"
             type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={formData.password}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
             className="mt-1 block w-full rounded-md border p-2"
             required
           />
         </div>
+
+        <div className="text-right">
+          <Link
+            href="/reset-password"
+            className="text-sm text-blue-600 hover:text-blue-500"
+          >
+            Forgot password?
+          </Link>
+        </div>
+
         <button
           type="submit"
           disabled={loading}
@@ -90,21 +104,9 @@ export default function SignInForm() {
         </button>
       </form>
 
-      <div className="flex items-center justify-between text-sm">
-        <Link
-          href="/reset-password"
-          className="text-blue-500 hover:text-blue-600"
-        >
-          Forgot your password?
-        </Link>
-        <Link href="/sign-up" className="text-blue-500 hover:text-blue-600">
-          Create account
-        </Link>
-      </div>
-
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-300" />
+          <div className="w-full border-t"></div>
         </div>
         <div className="relative flex justify-center text-sm">
           <span className="bg-white px-2 text-gray-500">Or continue with</span>
@@ -112,6 +114,13 @@ export default function SignInForm() {
       </div>
 
       <OAuthButtons />
+
+      <p className="text-center text-sm text-gray-600">
+        Don&apos;t have an account?{" "}
+        <Link href="/sign-up" className="text-blue-600 hover:text-blue-500">
+          Sign up
+        </Link>
+      </p>
     </div>
   );
 }

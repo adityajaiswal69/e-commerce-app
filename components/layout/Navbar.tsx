@@ -2,12 +2,31 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MiniCart from "@/components/cart/MiniCart";
+import { supabase } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
 
 export default function Navbar() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const isActive = (path: string) => pathname === path;
 
@@ -43,9 +62,21 @@ export default function Navbar() {
               Products
             </Link>
             <MiniCart />
-            <Link href="/sign-in" className="text-gray-600 hover:text-blue-600">
-              Sign In
-            </Link>
+            {user ? (
+              <Link
+                href="/profile"
+                className="text-gray-600 hover:text-blue-600"
+              >
+                Profile
+              </Link>
+            ) : (
+              <Link
+                href="/sign-in"
+                className="text-gray-600 hover:text-blue-600"
+              >
+                Sign In
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -110,13 +141,23 @@ export default function Navbar() {
             >
               Cart
             </Link>
-            <Link
-              href="/sign-in"
-              className="block text-gray-600 hover:text-blue-600"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Sign In
-            </Link>
+            {user ? (
+              <Link
+                href="/profile"
+                className="block text-gray-600 hover:text-blue-600"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Profile
+              </Link>
+            ) : (
+              <Link
+                href="/sign-in"
+                className="block text-gray-600 hover:text-blue-600"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Sign In
+              </Link>
+            )}
           </div>
         )}
       </div>

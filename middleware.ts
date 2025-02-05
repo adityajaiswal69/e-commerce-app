@@ -13,21 +13,21 @@ export async function middleware(req: NextRequest) {
   // Protected routes
   if (
     req.nextUrl.pathname.startsWith("/admin") ||
-    req.nextUrl.pathname.startsWith("/dashboard")
+    req.nextUrl.pathname.startsWith("/profile")
   ) {
     if (!session) {
       return NextResponse.redirect(new URL("/sign-in", req.url));
     }
   }
 
-  // Auth routes - redirect to dashboard if already authenticated
+  // Auth routes - redirect to homepage if already authenticated
   if (
     session &&
     (req.nextUrl.pathname.startsWith("/sign-in") ||
       req.nextUrl.pathname.startsWith("/sign-up") ||
       req.nextUrl.pathname.startsWith("/reset-password"))
   ) {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+    return NextResponse.redirect(new URL("/", req.url));
   }
 
   // Special case for update-password
@@ -44,7 +44,7 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     "/admin/:path*",
-    "/dashboard/:path*",
+    "/profile/:path*",
     "/sign-in",
     "/sign-up",
     "/reset-password",

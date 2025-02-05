@@ -1,22 +1,56 @@
+"use client";
+
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Image from "next/image";
+import { useCart } from "@/contexts/CartContext";
+import { useState, useEffect, use } from "react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
-export default async function ProductPage({
+export default function ProductPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const supabase = createServerSupabaseClient();
-  const { data: product } = await supabase
-    .from("products")
-    .select("*")
-    .eq("id", params.id)
-    .single();
+  const { id } = use(params);
+  const [loading, setLoading] = useState(false);
+  const { addItem } = useCart();
+
+  // This is a temporary solution until we figure out data fetching in client components
+  const [product, setProduct] = useState<Product | null>(null);
+
+  useEffect(() => {
+    async function fetchProduct() {
+      const supabase = createClientComponentClient();
+      const { data } = await supabase
+        .from("products")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (!data) {
+        notFound();
+      }
+
+      setProduct(data);
+    }
+
+    fetchProduct();
+  }, [id]);
 
   if (!product) {
-    notFound();
+    return <div>Loading...</div>;
   }
+
+  const handleAddToCart = () => {
+    setLoading(true);
+    try {
+      addItem(product);
+      // Optional: Show success message
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -36,10 +70,15 @@ export default async function ProductPage({
           <p className="mt-4 text-gray-600">{product.description}</p>
           <div className="mt-6">
             <button
-              disabled={product.stock === 0}
+              onClick={handleAddToCart}
+              disabled={product.stock === 0 || loading}
               className="w-full rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:bg-gray-300"
             >
-              {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
+              {loading
+                ? "Adding..."
+                : product.stock > 0
+                ? "Add to Cart"
+                : "Out of Stock"}
             </button>
           </div>
         </div>

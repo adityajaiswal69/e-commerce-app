@@ -1,17 +1,32 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import OAuthButtons from "./OAuthButtons";
 import Link from "next/link";
 
 export default function SignInForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Handle URL parameters
+  useEffect(() => {
+    const urlError = searchParams.get("error");
+    const urlMessage = searchParams.get("message");
+
+    if (urlError) {
+      setError(decodeURIComponent(urlError));
+    }
+    if (urlMessage) {
+      setMessage(decodeURIComponent(urlMessage));
+    }
+  }, [searchParams]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +54,7 @@ export default function SignInForm() {
     <div className="space-y-6">
       <form onSubmit={handleSignIn} className="space-y-4">
         {error && <div className="text-red-500">{error}</div>}
+        {message && <div className="text-green-500">{message}</div>}
         <div>
           <label htmlFor="email" className="block text-sm font-medium">
             Email

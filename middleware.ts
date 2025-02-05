@@ -11,7 +11,10 @@ export async function middleware(req: NextRequest) {
   } = await supabase.auth.getSession();
 
   // Protected routes
-  if (req.nextUrl.pathname.startsWith("/dashboard")) {
+  if (
+    req.nextUrl.pathname.startsWith("/admin") ||
+    req.nextUrl.pathname.startsWith("/dashboard")
+  ) {
     if (!session) {
       return NextResponse.redirect(new URL("/sign-in", req.url));
     }
@@ -40,6 +43,7 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
+    "/admin/:path*",
     "/dashboard/:path*",
     "/sign-in",
     "/sign-up",

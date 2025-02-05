@@ -11,6 +11,22 @@ type ProductFormProps = {
   product?: Product;
 };
 
+async function deleteProductImage(imageUrl: string) {
+  try {
+    // Extract file path from URL
+    const path = imageUrl.split("/").slice(-2).join("/"); // Gets "products/filename.ext"
+
+    const { error } = await supabase.storage
+      .from("product-images")
+      .remove([path]);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error("Error deleting image:", error);
+    throw new Error("Failed to delete image");
+  }
+}
+
 export default function ProductForm({ product }: ProductFormProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -103,12 +119,18 @@ export default function ProductForm({ product }: ProductFormProps) {
     setError(null);
 
     try {
-      const { error } = await supabase
+      // Delete the product first
+      const { error: deleteError } = await supabase
         .from("products")
         .delete()
         .eq("id", product.id);
 
-      if (error) throw error;
+      if (deleteError) throw deleteError;
+
+      // Then delete the associated image
+      if (product.image_url) {
+        await deleteProductImage(product.image_url);
+      }
 
       router.push("/admin/products");
       router.refresh();

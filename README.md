@@ -18,7 +18,6 @@ A modern e-commerce application built with Next.js 14, Supabase, and Tailwind CS
 - **Backend**: Supabase (PostgreSQL)
 - **Authentication**: Supabase Auth
 - **State Management**: React Context
-- **UI Components**: Heroicons
 
 ## Getting Started
 
@@ -41,6 +40,11 @@ npm install
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_client_id
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+STRIPE_SECRET_KEY=your_stripe_secret_key
+STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
 ```
 
 4. Run the development server:

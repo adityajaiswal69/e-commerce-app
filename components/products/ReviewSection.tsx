@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
 import { StarIcon } from "@heroicons/react/24/solid";
@@ -121,9 +121,37 @@ export default function ReviewSection({
     }
   };
 
+  const averageRating = useMemo(() => {
+    if (!reviews.length) return 0;
+    const total = reviews.reduce((acc, review) => acc + review.rating, 0);
+    return Number((total / reviews.length).toFixed(1));
+  }, [reviews]);
+
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Customer Reviews</h2>
+      <div className="flex items-center gap-4 mb-8">
+        <h2 className="text-2xl font-bold">Customer Reviews</h2>
+        {reviews.length > 0 && (
+          <div className="flex items-center gap-2">
+            <div className="flex">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <StarIcon
+                  key={star}
+                  className={`w-5 h-5 ${
+                    star <= averageRating ? "text-yellow-400" : "text-gray-300"
+                  }`}
+                />
+              ))}
+            </div>
+            <span className="text-lg font-medium">
+              {averageRating} out of 5
+            </span>
+            <span className="text-gray-500">
+              ({reviews.length} {reviews.length === 1 ? "review" : "reviews"})
+            </span>
+          </div>
+        )}
+      </div>
 
       {currentUserReview && !isEditing ? (
         <div className="mb-8">

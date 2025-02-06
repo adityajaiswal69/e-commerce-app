@@ -6,6 +6,8 @@ import Image from "next/image";
 import { useCart } from "@/contexts/CartContext";
 import { useState, useEffect, use } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import ReviewSection from "@/components/products/ReviewSection";
+import { Review } from "@/types/reviews";
 
 interface Product {
   id: string;
@@ -30,24 +32,52 @@ export default function ProductPage({
 
   // This is a temporary solution until we figure out data fetching in client components
   const [product, setProduct] = useState<Product | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
 
   useEffect(() => {
-    async function fetchProduct() {
+    async function fetchData() {
       const supabase = createClientComponentClient();
-      const { data } = await supabase
+
+      // Fetch product
+      const { data: productData } = await supabase
         .from("products")
         .select("*")
         .eq("id", id)
         .single();
 
-      if (!data) {
+      if (!productData) {
         notFound();
       }
+      setProduct(productData);
 
-      setProduct(data);
+      // Fetch reviews with user info
+      const { data: reviewsData, error: reviewError } = await supabase
+        .from("reviews")
+        .select(
+          `
+          id,
+          rating,
+          comment,
+          created_at,
+          product_id,
+          user_id,
+          user:profiles!user_id (
+            full_name
+          )
+        `
+        )
+        .eq("product_id", id)
+        .order("created_at", { ascending: false });
+
+      if (reviewError) {
+        console.error("Error fetching reviews:", reviewError);
+      }
+
+      console.log("Fetched reviews:", reviewsData); // For debugging
+      setReviews(reviewsData || []);
     }
 
-    fetchProduct();
+    fetchData();
   }, [id]);
 
   if (!product) {
@@ -94,6 +124,25 @@ export default function ProductPage({
             </button>
           </div>
         </div>
+      </div>
+
+      <div className="mt-12">
+        <ReviewSection
+          productId={id}
+          reviews={reviews}
+          onNewReview={(review) => {
+            // Replace existing review if it exists, otherwise add new one
+            setReviews((prev) => {
+              const index = prev.findIndex((r) => r.id === review.id);
+              if (index !== -1) {
+                const newReviews = [...prev];
+                newReviews[index] = review;
+                return newReviews;
+              }
+              return [review, ...prev];
+            });
+          }}
+        />
       </div>
     </div>
   );

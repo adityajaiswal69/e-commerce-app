@@ -95,12 +95,17 @@ export default function ReviewSection({
       }
 
       if (review) {
-        // Instead of fetching user data separately, use the current user's data
+        // Get user's profile data
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", user.id)
+          .single();
+
         const fullReview = {
           ...review,
           user: {
-            email: user.email,
-            user_metadata: user.user_metadata,
+            full_name: profileData?.full_name || "Anonymous User",
           },
         };
 

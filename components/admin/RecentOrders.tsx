@@ -1,23 +1,43 @@
 import Image from "next/image";
 import Link from "next/link";
 
+type Product = {
+  id: string;
+  name: string;
+  image_url: string;
+  price: number;
+};
+
+type OrderItem = {
+  quantity: number;
+  product: Product;
+};
+
+type Order = {
+  id: string;
+  created_at: string;
+  total: number | null;
+  status: string;
+  order_items: OrderItem[];
+};
+
 type RecentOrdersProps = {
-  orders: Array<{
-    id: string;
-    created_at: string;
-    total_price: number;
-    status: string;
-    order_items: Array<{
-      quantity: number;
-      product: {
-        name: string;
-        image_url: string;
-      };
-    }>;
-  }>;
+  orders: Order[];
 };
 
 export default function RecentOrders({ orders }: RecentOrdersProps) {
+  // Remove or comment out console.log for production
+  // console.log("Orders received in component:", orders);
+
+  if (!orders || orders.length === 0) {
+    return (
+      <div className="rounded-lg border bg-white p-4">
+        <h2 className="text-lg font-medium">Recent Orders</h2>
+        <p className="mt-2 text-sm text-gray-500">No orders found</p>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-lg border bg-white">
       <div className="border-b p-4">
@@ -35,28 +55,30 @@ export default function RecentOrders({ orders }: RecentOrdersProps) {
                 </p>
               </div>
               <div className="text-right">
-                <p className="font-medium">${order.total_price.toFixed(2)}</p>
+                <p className="font-medium">${(order.total || 0).toFixed(2)}</p>
                 <p className="text-sm capitalize text-gray-500">
                   {order.status}
                 </p>
               </div>
             </div>
 
-            <div className="flex -space-x-4">
-              {order.order_items.map((item, index) => (
-                <div
-                  key={index}
-                  className="relative h-10 w-10 overflow-hidden rounded-full border-2 border-white"
-                >
-                  <Image
-                    src={item.product.image_url}
-                    alt={item.product.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              ))}
-            </div>
+            {order.order_items && order.order_items.length > 0 && (
+              <div className="flex -space-x-4">
+                {order.order_items.map((item, index) => (
+                  <div
+                    key={`${order.id}-${index}`}
+                    className="relative h-10 w-10 overflow-hidden rounded-full border-2 border-white"
+                  >
+                    <Image
+                      src={item.product.image_url}
+                      alt={item.product.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         ))}
       </div>

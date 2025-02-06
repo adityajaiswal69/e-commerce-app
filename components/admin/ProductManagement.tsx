@@ -1,20 +1,30 @@
 import Image from "next/image";
 import Link from "next/link";
 
+type Product = {
+  id: string;
+  name: string;
+  price: number;
+  image_url: string;
+  created_at: string;
+};
+
 type ProductManagementProps = {
-  products: Array<{
-    id: string;
-    name: string;
-    price: number;
-    image_url: string;
-    stock: number;
-    active: boolean;
-  }>;
+  products: Product[];
 };
 
 export default function ProductManagement({
   products,
 }: ProductManagementProps) {
+  if (!products?.length) {
+    return (
+      <div className="rounded-lg border bg-white p-4">
+        <h2 className="text-lg font-medium">Recent Products</h2>
+        <p className="mt-2 text-sm text-gray-500">No products found</p>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-lg border bg-white">
       <div className="border-b p-4">
@@ -32,22 +42,18 @@ export default function ProductManagement({
                 className="object-cover"
               />
             </div>
-
-            <div className="flex flex-1 items-center justify-between">
-              <div>
-                <h3 className="font-medium">{product.name}</h3>
-                <p className="text-sm text-gray-500">
-                  ${product.price.toFixed(2)} · {product.stock} in stock
-                </p>
-              </div>
-
-              <Link
-                href={`/admin/products/${product.id}/edit`}
-                className="rounded-md border px-3 py-1 text-sm hover:bg-gray-50"
-              >
-                Edit
-              </Link>
+            <div className="flex-1">
+              <h3 className="font-medium">{product.name}</h3>
+              <p className="text-sm text-gray-500">
+                ${product.price.toFixed(2)}
+              </p>
             </div>
+            <Link
+              href={`/admin/products/${product.id}`}
+              className="text-sm text-blue-500 hover:text-blue-600"
+            >
+              Edit →
+            </Link>
           </div>
         ))}
       </div>

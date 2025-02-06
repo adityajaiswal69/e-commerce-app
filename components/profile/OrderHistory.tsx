@@ -1,25 +1,29 @@
 import Image from "next/image";
 import Link from "next/link";
 
+type OrderItem = {
+  quantity: number;
+  price_at_time: number | null;
+  product: {
+    name: string;
+    image_url: string;
+  };
+};
+
+type Order = {
+  id: string;
+  created_at: string;
+  total: number | null;
+  status: string;
+  order_items: OrderItem[];
+};
+
 type OrderHistoryProps = {
-  orders: Array<{
-    id: string;
-    created_at: string;
-    total_price: number;
-    status: string;
-    order_items: Array<{
-      quantity: number;
-      price_at_time: number;
-      product: {
-        name: string;
-        image_url: string;
-      };
-    }>;
-  }>;
+  orders: Order[];
 };
 
 export default function OrderHistory({ orders }: OrderHistoryProps) {
-  if (orders.length === 0) {
+  if (!orders?.length) {
     return (
       <div className="rounded-lg border p-6 text-center">
         <h2 className="mb-4 text-lg font-medium">Order History</h2>
@@ -49,7 +53,7 @@ export default function OrderHistory({ orders }: OrderHistoryProps) {
                 </p>
               </div>
               <div className="text-right">
-                <p className="font-medium">${order.total_price.toFixed(2)}</p>
+                <p className="font-medium">${(order.total || 0).toFixed(2)}</p>
                 <p className="text-sm capitalize text-gray-500">
                   {order.status}
                 </p>
@@ -70,7 +74,7 @@ export default function OrderHistory({ orders }: OrderHistoryProps) {
                   <div>
                     <p className="font-medium">{item.product.name}</p>
                     <p className="text-sm text-gray-500">
-                      {item.quantity} × ${item.price_at_time.toFixed(2)}
+                      {item.quantity} × ${(item.price_at_time || 0).toFixed(2)}
                     </p>
                   </div>
                 </div>

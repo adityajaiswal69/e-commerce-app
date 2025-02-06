@@ -1,25 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-
-type Product = {
-  id: string;
-  name: string;
-  image_url: string;
-  price: number;
-};
-
-type OrderItem = {
-  quantity: number;
-  product: Product;
-};
-
-type Order = {
-  id: string;
-  created_at: string;
-  total: number | null;
-  status: string;
-  order_items: OrderItem[];
-};
+import type { Order } from "@/types/orders";
 
 type RecentOrdersProps = {
   orders: Order[];
@@ -63,20 +44,37 @@ export default function RecentOrders({ orders }: RecentOrdersProps) {
             </div>
 
             {order.order_items && order.order_items.length > 0 && (
-              <div className="flex -space-x-4">
-                {order.order_items.map((item, index) => (
-                  <div
-                    key={`${order.id}-${index}`}
-                    className="relative h-10 w-10 overflow-hidden rounded-full border-2 border-white"
-                  >
-                    <Image
-                      src={item.product.image_url}
-                      alt={item.product.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                ))}
+              <div className="mt-4">
+                <div className="space-y-2">
+                  {order.order_items.map((item) => (
+                    <div
+                      key={`${order.id}-${item.products.id}`}
+                      className="flex items-center gap-4"
+                    >
+                      <div className="relative h-10 w-10 overflow-hidden rounded-full">
+                        <Image
+                          src={item.products.image_url}
+                          alt={item.products.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">
+                          {item.products.name}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {item.quantity} × ${item.price.toFixed(2)}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium">
+                          ${(item.quantity * item.price).toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

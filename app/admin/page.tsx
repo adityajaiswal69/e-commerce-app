@@ -32,19 +32,32 @@ export default async function AdminDashboard() {
   }
 
   // Fetch recent orders with all necessary details
-  const { data: ordersData } = await supabase
+  const { data: ordersData, error: ordersError } = await supabase
     .from("orders")
     .select(
       `
-      *
+      id,
+      created_at,
+      total,
+      status,
+      order_items!inner (
+        quantity,
+        price,
+        products!inner (
+          id,
+          name,
+          image_url
+        )
+      )
     `
     )
     .order("created_at", { ascending: false })
     .limit(5);
 
-  // Remove the inner joins as they might be filtering out orders
-  // Add debug logging
-  console.log("Raw orders data:", ordersData);
+  if (ordersError) {
+    console.error("Error fetching orders:", ordersError);
+  }
+
   const orders = ordersData as unknown as Order[];
 
   // Fetch recent products
@@ -69,7 +82,7 @@ export default async function AdminDashboard() {
     stats?.filter((order) => order.status === "pending").length || 0;
 
   const completedOrders =
-    stats?.filter((order) => order.status === "paid").length || 0;
+    stats?.filter((order) => order.status === "delivered").length || 0;
 
   return (
     <div className="container mx-auto px-4 py-8">

@@ -1,43 +1,106 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+"use client";
+
+import { useState, useEffect } from "react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import type { Order } from "@/types/orders";
+import OrderDetails from "@/components/admin/OrderDetails";
 
-export default async function AdminOrdersPage() {
-  const supabase = createServerComponentClient({ cookies });
+export default function AdminOrdersPage() {
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const supabase = createClientComponentClient();
 
-  // Check if user is authenticated and is admin
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  useEffect(() => {
+    const checkAuth = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-  if (!session) {
-    redirect("/sign-in");
+      if (!session) {
+        router.push("/sign-in");
+        return;
+      }
+
+      // Get user's role
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", session.user.id)
+        .single();
+
+      if (!profile || profile.role !== "admin") {
+        router.push("/");
+        return;
+      }
+
+      fetchOrders();
+    };
+
+    checkAuth();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      const { data: ordersData } = await supabase
+        .from("orders")
+        .select(
+          `
+          id,
+          created_at,
+          total,
+          status,
+          shipping_address,
+          order_items!inner (
+            quantity,
+            price,
+            products!inner (
+              id,
+              name,
+              image_url
+            )
+          )
+        `
+        )
+        .order("created_at", { ascending: false });
+
+      if (ordersData) {
+        setOrders(ordersData as unknown[] as Order[]);
+      }
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOrderClick = (order: Order) => {
+    setSelectedOrder(order);
+  };
+
+  const handleOrderUpdate = () => {
+    fetchOrders();
+    setSelectedOrder(null);
+    router.refresh();
+  };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="animate-pulse">
+          <div className="h-8 w-48 bg-gray-200"></div>
+          <div className="mt-8 space-y-4">
+            <div className="h-12 rounded bg-gray-200"></div>
+            <div className="h-12 rounded bg-gray-200"></div>
+            <div className="h-12 rounded bg-gray-200"></div>
+          </div>
+        </div>
+      </div>
+    );
   }
-
-  // Get user's role
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", session.user.id)
-    .single();
-
-  if (!profile || profile.role !== "admin") {
-    redirect("/");
-  }
-
-  // Fetch all orders with details
-  const { data: ordersData } = await supabase
-    .from("orders")
-    .select(
-      `
-      *
-    `
-    )
-    .order("created_at", { ascending: false });
-
-  const orders = ordersData as unknown as Order[];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -66,7 +129,11 @@ export default async function AdminOrdersPage() {
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
             {orders?.map((order) => (
-              <tr key={order.id}>
+              <tr
+                key={order.id}
+                onClick={() => handleOrderClick(order)}
+                className="cursor-pointer hover:bg-gray-50"
+              >
                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
                   #{order.id.slice(0, 8)}
                 </td>
@@ -76,14 +143,14 @@ export default async function AdminOrdersPage() {
                 <td className="px-6 py-4">
                   <div className="flex items-center space-x-2">
                     <div className="flex -space-x-2">
-                      {order.order_items?.map((item, index) => (
+                      {order.order_items?.map((item) => (
                         <div
-                          key={`${order.id}-${index}`}
+                          key={`${order.id}-${item.products.id}`}
                           className="relative h-8 w-8 overflow-hidden rounded-full border-2 border-white"
                         >
                           <Image
-                            src={item.product.image_url}
-                            alt={item.product.name}
+                            src={item.products.image_url}
+                            alt={item.products.name}
                             fill
                             className="object-cover"
                           />
@@ -101,7 +168,9 @@ export default async function AdminOrdersPage() {
                 <td className="whitespace-nowrap px-6 py-4">
                   <span
                     className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                      order.status === "paid"
+                      order.status === "delivered"
+                        ? "bg-blue-100 text-blue-800"
+                        : order.status === "paid"
                         ? "bg-green-100 text-green-800"
                         : "bg-yellow-100 text-yellow-800"
                     }`}
@@ -114,6 +183,14 @@ export default async function AdminOrdersPage() {
           </tbody>
         </table>
       </div>
+
+      {selectedOrder && (
+        <OrderDetails
+          order={selectedOrder}
+          onUpdate={handleOrderUpdate}
+          onClose={() => setSelectedOrder(null)}
+        />
+      )}
     </div>
   );
 }

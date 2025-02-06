@@ -7,7 +7,8 @@ export type Product = {
 
 export type OrderItem = {
   quantity: number;
-  product: Product;
+  price: number;
+  products: Product;
 };
 
 export type Order = {
@@ -16,4 +17,12 @@ export type Order = {
   total: number | null;
   status: string;
   order_items: OrderItem[];
+  shipping_address?: {
+    name: string;
+    address: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+  };
 };

@@ -1,7 +1,7 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import OrderHistory from "@/components/profile/OrderHistory";
-import ProfileInfo from "@/components/profile/ProfileInfo";
+import ProfileSettings from "@/components/profile/ProfileSettings";
 
 export default async function ProfilePage() {
   const supabase = createServerSupabaseClient();
@@ -14,7 +14,13 @@ export default async function ProfilePage() {
     notFound();
   }
 
-  // Fetch user's orders
+  // Fetch user's profile and orders
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
   const { data: orders } = await supabase
     .from("orders")
     .select(
@@ -38,7 +44,7 @@ export default async function ProfilePage() {
 
       <div className="grid gap-8 md:grid-cols-3">
         <div className="md:col-span-1">
-          <ProfileInfo user={user} />
+          <ProfileSettings profile={profile} />
         </div>
 
         <div className="md:col-span-2">

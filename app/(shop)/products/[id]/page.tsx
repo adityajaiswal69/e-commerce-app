@@ -7,6 +7,18 @@ import { useCart } from "@/contexts/CartContext";
 import { useState, useEffect, use } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  image_url: string;
+  category: string;
+  stock: number;
+  created_at: string;
+  active: boolean;
+}
+
 export default function ProductPage({
   params,
 }: {

@@ -2,31 +2,47 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useEffect, useState } from "react";
+import Image from "next/image";
 import MiniCart from "@/components/cart/MiniCart";
-import { supabase } from "@/lib/supabase/client";
-import type { User } from "@supabase/supabase-js";
+
+type Profile = {
+  avatar_url: string | null;
+  full_name: string | null;
+};
 
 export default function Navbar() {
-  const pathname = usePathname();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const pathname = usePathname();
+  const supabase = createClientComponentClient();
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
+    async function getProfile() {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
+      if (session) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("avatar_url, full_name")
+          .eq("id", session.user.id)
+          .single();
 
-    return () => subscription.unsubscribe();
-  }, []);
+        setProfile(data);
+      }
+      setLoading(false);
+    }
+
+    getProfile();
+  }, [supabase]);
+
+  const getInitial = (name: string | null) => {
+    return name ? name.charAt(0).toUpperCase() : "?";
+  };
 
   const isActive = (path: string) => pathname === path;
 
@@ -62,28 +78,41 @@ export default function Navbar() {
               Products
             </Link>
             <MiniCart />
-            {user ? (
-              <Link
-                href="/profile"
-                className="text-gray-600 hover:text-blue-600"
-              >
-                Profile
-              </Link>
-            ) : (
-              <Link
-                href="/sign-in"
-                className="text-gray-600 hover:text-blue-600"
-              >
-                Sign In
-              </Link>
-            )}
+            {!loading &&
+              (profile ? (
+                <div className="flex items-center gap-4">
+                  <Link
+                    href="/profile"
+                    className="text-gray-600 hover:text-blue-600"
+                  >
+                    {profile.avatar_url ? (
+                      <div className="relative h-8 w-8 overflow-hidden rounded-full">
+                        <Image
+                          src={profile.avatar_url}
+                          alt="Profile"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-sm text-white">
+                        {getInitial(profile.full_name)}
+                      </div>
+                    )}
+                  </Link>
+                </div>
+              ) : (
+                <Link
+                  href="/sign-in"
+                  className="text-gray-600 hover:text-blue-600"
+                >
+                  Sign In
+                </Link>
+              ))}
           </div>
 
           {/* Mobile Menu Button */}
-          <button
-            className="md:hidden"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
+          <button className="md:hidden" onClick={() => setIsMenuOpen(false)}>
             <svg
               className="h-6 w-6"
               fill="none"
@@ -141,23 +170,37 @@ export default function Navbar() {
             >
               Cart
             </Link>
-            {user ? (
-              <Link
-                href="/profile"
-                className="block text-gray-600 hover:text-blue-600"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Profile
-              </Link>
-            ) : (
-              <Link
-                href="/sign-in"
-                className="block text-gray-600 hover:text-blue-600"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Sign In
-              </Link>
-            )}
+            {!loading &&
+              (profile ? (
+                <Link
+                  href="/profile"
+                  className="block text-gray-600 hover:text-blue-600"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {profile.avatar_url ? (
+                    <div className="relative h-8 w-8 overflow-hidden rounded-full">
+                      <Image
+                        src={profile.avatar_url}
+                        alt="Profile"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-sm text-white">
+                      {getInitial(profile.full_name)}
+                    </div>
+                  )}
+                </Link>
+              ) : (
+                <Link
+                  href="/sign-in"
+                  className="block text-gray-600 hover:text-blue-600"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Sign In
+                </Link>
+              ))}
           </div>
         )}
       </div>

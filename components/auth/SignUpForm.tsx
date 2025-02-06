@@ -10,6 +10,7 @@ export default function SignUpForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -24,6 +25,9 @@ export default function SignUpForm() {
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: {
+            full_name: name,
+          },
         },
       });
 
@@ -42,6 +46,19 @@ export default function SignUpForm() {
     <div className="space-y-6">
       <form onSubmit={handleSignUp} className="space-y-4">
         {error && <div className="text-red-500">{error}</div>}
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium">
+            Full Name
+          </label>
+          <input
+            id="name"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="mt-1 block w-full rounded-md border p-2"
+            required
+          />
+        </div>
         <div>
           <label htmlFor="email" className="block text-sm font-medium">
             Email

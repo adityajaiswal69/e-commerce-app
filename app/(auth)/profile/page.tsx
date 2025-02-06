@@ -2,6 +2,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import OrderHistory from "@/components/profile/OrderHistory";
 import ProfileSettings from "@/components/profile/ProfileSettings";
+import ProfileInfo from "@/components/profile/ProfileInfo";
 
 export default async function ProfilePage() {
   const supabase = createServerSupabaseClient();
@@ -45,6 +46,7 @@ export default async function ProfilePage() {
       <div className="grid gap-8 md:grid-cols-3">
         <div className="md:col-span-1">
           <ProfileSettings profile={profile} />
+          <ProfileInfo user={user} />
         </div>
 
         <div className="md:col-span-2">

@@ -10,7 +10,7 @@ type OrderItem = {
   id: string;
   product_id: string;
   quantity: number;
-  price_at_time: number | null;
+  price: number | null;
   product: {
     name: string;
     image_url: string;
@@ -186,8 +186,11 @@ export default function OrderHistory({ orders }: OrderHistoryProps) {
             </div>
 
             <div className="space-y-4">
-              {order.order_items.map((item, index) => (
-                <div key={index} className="flex items-center gap-4">
+              {order.order_items.map((item) => (
+                <div
+                  key={`${order.id}-${item.product_id}`}
+                  className="flex items-center gap-4"
+                >
                   <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
                     <Image
                       src={item.product.image_url}
@@ -199,7 +202,7 @@ export default function OrderHistory({ orders }: OrderHistoryProps) {
                   <div>
                     <p className="font-medium">{item.product.name}</p>
                     <p className="text-sm text-gray-500">
-                      {item.quantity} × ${(item.price_at_time || 0).toFixed(2)}
+                      {item.quantity} × ${(item.price || 0).toFixed(2)}
                     </p>
                   </div>
                   <button

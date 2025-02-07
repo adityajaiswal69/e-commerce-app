@@ -7,7 +7,7 @@ import { toast } from "react-hot-toast";
 
 export default function CheckoutForm() {
   const router = useRouter();
-  const { state: cart, clearCart } = useCart();
+  const { items, clearCart } = useCart();
   const [loading, setLoading] = useState(false);
   const [shippingAddress, setShippingAddress] = useState({
     name: "",
@@ -23,11 +23,12 @@ export default function CheckoutForm() {
     setLoading(true);
 
     try {
-      if (!cart.items.length) {
+      if (!items.length) {
         throw new Error("Cart is empty");
       }
 
-      console.log("Submitting cart items:", cart.items);
+      console.log("Submitting order with items:", items);
+      console.log("Shipping address:", shippingAddress);
 
       const response = await fetch("/api/checkout", {
         method: "POST",
@@ -35,27 +36,37 @@ export default function CheckoutForm() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          items: cart.items,
+          items,
           shippingAddress,
         }),
       });
 
+      // Log the response status and body
+      console.log("Response status:", response.status);
       const data = await response.json();
-      console.log("Checkout response:", data);
+      console.log("Checkout response:", { status: response.status, data });
 
       if (!response.ok) {
-        throw new Error(data.error || "Checkout failed");
+        const errorMessage = data.error || "Checkout failed";
+        console.error("Checkout error:", errorMessage);
+        throw new Error(errorMessage);
       }
 
       if (data.sessionUrl) {
+        console.log("Redirecting to Stripe:", data.sessionUrl);
         clearCart();
         window.location.href = data.sessionUrl;
       } else {
+        console.error("Missing sessionUrl in response");
         throw new Error("No checkout URL received");
       }
     } catch (error) {
-      console.error("Checkout error:", error);
-      toast.error(error instanceof Error ? error.message : "Checkout failed");
+      console.error("Checkout error details:", error);
+      let errorMessage = "Checkout failed";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -201,7 +212,7 @@ export default function CheckoutForm() {
 
       <button
         type="submit"
-        disabled={loading || cart.items.length === 0}
+        disabled={loading || items.length === 0}
         className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? "Processing..." : "Proceed to Payment"}

@@ -9,6 +9,8 @@ export type OrderItem = {
   quantity: number;
   price: number;
   products: Product;
+  category: string;
+  selected_size: string;
 };
 
 export type Order = {

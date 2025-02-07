@@ -4,10 +4,17 @@ import { useCart } from "@/contexts/CartContext";
 import CheckoutForm from "@/components/checkout/CheckoutForm";
 import Image from "next/image";
 
-export default function CartPage() {
-  const { state: cart, removeItem, updateQuantity } = useCart();
+const DEFAULT_IMAGE = "/images/placeholder.jpg";
 
-  if (cart.items.length === 0) {
+export default function CartPage() {
+  const { items, removeItem } = useCart();
+
+  const total = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+
+  if (items.length === 0) {
     return (
       <div className="max-w-2xl mx-auto py-16 px-4 text-center">
         <h2 className="text-2xl font-bold">Your cart is empty</h2>
@@ -25,43 +32,35 @@ export default function CartPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items */}
         <div className="lg:col-span-2 space-y-4">
-          {cart.items.map((item) => (
+          {items.map((item) => (
             <div
-              key={item.product.id}
+              key={item.cartItemId}
               className="flex items-center gap-4 p-4 border rounded-lg"
             >
               <div className="relative w-24 h-24">
                 <Image
-                  src={item.product.image_url}
-                  alt={item.product.name}
-                  fill
+                  src={item.image_url || DEFAULT_IMAGE}
+                  alt={item.name}
+                  width={96}
+                  height={96}
                   className="object-cover rounded"
                 />
               </div>
 
               <div className="flex-1">
-                <h3 className="font-medium">{item.product.name}</h3>
-                <p className="text-gray-600">
-                  ${item.product.price.toFixed(2)}
-                </p>
+                <h3 className="font-medium">{item.name}</h3>
+                <div className="mt-1 space-y-1">
+                  <p className="text-sm text-gray-600">Size: {item.size}</p>
+                  <p className="text-sm text-gray-600">
+                    Category: {item.category}
+                  </p>
+                  <p className="text-gray-600">${item.price.toFixed(2)}</p>
+                </div>
 
                 <div className="flex items-center gap-2 mt-2">
-                  <select
-                    value={item.quantity}
-                    onChange={(e) =>
-                      updateQuantity(item.product.id, Number(e.target.value))
-                    }
-                    className="border rounded p-1"
-                  >
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                      <option key={num} value={num}>
-                        {num}
-                      </option>
-                    ))}
-                  </select>
-
+                  <p>Quantity: {item.quantity}</p>
                   <button
-                    onClick={() => removeItem(item.product.id)}
+                    onClick={() => removeItem(item.cartItemId!)}
                     className="text-red-500 hover:text-red-600"
                   >
                     Remove
@@ -71,7 +70,7 @@ export default function CartPage() {
 
               <div className="text-right">
                 <p className="font-medium">
-                  ${(item.product.price * item.quantity).toFixed(2)}
+                  ${(item.price * item.quantity).toFixed(2)}
                 </p>
               </div>
             </div>
@@ -86,7 +85,7 @@ export default function CartPage() {
             <div className="space-y-2 mb-4">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span>${cart.total.toFixed(2)}</span>
+                <span>${total.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Shipping</span>
@@ -95,7 +94,7 @@ export default function CartPage() {
               <div className="border-t pt-2 mt-2">
                 <div className="flex justify-between font-bold">
                   <span>Total</span>
-                  <span>${cart.total.toFixed(2)}</span>
+                  <span>${total.toFixed(2)}</span>
                 </div>
               </div>
             </div>

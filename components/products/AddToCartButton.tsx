@@ -8,12 +8,18 @@ type AddToCartButtonProps = {
   productId: string;
   price: number;
   selectedSize?: string;
+  category: string;
+  name: string;
+  image_url: string;
 };
 
 export default function AddToCartButton({
   productId,
   price,
   selectedSize,
+  category,
+  name,
+  image_url,
 }: AddToCartButtonProps) {
   const [loading, setLoading] = useState(false);
   const { addItem } = useCart();
@@ -32,6 +38,9 @@ export default function AddToCartButton({
         quantity: 1,
         price,
         size: selectedSize,
+        category,
+        name,
+        image_url,
       });
       router.refresh();
     } catch (error) {

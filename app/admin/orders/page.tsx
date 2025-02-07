@@ -57,11 +57,14 @@ export default function AdminOrdersPage() {
           order_items!inner (
             quantity,
             price,
+            category,
+            selected_size,
             products!inner (
               id,
               name,
               image_url
             )
+
           )
         `
         )

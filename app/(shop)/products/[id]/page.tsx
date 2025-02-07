@@ -8,6 +8,7 @@ import { useState, useEffect, use } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import ReviewSection from "@/components/products/ReviewSection";
 import { Review } from "@/types/reviews";
+import AddToCartButton from "@/components/products/AddToCartButton";
 
 interface Product {
   id: string;
@@ -211,17 +212,14 @@ export default function ProductPage({
               )}
             </div>
             <div className="pt-4">
-              <button
-                onClick={handleAddToCart}
-                disabled={product.stock === 0 || loading}
-                className="w-full rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:bg-gray-300"
-              >
-                {loading
-                  ? "Adding..."
-                  : product.stock > 0
-                  ? "Add to Cart"
-                  : "Out of Stock"}
-              </button>
+              <AddToCartButton
+                productId={product.id}
+                price={product.price}
+                selectedSize={selectedSize}
+                category={product.category}
+                name={product.name}
+                image_url={product.image_url}
+              />
             </div>
           </div>
         </div>

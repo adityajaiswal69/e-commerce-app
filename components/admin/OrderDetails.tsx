@@ -103,7 +103,13 @@ export default function OrderDetails({
                               {item.products.name}
                             </p>
                             <p className="text-sm text-gray-500">
-                              {item.quantity} × ${item.price.toFixed(2)}
+                              {item.quantity} × ${(item.price || 0).toFixed(2)}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              Category: {item.category}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              Size: {item.selected_size}
                             </p>
                           </div>
                           <div className="text-right">

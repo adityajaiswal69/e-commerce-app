@@ -1,7 +1,7 @@
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { CartItem } from "@/types/cart";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error("Missing STRIPE_SECRET_KEY");
@@ -9,42 +9,50 @@ if (!process.env.STRIPE_SECRET_KEY) {
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2023-10-16",
-  typescript: true,
 });
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
     const supabase = createRouteHandlerClient({ cookies });
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    const { items, shippingAddress } = await request.json();
 
-    if (!session) {
-      return NextResponse.json(
-        { error: "Please sign in to checkout" },
-        { status: 401 }
+    // Validate input data
+    if (!Array.isArray(items) || items.length === 0) {
+      console.error("Invalid items:", items);
+      return new Response(
+        JSON.stringify({ error: "Items must be a non-empty array" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    const { items, shippingAddress } = await req.json();
-    console.log("Received items:", items);
-    console.log("Shipping address:", shippingAddress);
-
-    if (!items?.length) {
-      return NextResponse.json({ error: "No items in cart" }, { status: 400 });
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      console.error("Unauthorized access attempt");
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    // Create Stripe session first
-    const stripeSession = await stripe.checkout.sessions.create({
+    // Calculate total
+    const total = items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+
+    // Create Stripe checkout session
+    const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
-      line_items: items.map((item: any) => ({
+      line_items: items.map((item: CartItem) => ({
         price_data: {
           currency: "usd",
           product_data: {
-            name: item.product.name,
-            images: [item.product.image_url],
+            name: item.name,
+            description: `Size: ${item.size}`,
           },
-          unit_amount: Math.round(item.product.price * 100),
+          unit_amount: Math.round(item.price * 100),
         },
         quantity: item.quantity,
       })),
@@ -52,73 +60,62 @@ export async function POST(req: Request) {
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/cart`,
       metadata: {
-        user_id: session.user.id,
+        userId: user.id,
+        shippingAddress: JSON.stringify(shippingAddress),
       },
     });
 
-    // Calculate total (ensure it's a number)
-    const total = items.reduce(
-      (sum: number, item: any) =>
-        sum + Number(item.product.price) * Number(item.quantity),
-      0
-    );
+    // Log the session details for debugging
+    console.log("Stripe session created:", session);
 
-    try {
-      // Create order first
-      const { data: order, error: orderError } = await supabase
-        .from("orders")
-        .insert({
-          user_id: session.user.id,
-          stripe_session_id: stripeSession.id,
-          total: total,
-          status: "pending",
-          shipping_address: shippingAddress,
-        })
-        .select()
-        .single();
+    // Create order in database
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .insert({
+        user_id: user.id,
+        status: "pending",
+        shipping_address: shippingAddress,
+        payment_intent_id: session.payment_intent as string,
+        payment_status: session.payment_status,
+        stripe_session_id: session.id,
+        total: total,
+      })
+      .select()
+      .single();
 
-      if (orderError) {
-        console.error("Order creation error:", orderError);
-        throw new Error(`Failed to create order: ${orderError.message}`);
-      }
-
-      if (!order) {
-        throw new Error("No order was created");
-      }
-
-      // Then create order items
-      const orderItems = items.map((item: any) => ({
-        order_id: order.id,
-        product_id: item.product.id,
-        quantity: Number(item.quantity),
-        price: Number(item.product.price),
-      }));
-
-      const { error: itemsError } = await supabase
-        .from("order_items")
-        .insert(orderItems);
-
-      if (itemsError) {
-        console.error("Order items creation error:", itemsError);
-        // Cleanup the order if items creation fails
-        await supabase.from("orders").delete().eq("id", order.id);
-        throw new Error(`Failed to create order items: ${itemsError.message}`);
-      }
-
-      return NextResponse.json({ sessionUrl: stripeSession.url });
-    } catch (dbError) {
-      console.error("Database error:", dbError);
-      throw dbError;
+    if (orderError) {
+      console.error("Error creating order:", orderError);
+      throw orderError;
     }
+
+    // Create order items
+    const orderItems = items.map((item: CartItem) => ({
+      order_id: order.id,
+      product_id: item.productId,
+      quantity: item.quantity,
+      price: item.price,
+      category: item.category,
+      selected_size: item.size,
+    }));
+
+    const { error: itemsError } = await supabase
+      .from("order_items")
+      .insert(orderItems);
+
+    if (itemsError) {
+      console.error("Error creating order items:", itemsError);
+      throw itemsError;
+    }
+
+    return new Response(JSON.stringify({ sessionUrl: session.url }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Checkout error:", error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "Payment processing failed",
-        details: error,
-      },
-      { status: 500 }
-    );
+    return new Response(JSON.stringify({ error: "Checkout failed" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }

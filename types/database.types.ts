@@ -8,6 +8,14 @@ export type Product = {
   category: string;
   stock: number;
   active: boolean;
+  style: string[];
+  colors: string[];
+  sizes: {
+    top?: string[];
+    bottom?: string[];
+    shoes?: string[];
+  };
+  occasions: string[];
 };
 
 export type Database = {

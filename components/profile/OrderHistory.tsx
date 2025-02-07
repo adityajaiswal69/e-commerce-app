@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { StarIcon } from "@heroicons/react/24/solid";
@@ -42,7 +42,43 @@ export default function OrderHistory({ orders }: OrderHistoryProps) {
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
   const [existingReview, setExistingReview] = useState<Review | null>(null);
+  const [itemReviews, setItemReviews] = useState<Record<string, Review | null>>(
+    {}
+  );
   const supabase = createClientComponentClient();
+
+  useEffect(() => {
+    async function fetchAllReviews() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const productIds = orders.flatMap((order) =>
+        order.order_items.map((item) => item.product_id)
+      );
+
+      if (productIds.length) {
+        const { data: reviews } = await supabase
+          .from("reviews")
+          .select("*")
+          .eq("user_id", user.id)
+          .in("product_id", productIds);
+
+        const reviewMap = (reviews || []).reduce(
+          (acc, review) => ({
+            ...acc,
+            [review.product_id]: review,
+          }),
+          {}
+        );
+
+        setItemReviews(reviewMap);
+      }
+    }
+
+    fetchAllReviews();
+  }, [orders, supabase]);
 
   const checkExistingReview = async (productId: string) => {
     const {
@@ -103,8 +139,8 @@ export default function OrderHistory({ orders }: OrderHistoryProps) {
         ]);
       }
 
+      await checkExistingReview(selectedItem.product_id);
       setSelectedItem(null);
-      setExistingReview(null);
     } catch (error) {
       console.error("Error submitting review:", error);
     } finally {
@@ -170,7 +206,9 @@ export default function OrderHistory({ orders }: OrderHistoryProps) {
                     onClick={() => handleItemClick(item)}
                     className="ml-auto text-blue-500 hover:text-blue-600"
                   >
-                    {existingReview ? "Update Review" : "Write Review"}
+                    {itemReviews[item.product_id]
+                      ? "Update Review"
+                      : "Write Review"}
                   </button>
                 </div>
               ))}

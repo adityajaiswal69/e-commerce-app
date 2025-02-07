@@ -19,6 +19,28 @@ interface Product {
   stock: number;
   created_at: string;
   active: boolean;
+  style?: string[];
+  colors?: string[];
+  sizes?: Record<string, string[]>;
+  occasions?: string[];
+}
+
+type SizeCategory = "top" | "bottom" | "shoes";
+
+function getSizeCategory(category: string): SizeCategory | null {
+  const categoryMap: Record<string, SizeCategory> = {
+    tshirt: "top",
+    shirt: "top",
+    jacket: "top",
+    pants: "bottom",
+    jeans: "bottom",
+    shorts: "bottom",
+    shoes: "shoes",
+    sneakers: "shoes",
+    boots: "shoes",
+  };
+
+  return categoryMap[category.toLowerCase()] || null;
 }
 
 export default function ProductPage({
@@ -33,6 +55,7 @@ export default function ProductPage({
   // This is a temporary solution until we figure out data fetching in client components
   const [product, setProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -97,31 +120,109 @@ export default function ProductPage({
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid gap-8 md:grid-cols-2">
-        <div className="aspect-square relative overflow-hidden rounded-lg">
+        <div className="relative aspect-square">
           <Image
             src={product.image_url}
             alt={product.name}
             fill
-            className="object-cover"
+            className="object-cover rounded-lg"
           />
         </div>
-        <div>
-          <h1 className="text-3xl font-bold">{product.name}</h1>
-          <p className="mt-2 text-lg text-gray-500">{product.category}</p>
-          <p className="mt-4 text-2xl font-bold">${product.price.toFixed(2)}</p>
-          <p className="mt-4 text-gray-600">{product.description}</p>
-          <div className="mt-6">
-            <button
-              onClick={handleAddToCart}
-              disabled={product.stock === 0 || loading}
-              className="w-full rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:bg-gray-300"
-            >
-              {loading
-                ? "Adding..."
-                : product.stock > 0
-                ? "Add to Cart"
-                : "Out of Stock"}
-            </button>
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold">{product.name}</h1>
+            <p className="mt-2 text-2xl font-semibold text-blue-600">
+              ${product.price.toFixed(2)}
+            </p>
+          </div>
+          <div className="space-y-4">
+            <p className="text-gray-600">{product.description}</p>
+            <div className="space-y-2">
+              {product.style?.length > 0 && (
+                <div>
+                  <h3 className="font-medium">Style:</h3>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {product.style.map((style) => (
+                      <span
+                        key={style}
+                        className="px-3 py-1 bg-gray-100 rounded-full text-sm"
+                      >
+                        {style}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {product.colors?.length > 0 && (
+                <div>
+                  <h3 className="font-medium">Colors:</h3>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {product.colors.map((color) => (
+                      <span
+                        key={color}
+                        className="px-3 py-1 bg-gray-100 rounded-full text-sm"
+                      >
+                        {color}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {product.sizes && (
+                <div>
+                  <h3 className="font-medium">Select Size:</h3>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {(() => {
+                      const sizeCategory = getSizeCategory(product.category);
+                      if (!sizeCategory || !product.sizes[sizeCategory]) {
+                        return null;
+                      }
+                      return product.sizes[sizeCategory].map((size) => (
+                        <button
+                          key={size}
+                          onClick={() => setSelectedSize(size)}
+                          className={`px-4 py-2 border rounded-md ${
+                            selectedSize === size
+                              ? "bg-blue-500 text-white border-blue-500"
+                              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      ));
+                    })()}
+                  </div>
+                </div>
+              )}
+              {product.occasions?.length > 0 && (
+                <div>
+                  <h3 className="font-medium">Perfect for:</h3>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {product.occasions.map((occasion) => (
+                      <span
+                        key={occasion}
+                        className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm"
+                      >
+                        {occasion}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="pt-4">
+              <button
+                onClick={handleAddToCart}
+                disabled={product.stock === 0 || loading}
+                className="w-full rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:bg-gray-300"
+              >
+                {loading
+                  ? "Adding..."
+                  : product.stock > 0
+                  ? "Add to Cart"
+                  : "Out of Stock"}
+              </button>
+            </div>
           </div>
         </div>
       </div>

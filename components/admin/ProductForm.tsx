@@ -7,8 +7,74 @@ import type { Product } from "@/types/database.types";
 import { uploadProductImage } from "@/lib/utils/upload";
 import Image from "next/image";
 
+const STYLE_OPTIONS = [
+  "Casual",
+  "Formal",
+  "Streetwear",
+  "Vintage",
+  "Minimalist",
+  "Athletic",
+];
+
+const COLOR_OPTIONS = [
+  "Black",
+  "White",
+  "Blue",
+  "Red",
+  "Green",
+  "Navy",
+  "Brown",
+  "Gray",
+  "Beige",
+];
+
+const OCCASION_OPTIONS = [
+  "Daily",
+  "Work",
+  "Party",
+  "Sport",
+  "Special Event",
+  "Casual",
+];
+
+const SIZE_OPTIONS = {
+  top: ["XS", "S", "M", "L", "XL", "XXL"],
+  bottom: ["28", "30", "32", "34", "36", "38"],
+  shoes: ["6", "7", "8", "9", "10", "11", "12"],
+};
+
+const CATEGORY_OPTIONS = [
+  { value: "tshirt", label: "T-Shirt" },
+  { value: "shirt", label: "Shirt" },
+  { value: "jacket", label: "Jacket" },
+  { value: "pants", label: "Pants" },
+  { value: "jeans", label: "Jeans" },
+  { value: "shorts", label: "Shorts" },
+  { value: "shoes", label: "Shoes" },
+  { value: "sneakers", label: "Sneakers" },
+  { value: "boots", label: "Boots" },
+];
+
 type ProductFormProps = {
   product?: Product;
+};
+
+type FormData = {
+  name: string;
+  description: string;
+  price: number;
+  image_url: string;
+  category: string;
+  stock: number;
+  active: boolean;
+  style: string[];
+  colors: string[];
+  sizes: {
+    top: string[];
+    bottom: string[];
+    shoes: string[];
+  };
+  occasions: string[];
 };
 
 async function deleteProductImage(imageUrl: string) {
@@ -36,14 +102,22 @@ export default function ProductForm({ product }: ProductFormProps) {
     product?.image_url || null
   );
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: product?.name || "",
     description: product?.description || "",
-    price: product?.price?.toString() || "",
+    price: product?.price || 0,
     image_url: product?.image_url || "",
     category: product?.category || "",
-    stock: product?.stock?.toString() || "",
+    stock: product?.stock || 0,
     active: product?.active ?? true,
+    style: product?.style || [],
+    colors: product?.colors || [],
+    sizes: product?.sizes || {
+      top: [] as string[],
+      bottom: [] as string[],
+      shoes: [] as string[],
+    },
+    occasions: product?.occasions || [],
   });
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,19 +144,39 @@ export default function ProductForm({ product }: ProductFormProps) {
     }
   };
 
+  const handleMultiSelect = (
+    field: "style" | "colors" | "occasions",
+    value: string
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: prev[field]?.includes(value)
+        ? prev[field]?.filter((item) => item !== value)
+        : [...(prev[field] || []), value],
+    }));
+  };
+
+  const handleSizeChange = (
+    category: keyof typeof SIZE_OPTIONS,
+    size: string
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      sizes: {
+        ...(prev.sizes || {}),
+        [category]: prev.sizes?.[category]?.includes(size)
+          ? prev.sizes[category]?.filter((s) => s !== size)
+          : [...(prev.sizes?.[category] || []), size],
+      },
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.image_url) {
       setError("Please upload an image");
       return;
     }
-
-    // Convert string values to numbers for submission
-    const submitData = {
-      ...formData,
-      price: parseFloat(formData.price) || 0,
-      stock: parseInt(formData.stock) || 0,
-    };
 
     setLoading(true);
     setError(null);
@@ -91,11 +185,11 @@ export default function ProductForm({ product }: ProductFormProps) {
       if (product) {
         const { error } = await supabase
           .from("products")
-          .update(submitData)
+          .update(formData)
           .eq("id", product.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("products").insert([submitData]);
+        const { error } = await supabase.from("products").insert([formData]);
         if (error) throw error;
       }
 
@@ -182,26 +276,70 @@ export default function ProductForm({ product }: ProductFormProps) {
         </div>
       </div>
 
-      <div>
-        <label htmlFor="name" className="block text-sm font-medium">
-          Product Name
-        </label>
-        <input
-          id="name"
-          type="text"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="mt-1 block w-full rounded-md border p-2"
-          required
-        />
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div>
+          <label className="block text-sm font-medium">Name</label>
+          <input
+            type="text"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            className="mt-1 block w-full rounded-md border p-2"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium">Category</label>
+          <select
+            value={formData.category}
+            onChange={(e) =>
+              setFormData({ ...formData, category: e.target.value })
+            }
+            className="mt-1 block w-full rounded-md border p-2"
+            required
+          >
+            <option value="">Select Category</option>
+            {CATEGORY_OPTIONS.map((category) => (
+              <option key={category.value} value={category.value}>
+                {category.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium">Price</label>
+          <input
+            type="number"
+            value={formData.price}
+            onChange={(e) =>
+              setFormData({ ...formData, price: Number(e.target.value) })
+            }
+            className="mt-1 block w-full rounded-md border p-2"
+            required
+            min="0"
+            step="0.01"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium">Stock</label>
+          <input
+            type="number"
+            value={formData.stock}
+            onChange={(e) =>
+              setFormData({ ...formData, stock: Number(e.target.value) })
+            }
+            className="mt-1 block w-full rounded-md border p-2"
+            required
+            min="0"
+          />
+        </div>
       </div>
 
       <div>
-        <label htmlFor="description" className="block text-sm font-medium">
-          Description
-        </label>
+        <label className="block text-sm font-medium">Description</label>
         <textarea
-          id="description"
           value={formData.description}
           onChange={(e) =>
             setFormData({ ...formData, description: e.target.value })
@@ -212,71 +350,128 @@ export default function ProductForm({ product }: ProductFormProps) {
         />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <div>
-          <label htmlFor="price" className="block text-sm font-medium">
-            Price
-          </label>
-          <input
-            id="price"
-            type="number"
-            step="0.01"
-            min="0"
-            value={formData.price}
-            onChange={(e) =>
-              setFormData({ ...formData, price: e.target.value })
-            }
-            className="mt-1 block w-full rounded-md border p-2"
-            required
-          />
-        </div>
-
-        <div>
-          <label htmlFor="stock" className="block text-sm font-medium">
-            Stock
-          </label>
-          <input
-            id="stock"
-            type="number"
-            min="0"
-            value={formData.stock}
-            onChange={(e) =>
-              setFormData({ ...formData, stock: e.target.value })
-            }
-            className="mt-1 block w-full rounded-md border p-2"
-            required
-          />
-        </div>
-      </div>
-
       <div>
-        <label htmlFor="category" className="block text-sm font-medium">
-          Category
-        </label>
+        <label className="block text-sm font-medium">Image URL</label>
         <input
-          id="category"
-          type="text"
-          value={formData.category}
+          type="url"
+          value={formData.image_url}
           onChange={(e) =>
-            setFormData({ ...formData, category: e.target.value })
+            setFormData({ ...formData, image_url: e.target.value })
           }
           className="mt-1 block w-full rounded-md border p-2"
           required
         />
       </div>
 
-      <div className="flex items-center">
-        <input
-          id="active"
-          type="checkbox"
-          checked={formData.active}
-          onChange={(e) =>
-            setFormData({ ...formData, active: e.target.checked })
-          }
-          className="h-4 w-4 rounded border-gray-300"
-        />
-        <label htmlFor="active" className="ml-2 block text-sm font-medium">
-          Active (visible to customers)
+      <div>
+        <label className="block text-sm font-medium mb-2">Styles</label>
+        <div className="flex flex-wrap gap-2">
+          {STYLE_OPTIONS.map((style) => (
+            <button
+              key={style}
+              type="button"
+              onClick={() => handleMultiSelect("style", style)}
+              className={`px-4 py-2 rounded-full ${
+                formData.style?.includes(style)
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-100 text-gray-700"
+              }`}
+            >
+              {style}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-2">Colors</label>
+        <div className="flex flex-wrap gap-2">
+          {COLOR_OPTIONS.map((color) => (
+            <button
+              key={color}
+              type="button"
+              onClick={() => handleMultiSelect("colors", color)}
+              className={`px-4 py-2 rounded-full ${
+                formData.colors?.includes(color)
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-100 text-gray-700"
+              }`}
+            >
+              {color}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-2">
+          Available Sizes
+        </label>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {Object.entries(SIZE_OPTIONS).map(([category, sizes]) => (
+            <div key={category}>
+              <label className="block text-sm font-medium mb-2 capitalize">
+                {category}
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {sizes.map((size) => (
+                  <button
+                    key={size}
+                    type="button"
+                    onClick={() =>
+                      handleSizeChange(
+                        category as keyof typeof SIZE_OPTIONS,
+                        size
+                      )
+                    }
+                    className={`px-3 py-1 rounded ${
+                      formData.sizes?.[
+                        category as keyof typeof SIZE_OPTIONS
+                      ]?.includes(size)
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-2">Occasions</label>
+        <div className="flex flex-wrap gap-2">
+          {OCCASION_OPTIONS.map((occasion) => (
+            <button
+              key={occasion}
+              type="button"
+              onClick={() => handleMultiSelect("occasions", occasion)}
+              className={`px-4 py-2 rounded-full ${
+                formData.occasions?.includes(occasion)
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-100 text-gray-700"
+              }`}
+            >
+              {occasion}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={formData.active}
+            onChange={(e) =>
+              setFormData({ ...formData, active: e.target.checked })
+            }
+            className="rounded"
+          />
+          <span className="text-sm font-medium">Active</span>
         </label>
       </div>
 

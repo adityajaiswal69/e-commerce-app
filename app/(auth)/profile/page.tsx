@@ -2,7 +2,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import OrderHistory from "@/components/profile/OrderHistory";
 import ProfileSettings from "@/components/profile/ProfileSettings";
-import ProfileInfo from "@/components/profile/ProfileInfo";
+import StylePreferences from "@/components/profile/StylePreferences";
 
 export default async function ProfilePage() {
   const supabase = createServerSupabaseClient();
@@ -15,13 +15,18 @@ export default async function ProfilePage() {
     notFound();
   }
 
-  // Fetch user's profile and orders
+  // Fetch user's profile
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", user.id)
     .single();
 
+  if (!profile) {
+    notFound();
+  }
+
+  // Fetch user's orders
   const { data: orders } = await supabase
     .from("orders")
     .select(
@@ -43,15 +48,10 @@ export default async function ProfilePage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="mb-8 text-2xl font-bold">My Profile</h1>
 
-      <div className="grid gap-8 md:grid-cols-3">
-        <div className="md:col-span-1">
-          <ProfileSettings profile={profile} />
-          <ProfileInfo user={user} />
-        </div>
-
-        <div className="md:col-span-2">
-          <OrderHistory orders={orders || []} />
-        </div>
+      <div className="space-y-8">
+        <ProfileSettings profile={profile} />
+        <StylePreferences />
+        <OrderHistory orders={orders || []} />
       </div>
     </div>
   );

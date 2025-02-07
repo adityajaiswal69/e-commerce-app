@@ -2,6 +2,8 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import ProductGrid from "@/components/products/ProductGrid";
 import Link from "next/link";
 import NewsletterForm from "@/components/NewsletterForm";
+import HomeRecommendations from "@/components/recommendations/HomeRecommendations";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default async function HomePage() {
   const supabase = createServerSupabaseClient();
@@ -81,6 +83,10 @@ export default async function HomePage() {
 
       {/* Newsletter Section */}
       <NewsletterForm />
+
+      <ErrorBoundary>
+        <HomeRecommendations />
+      </ErrorBoundary>
     </div>
   );
 }

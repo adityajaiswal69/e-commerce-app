@@ -24,7 +24,7 @@ A modern e-commerce application built with Next.js 14, Supabase, and Tailwind CS
 1. Clone the repository:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/rohit-og/e-commerce-app.git
 cd e-commerce-app
 ```
 

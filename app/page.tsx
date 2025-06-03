@@ -85,7 +85,7 @@ export default async function HomePage() {
       <section className="container mx-auto px-4 py-12 md:py-16">
         <div className="mx-auto max-w-7xl">
           <h2 className="mb-6 text-2xl md:text-3xl font-bold text-[#333333] flex items-center">
-            Top <span className="text-[#e9e2a3] ml-2">Categories</span>
+            Top <span className="text-[#bfb875] ml-2">Categories</span>
           </h2>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
@@ -296,9 +296,9 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <ErrorBoundary>
+      {/* <ErrorBoundary>
         <HomeRecommendations />
-      </ErrorBoundary>
+      </ErrorBoundary> */}
     </div>
   );
 }

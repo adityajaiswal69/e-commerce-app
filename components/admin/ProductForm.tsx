@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import type { Product } from "@/types/database.types";
@@ -43,17 +43,46 @@ const SIZE_OPTIONS = {
   shoes: ["6", "7", "8", "9", "10", "11", "12"],
 };
 
+// Category and subcategory structure based on LeftNavbar.tsx
 const CATEGORY_OPTIONS = [
-  { value: "tshirt", label: "T-Shirt" },
-  { value: "shirt", label: "Shirt" },
-  { value: "jacket", label: "Jacket" },
-  { value: "pants", label: "Pants" },
-  { value: "jeans", label: "Jeans" },
-  { value: "shorts", label: "Shorts" },
-  { value: "shoes", label: "Shoes" },
-  { value: "sneakers", label: "Sneakers" },
-  { value: "boots", label: "Boots" },
+  { value: "", label: "Select Category" },
+  { value: "hotel-hospitality", label: "HOTEL/HOSPITALITY UNIFORM", hasSubcategories: true },
+  { value: "school", label: "SCHOOL", hasSubcategories: false },
+  { value: "automobile", label: "AUTOMOBILE", hasSubcategories: false },
+  { value: "corporate", label: "CORPORATE", hasSubcategories: false },
+  { value: "restaurant-cafe-pub", label: "RESTAURANT/CAFE/PUB", hasSubcategories: false },
+  { value: "speciality-industry", label: "SPECIALITY INDUSTRY UNIFORM", hasSubcategories: false },
+  { value: "hospital-uniform", label: "HOSPITAL UNIFORM", hasSubcategories: true },
+  { value: "medical-factory", label: "MEDICAL FACTORY UNIFORM", hasSubcategories: false },
+  { value: "factory-workers", label: "FACTORY WORKERS UNIFORM", hasSubcategories: false },
+  { value: "catering-uniform", label: "CATERING UNIFORM", hasSubcategories: false },
+  { value: "fashion", label: "FASHION", hasSubcategories: false },
 ];
+
+// Subcategories for categories that have them
+const SUBCATEGORY_OPTIONS: Record<string, Array<{value: string, label: string}>> = {
+  "hotel-hospitality": [
+    { value: "milk-uniform", label: "Milk Uniform" },
+    { value: "maintenance-uniform", label: "Maintenance Uniform" },
+    { value: "kitchen-uniform", label: "Kitchen Uniform" },
+    { value: "chef-uniform", label: "Chef Uniform" },
+    { value: "fb-gsa-waiter", label: "F&B GSA/Waiter" },
+    { value: "pool-uniform", label: "Pool - Uniform" },
+    { value: "spa-uniform", label: "Spa - Uniform" },
+    { value: "manager", label: "Manager" },
+    { value: "bell-boy", label: "Bell Boy" },
+    { value: "valet-uniform", label: "Valet Uniform" },
+    { value: "hostess-uniform", label: "Hostess Uniform" },
+    { value: "security-guard-uniform", label: "Security Guard Uniform" },
+    { value: "back-office", label: "Back Office" }
+  ],
+  "hospital-uniform": [
+    { value: "doctor-coat", label: "Doctor Coat" },
+    { value: "nurse-uniform", label: "Nurse Uniform" },
+    { value: "patient-uniform", label: "Patient Uniform" },
+    { value: "back-office", label: "Back Office" }
+  ]
+};
 
 type ProductFormProps = {
   product?: Product;
@@ -65,6 +94,7 @@ type FormData = {
   price: number;
   image_url: string;
   category: string;
+  subcategory: string;
   stock: number;
   active: boolean;
   style: string[];
@@ -101,6 +131,7 @@ export default function ProductForm({ product }: ProductFormProps) {
   const [imagePreview, setImagePreview] = useState<string | null>(
     product?.image_url || null
   );
+  const [showSubcategory, setShowSubcategory] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
     name: product?.name || "",
@@ -108,6 +139,7 @@ export default function ProductForm({ product }: ProductFormProps) {
     price: product?.price || 0,
     image_url: product?.image_url || "",
     category: product?.category || "",
+    subcategory: "", // Initialize subcategory as empty string
     stock: product?.stock || 0,
     active: product?.active ?? true,
     style: product?.style || [],
@@ -119,6 +151,18 @@ export default function ProductForm({ product }: ProductFormProps) {
     },
     occasions: product?.occasions || [],
   });
+  
+  // Fetch subcategories when category changes
+  useEffect(() => {
+    const selectedCategory = CATEGORY_OPTIONS.find(cat => cat.value === formData.category);
+    const hasSubcategories = selectedCategory?.hasSubcategories || false;
+    setShowSubcategory(hasSubcategories);
+    
+    // Reset subcategory when category changes
+    if (formData.subcategory && !hasSubcategories) {
+      setFormData(prev => ({ ...prev, subcategory: "" }));
+    }
+  }, [formData.category]);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -177,19 +221,46 @@ export default function ProductForm({ product }: ProductFormProps) {
       setError("Please upload an image");
       return;
     }
+    
+    // Validate subcategory if category has subcategories
+    if (showSubcategory && !formData.subcategory) {
+      setError("Please select a subcategory");
+      return;
+    }
 
     setLoading(true);
     setError(null);
 
     try {
+      // Create a product data object with the appropriate structure
+      const productData = {
+        name: formData.name,
+        description: formData.description,
+        price: formData.price,
+        image_url: formData.image_url,
+        category: formData.category,
+        stock: formData.stock,
+        active: formData.active,
+        style: formData.style,
+        colors: formData.colors,
+        sizes: formData.sizes,
+        occasions: formData.occasions
+      };
+      
+      // If subcategory is selected, append it to the category
+      if (showSubcategory && formData.subcategory) {
+        // Use the subcategory as part of the category path
+        productData.category = `${formData.category}/${formData.subcategory}`;
+      }
+
       if (product) {
         const { error } = await supabase
           .from("products")
-          .update(formData)
+          .update(productData)
           .eq("id", product.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("products").insert([formData]);
+        const { error } = await supabase.from("products").insert([productData]);
         if (error) throw error;
       }
 
@@ -292,15 +363,14 @@ export default function ProductForm({ product }: ProductFormProps) {
           <label className="block text-sm font-medium">Category</label>
           <select
             value={formData.category}
-            onChange={(e) =>
-              setFormData({ ...formData, category: e.target.value })
-            }
+            onChange={(e) => {
+              setFormData({ ...formData, category: e.target.value, subcategory_id: null });
+            }}
             className="mt-1 block w-full rounded-md border p-2"
             required
           >
-            <option value="">Select Category</option>
-            {CATEGORY_OPTIONS.map((category) => (
-              <option key={category.value} value={category.value}>
+            {CATEGORY_OPTIONS.map((category, index) => (
+              <option key={index} value={category.value} disabled={index === 0 && category.value === ""}>
                 {category.label}
               </option>
             ))}
@@ -335,6 +405,27 @@ export default function ProductForm({ product }: ProductFormProps) {
             min="0"
           />
         </div>
+        
+        {showSubcategory && (
+          <div>
+            <label className="block text-sm font-medium">Subcategory</label>
+            <select
+              value={formData.subcategory}
+              onChange={(e) => 
+                setFormData({ ...formData, subcategory: e.target.value })
+              }
+              className="mt-1 block w-full rounded-md border p-2"
+              required={showSubcategory}
+            >
+              <option value="">Select Subcategory</option>
+              {formData.category && SUBCATEGORY_OPTIONS[formData.category]?.map((subcategory, index) => (
+                <option key={index} value={subcategory.value}>
+                  {subcategory.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       <div>

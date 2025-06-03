@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import LeftNavBar from "@/components/layout/LeftNavbar";
+import Footer from "@/components/layout/Footer";
 import { CartProvider } from "@/contexts/CartContext";
 
 const geist = Geist({ subsets: ["latin"] });
@@ -32,6 +33,9 @@ export default function RootLayout({
                 {children}
               </div>
             </main>
+            <div className="md:ml-64">
+              <Footer />
+            </div>
           </div>
         </CartProvider>
       </body>

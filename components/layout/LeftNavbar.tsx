@@ -23,6 +23,8 @@ export default function LeftNavbar() {
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const pathname = usePathname();
   const supabase = createClientComponentClient();
 
@@ -59,6 +61,32 @@ export default function LeftNavbar() {
         ? prev.filter(item => item !== href)
         : [...prev, href]
     );
+  };
+
+  // Search functionality (same as TopNavbar)
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      // Handle search functionality here
+      console.log("Searching for:", searchQuery);
+      // You can redirect to search results page or trigger search
+      // For example: router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+      setMobileSearchOpen(false);
+    }
+  };
+
+  const toggleMobileSearch = () => {
+    if (mobileSearchOpen && !searchQuery.trim()) {
+      // Close search if it's open and input is empty
+      setMobileSearchOpen(false);
+    } else if (!mobileSearchOpen) {
+      // Open search
+      setMobileSearchOpen(true);
+    }
+  };
+
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
   };
 
   const navigationItems: NavigationItem[] = [
@@ -160,34 +188,81 @@ export default function LeftNavbar() {
 
   return (
     <>
-      {/* Mobile Menu Button - Fixed at top left */}
-      <button 
-        className="fixed top-4 left-4 z-50 md:hidden bg-white border rounded-md p-2 shadow-lg"
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-      >
-        <svg
-          className="h-6 w-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+      {/* Mobile Menu and Search Buttons - Fixed at top */}
+      <div className="fixed top-3 left-4 right-4 z-50 md:hidden flex items-center justify-between">
+        {/* Mobile Menu Button */}
+        <button 
+          className="bg-white border rounded-md p-2 shadow-lg"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
-          {isMenuOpen ? (
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          ) : (
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          )}
-        </svg>
-      </button>
+          <svg
+            className="h-6 w-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            {isMenuOpen ? (
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            ) : (
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            )}
+          </svg>
+        </button>
+
+        {/* Mobile Search Container */}
+        <div className="flex items-center">
+          {/* Animated Search Input */}
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            mobileSearchOpen ? 'w-64 mr-2' : 'w-0'
+          }`}>
+            <form onSubmit={handleSearch} className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchInputChange}
+                placeholder="Search products..."
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#e9e2a3] focus:border-transparent bg-white shadow-lg"
+                autoFocus={mobileSearchOpen}
+              />
+            </form>
+          </div>
+          
+          {/* Dynamic Search Button */}
+          <button 
+            onClick={mobileSearchOpen && searchQuery.trim() ? handleSearch : toggleMobileSearch}
+            type={mobileSearchOpen && searchQuery.trim() ? "submit" : "button"}
+            className="bg-white border rounded-md p-2 shadow-lg hover:bg-[#f8f6e1] transition-colors"
+            aria-label={mobileSearchOpen && searchQuery.trim() ? "Submit search" : mobileSearchOpen ? "Close search" : "Open search"}
+          >
+            {mobileSearchOpen && searchQuery.trim() ? (
+              // Submit icon
+              <svg className="h-6 w-6 text-[#333333]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            ) : mobileSearchOpen ? (
+              // Close icon
+              <svg className="h-6 w-6 text-[#333333]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              // Search icon
+              <svg className="h-6 w-6 text-[#333333]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            )}
+          </button>
+        </div>
+      </div>
 
       {/* Left Sidebar Navigation */}
       <nav className={`fixed left-0 top-0 h-full w-64 bg-white border-r shadow-lg transform transition-transform duration-300 ease-in-out z-40 ${
@@ -201,11 +276,11 @@ export default function LeftNavbar() {
                 <Image
                   src="/Logo-3.JPG"
                   alt="TopHat Logo"
-                  width={100}
-                  height={100}
+                  width={150}
+                  height={50}
                   className="mx-auto mb-2"
                   priority
-                />
+                />  
               </div>
             </Link>
           </div>

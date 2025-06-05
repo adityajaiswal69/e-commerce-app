@@ -1,56 +1,127 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import MiniCart from "@/components/cart/MiniCart";
+import { getCurrentUser, signOut } from "@/lib/auth-utils";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { Database } from "@/types/database.types";
 
-type Profile = {
-  avatar_url: string | null;
-  full_name: string | null;
+// Icons
+const UserIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+    <circle cx="12" cy="7" r="4"></circle>
+  </svg>
+);
+
+const LogOutIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+    <polyline points="16 17 21 12 16 7"></polyline>
+    <line x1="21" y1="12" x2="9" y2="12"></line>
+  </svg>
+);
+
+const UserCircleIcon = ({ className = '' }) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 20a6 6 0 0 0-12 0"></path>
+    <circle cx="12" cy="10" r="4"></circle>
+    <circle cx="12" cy="12" r="10"></circle>
+  </svg>
+);
+
+const LogInIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+    <polyline points="10 17 15 12 10 7"></polyline>
+    <line x1="15" y1="12" x2="3" y2="12"></line>
+  </svg>
+);
+
+type UserProfile = {
+  id: string;
+  email?: string;
+  full_name?: string | null;
+  avatar_url?: string | null;
+  role?: string;
 };
 
 type NavigationItem = {
-  href: string;
+  href: string
   label: string;
   children?: NavigationItem[];
 };
 
 export default function LeftNavbar() {
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const pathname = usePathname();
-  const supabase = createClientComponentClient();
-
-  useEffect(() => {
-    async function getProfile() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (session) {
-        const { data } = await supabase
-          .from("profiles")
-          .select("avatar_url, full_name")
-          .eq("id", session.user.id)
-          .single();
-
-        setProfile(data);
-      }
+  const router = useRouter();
+  const supabase = createClientComponentClient<Database>();
+  
+  // Check authentication state
+  const checkAuth = async () => {
+    try {
+      const { user: currentUser, error } = await getCurrentUser();
+      
+      if (error) throw error;
+      
+      setUser(currentUser);
+    } catch (error) {
+      console.error("Error checking auth:", error);
+      setUser(null);
+    } finally {
       setLoading(false);
     }
+  };
 
-    getProfile();
-  }, [supabase]);
+  useEffect(() => {
+    checkAuth();
 
-  const getInitial = (name: string | null) => {
-    return name ? name.charAt(0).toUpperCase() : "?";
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+        checkAuth();
+      }
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, [pathname]);
+
+  const handleLogout = async (isAdmin = false) => {
+    try {
+      setShowProfileMenu(false);
+      const { error } = await signOut(isAdmin);
+      
+      if (error) throw error;
+      
+      // Redirect based on user type
+      const redirectPath = isAdmin ? '/admin/login' : '/';
+      router.push(redirectPath);
+      router.refresh();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  const handleProfileClick = () => {
+    router.push('/profile');
+    setShowProfileMenu(false);
+    setIsMenuOpen(false);
+  };
+
+  const getInitial = (name?: string | null) => {
+    return name ? name.charAt(0).toUpperCase() : <UserCircleIcon className="w-6 h-6" />;
   };
 
   const isActive = (path: string) => pathname === path;
@@ -317,38 +388,100 @@ export default function LeftNavbar() {
               
               {!loading && (
                 <div>
-                  {profile ? (
-                    <Link
-                      href="/profile"
-                      className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-50"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      {profile.avatar_url ? (
-                        <div className="relative h-8 w-8 overflow-hidden rounded-full">
-                          <Image
-                            src={profile.avatar_url}
-                            alt="Profile"
-                            fill
-                            className="object-cover"
+                  {user ? (
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowProfileMenu(!showProfileMenu)}
+                        className="flex w-full items-center space-x-3 p-2 rounded-md hover:bg-gray-50"
+                      >
+                        {user.avatar_url ? (
+                          <div className="relative h-8 w-8 overflow-hidden rounded-full">
+                            <Image
+                              src={user.avatar_url}
+                              alt={user.full_name || 'Profile'}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#333333] text-[#e9e2a3]">
+                            {getInitial(user.full_name)}
+                          </div>
+                        )}
+                        <span className="text-sm text-gray-700">
+                          {user.full_name || user.email || "Profile"}
+                        </span>
+                        <svg
+                          className={`ml-auto h-4 w-4 transform transition-transform ${
+                            showProfileMenu ? 'rotate-180' : ''
+                          }`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
                           />
-                        </div>
-                      ) : (
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#333333] text-sm text-[#e9e2a3]">
-                          {getInitial(profile.full_name)}
+                        </svg>
+                      </button>
+                      
+                      {showProfileMenu && (
+                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-md shadow-lg overflow-hidden z-50 w-48">
+                          <button
+                            onClick={handleProfileClick}
+                            className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          >
+                            <span className="mr-2">
+                              <UserIcon />
+                            </span>
+                            My Profile
+                          </button>
+                          {user?.role === 'admin' && (
+                            <button
+                              onClick={() => handleLogout(true)}
+                              className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                            >
+                              <span className="mr-2">
+                                <LogOutIcon />
+                              </span>
+                              Admin Logout
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleLogout(false)}
+                            className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 border-t border-gray-100"
+                          >
+                            <span className="mr-2">
+                              <LogOutIcon />
+                            </span>
+                            Sign Out
+                          </button>
                         </div>
                       )}
-                      <span className="text-sm text-gray-700">
-                        {profile.full_name || "Profile"}
-                      </span>
-                    </Link>
+                    </div>
                   ) : (
-                    <Link
-                      href="/sign-in"
-                      className="block w-full text-center px-6 py-3 text-base font-bold text-[#333333] bg-[#e9e2a3] border-2 border-[#333333] rounded-md hover:bg-[#f8f6e1] shadow-lg transition-all duration-200 my-4"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      SIGN IN
-                    </Link>
+                    <div className="space-y-2 px-2">
+                      <Link
+                        href="/sign-in"
+                        className="block w-full text-center px-4 py-2 text-sm font-medium text-[#333333] bg-[#e9e2a3] border border-[#333333] rounded-md hover:bg-[#f8f6e1] transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Sign In
+                      </Link>
+                      <p className="text-xs text-center text-gray-500">
+                        New customer?{' '}
+                        <Link 
+                          href="/sign-up" 
+                          className="text-[#333333] font-medium hover:underline"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Create an account
+                        </Link>
+                      </p>
+                    </div>
                   )}
                 </div>
               )}

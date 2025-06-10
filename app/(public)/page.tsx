@@ -188,8 +188,20 @@ const keyFeatures = [
       {featuredProducts && featuredProducts.length > 0 && (
             <BestSellingProducts products={featuredProducts} />
           )}
-      
-        
+
+      {/* View All Products Button */}
+      <section className="container mx-auto px-4 py-8 text-center">
+        <Link
+          href="/products"
+          className="inline-flex items-center px-8 py-3 bg-[#333333] text-white font-medium rounded-md hover:bg-[#555555] transition-colors duration-300"
+        >
+          View All Products
+          <svg className="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
+        </Link>
+      </section>
+
       {/* What We Do Section */}
       {/* <section className="bg-[#f8f6e1] px-4 py-12 md:py-16">
         <div className="container mx-auto">
@@ -226,7 +238,7 @@ const keyFeatures = [
       {/* Why Choose Us with Clients */}
       <section className="bg-[#333333] px-4 py-5 md:py-10 text-white">
         <div className="container mx-auto">
-          <div className="mx-auto max-w-4xl text-center mb-12 md:mb-16">
+          <div className="mx-auto max-w-4xl text-center">
             <h2 className="mb-4 md:mb-6 text-2xl font-bold text-white md:text-3xl lg:text-4xl">
               Professional. Dependable. Aesthetic.
             </h2>
@@ -237,16 +249,17 @@ const keyFeatures = [
           </div>
           
           {/* Integrated LogoTicker */}
-          <div className="mt-8 md:mt-12">
-           
-            <LogoTicker />
-          </div>
+          
         </div>
       </section>
 
       {/* Testimonials Section */}
       <Testimonials />
       {/* Newsletter Section (modified to match design) */}
+      <div className="mt-8 md:mt-12">
+           
+            <LogoTicker />
+          </div>
       <section className="bg-[#f8f6e1] py-5 md:py-10">
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-3xl">

@@ -63,6 +63,7 @@ export default function ResponsiveNavbar() {
 
   const navigationItems: NavigationItem[] = [
     { href: "/", label: "HOME" },
+    { href: "/products", label: "ALL PRODUCTS" },
     {
       href: "/hotel-hospitality",
       label: "HOTEL/HOSPITALITY",

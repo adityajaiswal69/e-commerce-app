@@ -2,17 +2,18 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function TopNavbar() {
   const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // Handle search functionality here
-      console.log("Searching for:", searchQuery);
-      // You can redirect to search results page or trigger search
-      // For example: router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+      // Redirect to products page with search query
+      router.push(`/products?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery(""); // Clear search after submitting
     }
   };
 

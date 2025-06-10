@@ -1,5 +1,5 @@
 import React from 'react';
-import { Quote } from 'lucide-react';
+import { ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
 
 interface TestimonialCardProps {
   quote: string;
@@ -19,7 +19,7 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({
   return (
     <div className="bg-white rounded-lg p-6 md:p-8 shadow-lg h-full flex flex-col">
       <div className="mb-6 text-[#e9e2a3]">
-        <Quote className="h-8 w-8" />
+        <ChatBubbleLeftIcon className="h-8 w-8" />
       </div>
       <p className="text-[#333333] text-lg mb-6 flex-grow">"{quote}"</p>
       <div className="flex items-center">

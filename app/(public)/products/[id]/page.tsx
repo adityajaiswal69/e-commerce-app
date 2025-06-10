@@ -65,56 +65,72 @@ export default function ProductPage({
       const supabase = createClientComponentClient();
 
       try {
-        // Fetch product with related data
+        // Fetch basic product data first
         const { data: productData, error: productError } = await supabase
           .from("products")
-          .select(`
-            *,
-            product_images (
-              id,
-              image_url,
-              alt_text,
-              is_primary,
-              display_order
-            ),
-            product_variants (
-              id,
-              name,
-              sku,
-              price,
-              original_price,
-              stock,
-              size,
-              color,
-              material,
-              image_url,
-              active,
-              display_order
-            )
-          `)
+          .select("*")
           .eq("id", id)
           .single();
 
         if (productError || !productData) {
+          console.error("Product not found:", productError);
           notFound();
         }
 
-        // Calculate average rating
-        const { data: reviewStats } = await supabase
-          .from("reviews")
-          .select("rating")
-          .eq("product_id", id);
+        // Try to fetch related data, but don't fail if tables don't exist
+        let productImages: any[] = [];
+        let productVariants: any[] = [];
 
+        try {
+          const { data: imagesData } = await supabase
+            .from("product_images")
+            .select("id, image_url, alt_text, is_primary, display_order")
+            .eq("product_id", id)
+            .order("display_order");
+          productImages = imagesData || [];
+        } catch (error) {
+          console.log("Product images table not found or error:", error);
+        }
+
+        try {
+          const { data: variantsData } = await supabase
+            .from("product_variants")
+            .select("id, name, sku, price, original_price, stock, size, color, material, image_url, active, display_order")
+            .eq("product_id", id)
+            .eq("active", true)
+            .order("display_order");
+          productVariants = variantsData || [];
+        } catch (error) {
+          console.log("Product variants table not found or error:", error);
+        }
+
+        // Combine the data
+        const enhancedProductData = {
+          ...productData,
+          product_images: productImages,
+          product_variants: productVariants
+        };
+
+        // Calculate average rating
         let averageRating = 0;
         let reviewCount = 0;
-        if (reviewStats && reviewStats.length > 0) {
-          reviewCount = reviewStats.length;
-          const totalRating = reviewStats.reduce((sum, review) => sum + review.rating, 0);
-          averageRating = totalRating / reviewCount;
+        try {
+          const { data: reviewStats } = await supabase
+            .from("reviews")
+            .select("rating")
+            .eq("product_id", id);
+
+          if (reviewStats && reviewStats.length > 0) {
+            reviewCount = reviewStats.length;
+            const totalRating = reviewStats.reduce((sum, review) => sum + review.rating, 0);
+            averageRating = totalRating / reviewCount;
+          }
+        } catch (error) {
+          console.log("Reviews table not found or error:", error);
         }
 
         const enhancedProduct: ExtendedProduct = {
-          ...productData,
+          ...enhancedProductData,
           average_rating: averageRating,
           review_count: reviewCount,
         };
@@ -122,60 +138,76 @@ export default function ProductPage({
         setProduct(enhancedProduct);
 
         // Set default variant if available
-        if (productData.product_variants && productData.product_variants.length > 0) {
-          const activeVariants = productData.product_variants
-            .filter(v => v.active)
-            .sort((a, b) => a.display_order - b.display_order);
+        if (enhancedProductData.product_variants && enhancedProductData.product_variants.length > 0) {
+          const activeVariants = enhancedProductData.product_variants
+            .filter((v: any) => v.active)
+            .sort((a: any, b: any) => a.display_order - b.display_order);
           if (activeVariants.length > 0) {
             setSelectedVariant(activeVariants[0]);
           }
         }
 
         // Fetch related products
-        const { data: relatedData } = await supabase
-          .from("related_products")
-          .select(`
-            related_product_id,
-            products!related_product_id (
-              id,
-              name,
-              price,
-              image_url,
-              category
-            )
-          `)
-          .eq("product_id", id)
-          .limit(4);
+        try {
+          const { data: relatedData } = await supabase
+            .from("related_products")
+            .select(`
+              related_product_id,
+              products!related_product_id (
+                id,
+                name,
+                price,
+                image_url,
+                category
+              )
+            `)
+            .eq("product_id", id)
+            .limit(4);
 
-        if (relatedData) {
-          const related = relatedData
-            .map(item => item.products)
-            .filter(Boolean) as Product[];
-          setRelatedProducts(related);
+          if (relatedData) {
+            const related = relatedData
+              .map((item: any) => item.products)
+              .filter(Boolean);
+            setRelatedProducts(related);
+          }
+        } catch (error) {
+          console.log("Related products table not found or error:", error);
         }
 
         // Fetch reviews with user info
-        const { data: reviewsData, error: reviewError } = await supabase
-          .from("reviews")
-          .select(`
-            id,
-            rating,
-            comment,
-            created_at,
-            product_id,
-            user_id,
-            user:profiles!user_id (
-              full_name
-            )
-          `)
-          .eq("product_id", id)
-          .order("created_at", { ascending: false });
+        try {
+          const { data: reviewsData, error: reviewError } = await supabase
+            .from("reviews")
+            .select(`
+              id,
+              rating,
+              comment,
+              created_at,
+              product_id,
+              user_id,
+              user:profiles!user_id (
+                full_name
+              )
+            `)
+            .eq("product_id", id)
+            .order("created_at", { ascending: false });
 
-        if (reviewError) {
-          console.error("Error fetching reviews:", reviewError);
+          if (reviewError) {
+            console.error("Error fetching reviews:", reviewError);
+          } else {
+            // Transform the data to match the Review type
+            const transformedReviews = (reviewsData || []).map((review: any) => ({
+              ...review,
+              user: Array.isArray(review.user) && review.user.length > 0
+                ? review.user[0]
+                : { full_name: 'Anonymous' }
+            }));
+            setReviews(transformedReviews);
+          }
+        } catch (error) {
+          console.log("Reviews table not found or error:", error);
+          setReviews([]);
         }
-
-        setReviews(reviewsData || []);
       } catch (error) {
         console.error("Error fetching product data:", error);
         notFound();
@@ -219,13 +251,16 @@ export default function ProductPage({
   const getProductImages = () => {
     if (product?.product_images && product.product_images.length > 0) {
       return product.product_images
-        .sort((a, b) => a.display_order - b.display_order)
-        .map(img => ({
-          url: img.image_url,
-          alt: img.alt_text || product.name
+        .sort((a: any, b: any) => (a.display_order || 0) - (b.display_order || 0))
+        .map((img: any) => ({
+          url: img.image_url || product.image_url || '/placeholder-image.svg',
+          alt: img.alt_text || product.name || 'Product image'
         }));
     }
-    return [{ url: product?.image_url || '', alt: product?.name || '' }];
+    return [{
+      url: product?.image_url || '/placeholder-image.svg',
+      alt: product?.name || 'Product image'
+    }];
   };
 
   const handleAddToCart = async () => {
@@ -234,13 +269,12 @@ export default function ProductPage({
     setAddingToCart(true);
     try {
       const cartItem = {
-        id: selectedVariant?.id || product.id,
+        productId: selectedVariant?.id || product.id,
         name: selectedVariant ? `${product.name} - ${selectedVariant.name}` : product.name,
         price: getCurrentPrice(),
         image_url: selectedVariant?.image_url || product.image_url,
         category: product.category,
-        selectedSize,
-        selectedColor,
+        size: selectedSize || 'default',
         quantity
       };
 
@@ -305,11 +339,15 @@ export default function ProductPage({
                 </div>
               )}
               <Image
-                src={images[selectedImageIndex]?.url || ''}
+                src={images[selectedImageIndex]?.url || '/placeholder-image.svg'}
                 alt={images[selectedImageIndex]?.alt || product.name}
                 fill
                 className="object-cover"
                 priority
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/placeholder-image.svg';
+                }}
               />
             </div>
 
@@ -331,6 +369,10 @@ export default function ProductPage({
                       alt={image.alt}
                       fill
                       className="object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/placeholder-image.svg';
+                      }}
                     />
                   </button>
                 ))}
@@ -610,10 +652,14 @@ export default function ProductPage({
                   <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                     <div className="relative aspect-square">
                       <Image
-                        src={relatedProduct.image_url}
+                        src={relatedProduct.image_url || '/placeholder-image.svg'}
                         alt={relatedProduct.name}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder-image.svg';
+                        }}
                       />
                     </div>
                     <div className="p-4">

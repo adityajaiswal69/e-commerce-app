@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import MiniCart from "@/components/cart/MiniCart";
+import { useCart } from "@/contexts/CartContext";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 type Profile = {
@@ -25,6 +26,9 @@ export default function ResponsiveNavbar() {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const pathname = usePathname();
   const supabase = createClientComponentClient();
+  const { items } = useCart();
+
+  const cartItemCount = items.reduce((total, item) => total + item.quantity, 0);
 
   useEffect(() => {
     async function getProfile() {
@@ -271,20 +275,30 @@ export default function ResponsiveNavbar() {
 
               {/* Cart */}
               <div className="relative">
-                <Link href="/cart" className="flex items-center">
-                  <svg className="h-6 w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <Link href="/cart" className="flex items-center relative">
+                  <svg className="h-6 w-6 text-gray-700 hover:text-[#333333]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                   </svg>
+                  {cartItemCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                      {cartItemCount > 99 ? '99+' : cartItemCount}
+                    </span>
+                  )}
                 </Link>
               </div>
             </div>
 
             {/* Mobile Menu Button - Right Side */}
             <div className="flex items-center lg:hidden">
-              <Link href="/cart" className="mr-4">
-                <svg className="h-6 w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <Link href="/cart" className="mr-4 relative">
+                <svg className="h-6 w-6 text-gray-700 hover:text-[#333333]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                    {cartItemCount > 99 ? '99+' : cartItemCount}
+                  </span>
+                )}
               </Link>
               <button 
                 className="p-2 rounded-md text-gray-700"
@@ -372,6 +386,32 @@ export default function ResponsiveNavbar() {
               )}
             </div>
           )}
+
+          {/* Cart Section for Mobile */}
+          <div className="px-4 py-4 border-b border-gray-200">
+            <Link
+              href="/cart"
+              className="flex items-center justify-between p-3 rounded-lg border-2 border-gray-200 hover:border-[#e9e2a3] hover:bg-[#f8f6e1] transition-all"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <div className="flex items-center space-x-3">
+                <svg className="h-6 w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Shopping Cart</p>
+                  <p className="text-xs text-gray-500">
+                    {cartItemCount === 0 ? 'Empty' : `${cartItemCount} item${cartItemCount !== 1 ? 's' : ''}`}
+                  </p>
+                </div>
+              </div>
+              {cartItemCount > 0 && (
+                <span className="bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-medium">
+                  {cartItemCount > 99 ? '99+' : cartItemCount}
+                </span>
+              )}
+            </Link>
+          </div>
 
           {/* Navigation Links */}
           <div className="mt-2">

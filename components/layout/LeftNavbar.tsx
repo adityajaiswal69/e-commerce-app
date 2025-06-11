@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import MiniCart from "@/components/cart/MiniCart";
+import CompactCart from "@/components/cart/CompactCart";
+import { useCart } from "@/contexts/CartContext";
 import { getCurrentUser, signOut } from "@/lib/auth-utils";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Database } from "@/types/database.types";
@@ -54,6 +55,20 @@ type NavigationItem = {
   label: string;
   children?: NavigationItem[];
 };
+
+// Mobile Cart Badge Component
+function MobileCartBadge() {
+  const { items } = useCart();
+  const cartItemCount = items.reduce((total, item) => total + item.quantity, 0);
+
+  if (cartItemCount === 0) return null;
+
+  return (
+    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+      {cartItemCount > 99 ? '99+' : cartItemCount}
+    </span>
+  );
+}
 
 export default function LeftNavbar() {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -162,6 +177,7 @@ export default function LeftNavbar() {
   const navigationItems: NavigationItem[] = [
     { href: "/", label: "HOME" },
     { href: "/products", label: "ALL PRODUCTS" },
+    { href: "/cart", label: "CART" },
     {
       href: "/hotel-hospitality",
       label: "HOTEL/HOSPITALITY UNIFORM",
@@ -215,7 +231,7 @@ export default function LeftNavbar() {
         <div className="flex items-center">
           <Link
             href={item.href}
-            className={`flex-1 block py-2 text-sm font-medium rounded-md transition-colors ${paddingLeft} ${
+            className={`flex-1 block py-1.5 text-sm font-medium rounded-md transition-colors ${paddingLeft} ${
               isActive(item.href)
                 ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
                 : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
@@ -247,9 +263,9 @@ export default function LeftNavbar() {
             </button>
           )}
         </div>
-        
+
         {hasChildren && isExpanded && (
-          <div className="ml-2 border-l border-gray-200">
+          <div className="ml-1 border-l border-gray-200">
             {item.children!.map((child) => renderNavigationItem(child, level + 1))}
           </div>
         )}
@@ -290,11 +306,11 @@ export default function LeftNavbar() {
           </svg>
         </button>
 
-        {/* Mobile Search Container */}
-        <div className="flex items-center">
+        {/* Mobile Search and Cart Container */}
+        <div className="flex items-center space-x-2">
           {/* Animated Search Input */}
           <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
-            mobileSearchOpen ? 'w-64 mr-2' : 'w-0'
+            mobileSearchOpen ? 'w-60 mr-2' : 'w-0'
           }`}>
             <form onSubmit={handleSearch} className="relative">
               <input
@@ -307,9 +323,21 @@ export default function LeftNavbar() {
               />
             </form>
           </div>
-          
+
+          {/* Mobile Cart Button */}
+          <Link
+            href="/cart"
+            className="relative bg-white border rounded-md p-2 shadow-lg hover:bg-[#f8f6e1] transition-colors"
+          >
+            <svg className="h-6 w-6 text-[#333333]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+            {/* Mobile Cart Badge */}
+            <MobileCartBadge />
+          </Link>
+
           {/* Dynamic Search Button */}
-          <button 
+          <button
             onClick={mobileSearchOpen && searchQuery.trim() ? handleSearch : toggleMobileSearch}
             type={mobileSearchOpen && searchQuery.trim() ? "submit" : "button"}
             className="bg-white border rounded-md p-2 shadow-lg hover:bg-[#f8f6e1] transition-colors"
@@ -335,37 +363,37 @@ export default function LeftNavbar() {
         </div>
       </div>
 
-      {/* Left Sidebar Navigation */}
+      {/* Left Sidebar Navigation - Reduced Width */}
       <nav className={`fixed left-0 top-0 h-full w-64 bg-white border-r shadow-lg transform transition-transform duration-300 ease-in-out z-40 ${
         isMenuOpen ? 'translate-x-0' : '-translate-x-full'
       } md:translate-x-0`}>
         <div className="flex flex-col h-full">
           {/* Logo/Header Section */}
-          <div className="p-6 border-b">
+          <div className="p-2 border-b">
             <Link href="/" className="block">
               <div className="">
                 <Image
                   src="/Logo-3.JPG"
-                  alt="TopHat Logo"
+                  alt="Uniformat Logo"
                   width={150}
                   height={50}
-                  className="mx-auto mb-2"
+                  className="mx-auto"
                   priority
-                />  
+                />
               </div>
             </Link>
           </div>
 
           {/* Navigation Items */}
-          <div className="flex-1 overflow-y-auto py-6">
-            <div className="space-y-1 px-3">
+          <div className="flex-1 overflow-y-auto py-4">
+            <div className="space-y-1 px-2">
               {navigationItems.map((item) => renderNavigationItem(item))}
             </div>
 
             {/* Search Section */}
-            <div className="mt-8 px-6">
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="mt-6 px-3">
+              <div className="flex items-center space-x-2 text-xs text-gray-600">
+                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <span>SEARCH</span>
@@ -373,119 +401,88 @@ export default function LeftNavbar() {
             </div>
 
             {/* Portfolio Section */}
-            <div className="mt-4 px-6">
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <div className="mt-3 px-3">
+              <div className="flex items-center space-x-2 text-xs text-gray-600">
                 <span>+</span>
                 <span>PORTFOLIO</span>
               </div>
             </div>
           </div>
 
-          {/* Bottom Section - User Profile & Cart */}
-          <div className="border-t p-4">
-            <div className="space-y-4">
-              <MiniCart />
-              
-              {!loading && (
-                <div>
-                  {user ? (
-                    <div className="relative">
-                      <button
-                        onClick={() => setShowProfileMenu(!showProfileMenu)}
-                        className="flex w-full items-center space-x-3 p-2 rounded-md hover:bg-gray-50"
-                      >
-                        {user.avatar_url ? (
-                          <div className="relative h-8 w-8 overflow-hidden rounded-full">
-                            <Image
-                              src={user.avatar_url}
-                              alt={user.full_name || 'Profile'}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#333333] text-[#e9e2a3]">
-                            {getInitial(user.full_name)}
-                          </div>
-                        )}
-                        <span className="text-sm text-gray-700">
-                          {user.full_name || user.email || "Profile"}
-                        </span>
-                        <svg
-                          className={`ml-auto h-4 w-4 transform transition-transform ${
-                            showProfileMenu ? 'rotate-180' : ''
-                          }`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
+          {/* Bottom Section - Avatar & Cart */}
+          <div className="border-t p-3">
+            {!loading && (
+              <div className="flex items-center justify-between">
+                {user ? (
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowProfileMenu(!showProfileMenu)}
+                      className="p-1 rounded-full hover:bg-gray-50 transition-colors"
+                    >
+                      {user.avatar_url ? (
+                        <div className="relative h-10 w-10 overflow-hidden rounded-full">
+                          <Image
+                            src={user.avatar_url}
+                            alt={user.full_name || 'Profile'}
+                            fill
+                            className="object-cover"
                           />
-                        </svg>
-                      </button>
-                      
-                      {showProfileMenu && (
-                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-md shadow-lg overflow-hidden z-50 w-48">
+                        </div>
+                      ) : (
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#333333] text-[#e9e2a3]">
+                          {getInitial(user.full_name)}
+                        </div>
+                      )}
+                    </button>
+
+                    {showProfileMenu && (
+                      <div className="absolute bottom-full left-0 mb-2 bg-white rounded-md shadow-lg overflow-hidden z-50 w-40">
+                        <button
+                          onClick={handleProfileClick}
+                          className="flex w-full items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        >
+                          <span className="mr-2">
+                            <UserIcon />
+                          </span>
+                          Profile
+                        </button>
+                        {user?.role === 'admin' && (
                           <button
-                            onClick={handleProfileClick}
-                            className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                          >
-                            <span className="mr-2">
-                              <UserIcon />
-                            </span>
-                            My Profile
-                          </button>
-                          {user?.role === 'admin' && (
-                            <button
-                              onClick={() => handleLogout(true)}
-                              className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                            >
-                              <span className="mr-2">
-                                <LogOutIcon />
-                              </span>
-                              Admin Logout
-                            </button>
-                          )}
-                          <button
-                            onClick={() => handleLogout(false)}
-                            className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 border-t border-gray-100"
+                            onClick={() => handleLogout(true)}
+                            className="flex w-full items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
                           >
                             <span className="mr-2">
                               <LogOutIcon />
                             </span>
-                            Sign Out
+                            Admin
                           </button>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="space-y-2 px-2">
-                      <Link
-                        href="/sign-in"
-                        className="block w-full text-center px-4 py-2 text-sm font-medium text-[#333333] bg-[#e9e2a3] border border-[#333333] rounded-md hover:bg-[#f8f6e1] transition-colors"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Sign In
-                      </Link>
-                      <p className="text-xs text-center text-gray-500">
-                        New customer?{' '}
-                        <Link 
-                          href="/sign-up" 
-                          className="text-[#333333] font-medium hover:underline"
-                          onClick={() => setIsMenuOpen(false)}
+                        )}
+                        <button
+                          onClick={() => handleLogout(false)}
+                          className="flex w-full items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 border-t border-gray-100"
                         >
-                          Create an account
-                        </Link>
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+                          <span className="mr-2">
+                            <LogOutIcon />
+                          </span>
+                          Sign Out
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Link
+                    href="/sign-in"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-[#333333] text-[#e9e2a3] hover:bg-gray-800 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <LogInIcon />
+                  </Link>
+                )}
+
+                {/* Compact Cart with Hover */}
+                <CompactCart />
+              </div>
+            )}
           </div>
         </div>
       </nav>

@@ -4,10 +4,14 @@ import { useCart } from "@/contexts/CartContext";
 import CheckoutForm from "@/components/checkout/CheckoutForm";
 import Image from "next/image";
 
-const DEFAULT_IMAGE = "/images/placeholder.jpg";
+const DEFAULT_IMAGE = "/placeholder-image.svg";
 
 export default function CartPage() {
   const { items, removeItem } = useCart();
+
+  // Debug logging
+  console.log("Cart page - items:", items);
+  console.log("Cart page - items length:", items.length);
 
   const total = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -28,6 +32,15 @@ export default function CartPage() {
   return (
     <div className="max-w-7xl mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
+
+      {/* Debug section - remove this after fixing */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="mb-4 p-4 bg-yellow-100 border border-yellow-300 rounded">
+          <h3 className="font-bold">Debug Info:</h3>
+          <p>Items count: {items.length}</p>
+          <p>Items data: {JSON.stringify(items, null, 2)}</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items */}

@@ -178,6 +178,7 @@ export default function LeftNavbar() {
     { href: "/", label: "HOME" },
     { href: "/products", label: "ALL PRODUCTS" },
     { href: "/cart", label: "CART" },
+    { href: "/my-designs", label: "MY DESIGNS" },
     {
       href: "/hotel-hospitality",
       label: "HOTEL/HOSPITALITY UNIFORM",

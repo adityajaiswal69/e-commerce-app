@@ -144,10 +144,10 @@ export default function ProductForm({ product }: ProductFormProps) {
     active: product?.active ?? true,
     style: product?.style || [],
     colors: product?.colors || [],
-    sizes: product?.sizes || {
-      top: [] as string[],
-      bottom: [] as string[],
-      shoes: [] as string[],
+    sizes: {
+      top: product?.sizes?.top ?? [],
+      bottom: product?.sizes?.bottom ?? [],
+      shoes: product?.sizes?.shoes ?? [],
     },
     occasions: product?.occasions || [],
   });
@@ -364,7 +364,7 @@ export default function ProductForm({ product }: ProductFormProps) {
           <select
             value={formData.category}
             onChange={(e) => {
-              setFormData({ ...formData, category: e.target.value, subcategory_id: null });
+              setFormData({ ...formData, category: e.target.value, subcategory: "" });
             }}
             className="mt-1 block w-full rounded-md border p-2"
             required

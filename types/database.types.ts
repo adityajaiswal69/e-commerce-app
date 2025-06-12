@@ -104,6 +104,48 @@ export type Product = {
   meta_description?: string;
 };
 
+// Design-related types
+export type DesignElement = {
+  id: string;
+  type: 'text' | 'image';
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  data: TextElementData | ImageElementData;
+};
+
+export type TextElementData = {
+  text: string;
+  fontSize: number;
+  fontFamily: string;
+  color: string;
+  fontWeight: 'normal' | 'bold';
+  fontStyle: 'normal' | 'italic';
+  textAlign: 'left' | 'center' | 'right';
+};
+
+export type ImageElementData = {
+  src: string;
+  originalWidth: number;
+  originalHeight: number;
+};
+
+export type Design = {
+  id: string;
+  user_id: string;
+  product_id: string;
+  name: string;
+  elements: DesignElement[];
+  canvas_width: number;
+  canvas_height: number;
+  product_view: 'front' | 'back';
+  preview_image_url?: string;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -126,6 +168,11 @@ export type Database = {
         Row: ProductImage;
         Insert: Omit<ProductImage, "id" | "created_at">;
         Update: Partial<Omit<ProductImage, "id" | "created_at">>;
+      };
+      designs: {
+        Row: Design;
+        Insert: Omit<Design, "id" | "created_at" | "updated_at">;
+        Update: Partial<Omit<Design, "id" | "created_at" | "updated_at">>;
       };
       product_variants: {
         Row: ProductVariant;

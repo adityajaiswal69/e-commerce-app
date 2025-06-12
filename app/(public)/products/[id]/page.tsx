@@ -73,7 +73,7 @@ export default function ProductPage({
           .single();
 
         if (productError || !productData) {
-          console.error("Product not found:", productError);
+          // Product not found, redirect to 404
           notFound();
         }
 
@@ -193,7 +193,8 @@ export default function ProductPage({
             .order("created_at", { ascending: false });
 
           if (reviewError) {
-            console.error("Error fetching reviews:", reviewError);
+            // Handle review fetch error silently or show user-friendly message
+            setReviews([]);
           } else {
             // Transform the data to match the Review type
             const transformedReviews = (reviewsData || []).map((review: any) => ({
@@ -209,7 +210,7 @@ export default function ProductPage({
           setReviews([]);
         }
       } catch (error) {
-        console.error("Error fetching product data:", error);
+        // Error fetching product data, redirect to 404
         notFound();
       }
     }
@@ -582,6 +583,19 @@ export default function ProductPage({
                 <button className="p-4 border-2 border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
                   <ShareIcon className="w-6 h-6 text-gray-600" />
                 </button>
+              </div>
+
+              {/* Customize Design Button */}
+              <div className="pt-4">
+                <Link
+                  href={`/design/${product.id}`}
+                  className="w-full bg-white text-[#333333] px-8 py-4 rounded-lg font-semibold border-2 border-[#333333] hover:bg-[#f8f6e1] transition-colors flex items-center justify-center"
+                >
+                  <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Customize This Uniform
+                </Link>
               </div>
             </div>
 

@@ -4,12 +4,22 @@ import React, { createContext, useContext, useReducer, useCallback } from 'react
 import { DesignElement, TextElementData, ImageElementData } from '@/types/database.types';
 
 export type CanvasState = {
-  elements: DesignElement[];
+  elements_by_view: {
+    front: DesignElement[];
+    back: DesignElement[];
+    left: DesignElement[];
+    right: DesignElement[];
+  };
   selectedElementId: string | null;
   canvasWidth: number;
   canvasHeight: number;
   productView: 'front' | 'back' | 'left' | 'right';
-  history: DesignElement[][];
+  history: {
+    front: DesignElement[][];
+    back: DesignElement[][];
+    left: DesignElement[][];
+    right: DesignElement[][];
+  };
   historyIndex: number;
   isDragging: boolean;
   isResizing: boolean;
@@ -37,13 +47,22 @@ export type CanvasAction =
   | { type: 'SET_DRAG_OFFSET'; payload: { x: number; y: number } }
   | { type: 'COMMIT_CHANGES' };
 
-const initialState: CanvasState = {
-  elements: [],
+const initialState: CanvasState = {  elements_by_view: {
+    front: [],
+    back: [],
+    left: [],
+    right: []
+  },
   selectedElementId: null,
   canvasWidth: 600,
   canvasHeight: 600,
   productView: 'front',
-  history: [[]],
+  history: {
+    front: [[]],
+    back: [[]],
+    left: [[]],
+    right: [[]]
+  },
   historyIndex: 0,
   isDragging: false,
   isResizing: false,
@@ -55,20 +74,42 @@ function generateId(): string {
 }
 
 function addToHistory(state: CanvasState, newElements: DesignElement[]): CanvasState {
-  const newHistory = state.history.slice(0, state.historyIndex + 1);
-  newHistory.push([...newElements]);
+  const view = state.productView;
+  const newHistory = {
+    ...state.history,
+    [view]: [...state.history[view].slice(0, state.historyIndex + 1), [...newElements]]
+  };
   
   return {
     ...state,
-    history: newHistory.slice(-50), // Keep last 50 states
-    historyIndex: Math.min(newHistory.length - 1, 49),
+    history: newHistory,
+    historyIndex: Math.min(newHistory[view].length - 1, 49),
   };
 }
 
+function updateViewElements(
+  state: CanvasState,
+  newElements: DesignElement[]
+): CanvasState {
+  const view = state.productView;
+  return addToHistory(
+    {
+      ...state,
+      elements_by_view: {
+        ...state.elements_by_view,
+        [view]: newElements
+      }
+    },
+    newElements
+  );
+}
+
 function canvasReducer(state: CanvasState, action: CanvasAction): CanvasState {
+  const view = state.productView;
+  const currentElements = state.elements_by_view[view];
+
   switch (action.type) {
     case 'ADD_TEXT': {
-      // Calculate text dimensions based on font size
       const fontSize = 24;
       const text = action.payload.text;
       const estimatedWidth = Math.max(200, text.length * fontSize * 0.6);
@@ -93,15 +134,7 @@ function canvasReducer(state: CanvasState, action: CanvasAction): CanvasState {
         } as TextElementData,
       };
 
-      const newElements = [...state.elements, newElement];
-      return addToHistory(
-        {
-          ...state,
-          elements: newElements,
-          selectedElementId: newElement.id,
-        },
-        newElements
-      );
+      return updateViewElements(state, [...currentElements, newElement]);
     }
 
     case 'ADD_IMAGE': {
@@ -120,141 +153,93 @@ function canvasReducer(state: CanvasState, action: CanvasAction): CanvasState {
         } as ImageElementData,
       };
 
-      const newElements = [...state.elements, newElement];
-      return addToHistory(
-        {
-          ...state,
-          elements: newElements,
-          selectedElementId: newElement.id,
-        },
-        newElements
-      );
+      return updateViewElements(state, [...currentElements, newElement]);
     }
 
     case 'ADD_ELEMENT': {
-      const newElements = [...state.elements, action.payload];
-      return addToHistory(
-        {
-          ...state,
-          elements: newElements,
-          selectedElementId: action.payload.id,
-        },
-        newElements
-      );
+      return updateViewElements(state, [...currentElements, action.payload]);
     }
 
-    case 'SELECT_ELEMENT':
+    case 'SELECT_ELEMENT': {
       return {
         ...state,
         selectedElementId: action.payload,
       };
+    }
 
     case 'UPDATE_ELEMENT': {
-      const newElements = state.elements.map(el =>
+      const newElements = currentElements.map((el: DesignElement) =>
         el.id === action.payload.id
           ? { ...el, ...action.payload.updates }
           : el
       );
-      
-      return addToHistory(
-        {
-          ...state,
-          elements: newElements,
-        },
-        newElements
-      );
+
+      return updateViewElements(state, newElements);
     }
 
     case 'DELETE_ELEMENT': {
-      const newElements = state.elements.filter(el => el.id !== action.payload);
-      return addToHistory(
-        {
-          ...state,
-          elements: newElements,
-          selectedElementId: state.selectedElementId === action.payload ? null : state.selectedElementId,
-        },
-        newElements
-      );
+      const newElements = currentElements.filter((el: DesignElement) => el.id !== action.payload);
+      return updateViewElements(state, newElements);
     }
 
     case 'MOVE_ELEMENT': {
-      const newElements = state.elements.map(el =>
+      const newElements = currentElements.map((el: DesignElement) =>
         el.id === action.payload.id
           ? { ...el, x: action.payload.x, y: action.payload.y }
           : el
       );
 
-      // Only add to history when mouse is released (not during drag)
-      return {
-        ...state,
-        elements: newElements,
-      };
+      return updateViewElements(state, newElements);
     }
 
     case 'RESIZE_ELEMENT': {
-      const newElements = state.elements.map(el =>
+      const newElements = currentElements.map((el: DesignElement) =>
         el.id === action.payload.id
           ? { ...el, width: action.payload.width, height: action.payload.height }
           : el
       );
 
-      // Only add to history when mouse is released (not during resize)
-      return {
-        ...state,
-        elements: newElements,
-      };
-    }
-
-    case 'COMMIT_CHANGES': {
-      // Add current state to history (called when drag/resize ends)
-      return addToHistory(state, state.elements);
+      return updateViewElements(state, newElements);
     }
 
     case 'ROTATE_ELEMENT': {
-      const newElements = state.elements.map(el =>
+      const newElements = currentElements.map((el: DesignElement) =>
         el.id === action.payload.id
           ? { ...el, rotation: action.payload.rotation }
           : el
       );
       
-      return addToHistory(
-        {
-          ...state,
-          elements: newElements,
-        },
-        newElements
-      );
+      return updateViewElements(state, newElements);
     }
 
     case 'UPDATE_TEXT_DATA': {
-      const newElements = state.elements.map(el =>
+      const newElements = currentElements.map((el: DesignElement) =>
         el.id === action.payload.id && el.type === 'text'
           ? { ...el, data: { ...el.data, ...action.payload.textData } }
           : el
       );
       
-      return addToHistory(
-        {
-          ...state,
-          elements: newElements,
-        },
-        newElements
-      );
+      return updateViewElements(state, newElements);
     }
 
-    case 'SWITCH_VIEW':
+    case 'SWITCH_VIEW': {
       return {
         ...state,
         productView: action.payload,
-        selectedElementId: null,
+        selectedElementId: null // Clear selection when switching views
       };
+    }
 
     case 'UNDO': {
+      const view = state.productView;
       if (state.historyIndex > 0) {
         const newIndex = state.historyIndex - 1;
         return {
           ...state,
-          elements: [...state.history[newIndex]],
+          elements_by_view: {
+            ...state.elements_by_view,
+            [view]: [...state.history[view][newIndex]]
+          },
           historyIndex: newIndex,
           selectedElementId: null,
         };
@@ -263,11 +248,15 @@ function canvasReducer(state: CanvasState, action: CanvasAction): CanvasState {
     }
 
     case 'REDO': {
-      if (state.historyIndex < state.history.length - 1) {
+      const view = state.productView;
+      if (state.historyIndex < state.history[view].length - 1) {
         const newIndex = state.historyIndex + 1;
         return {
           ...state,
-          elements: [...state.history[newIndex]],
+          elements_by_view: {
+            ...state.elements_by_view,
+            [view]: [...state.history[view][newIndex]]
+          },
           historyIndex: newIndex,
           selectedElementId: null,
         };
@@ -277,25 +266,17 @@ function canvasReducer(state: CanvasState, action: CanvasAction): CanvasState {
 
     case 'CLEAR_CANVAS': {
       const newElements: DesignElement[] = [];
-      return addToHistory(
-        {
-          ...state,
-          elements: newElements,
-          selectedElementId: null,
-        },
-        newElements
-      );
+      return updateViewElements({
+        ...state,
+        selectedElementId: null,
+      }, newElements);
     }
 
     case 'LOAD_DESIGN':
-      return addToHistory(
-        {
-          ...state,
-          elements: action.payload,
-          selectedElementId: null,
-        },
-        action.payload
-      );
+      return updateViewElements({
+        ...state,
+        selectedElementId: null,
+      }, action.payload);
 
     case 'SET_DRAGGING':
       return {
@@ -408,7 +389,7 @@ export function DesignProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const canUndo = state.historyIndex > 0;
-  const canRedo = state.historyIndex < state.history.length - 1;
+  const canRedo = state.historyIndex < state.history[state.productView].length - 1;
 
   const value: DesignContextType = {
     state,

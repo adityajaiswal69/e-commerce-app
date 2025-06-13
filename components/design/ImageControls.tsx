@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useDesign } from '@/contexts/DesignContext';
-import { ImageElementData } from '@/types/database.types';
+import { ImageElementData, DesignElement } from '@/types/database.types';
 
 interface ImageControlsProps {
   className?: string;
@@ -10,8 +10,13 @@ interface ImageControlsProps {
 
 export default function ImageControls({ className = '' }: ImageControlsProps) {
   const { state, updateElement } = useDesign();
-
-  const selectedElement = state.elements.find(el => el.id === state.selectedElementId);
+  const currentView: 'front' | 'back' | 'left' | 'right' = state.productView;
+  
+  // Handle case where elements_by_view[currentView] might be undefined
+  const viewElements = state.elements_by_view[currentView] ?? [];
+  const selectedElement = viewElements.find(
+    (el: DesignElement) => el.id === state.selectedElementId
+  ) as DesignElement | undefined;
   const isImageSelected = selectedElement?.type === 'image';
 
   if (!isImageSelected || !selectedElement) {
@@ -27,21 +32,31 @@ export default function ImageControls({ className = '' }: ImageControlsProps) {
   const imageData = selectedElement.data as ImageElementData;
 
   const handleResetSize = () => {
-    updateElement(selectedElement.id, {
+    if (!imageData.originalWidth || !imageData.originalHeight) return;
+    
+    updateElement('UPDATE_ELEMENT', {
+      id: selectedElement.id,
       width: imageData.originalWidth,
       height: imageData.originalHeight
     });
   };
 
   const handleMaintainAspectRatio = (newWidth: number) => {
+    if (!imageData.originalWidth || !imageData.originalHeight) return;
+    
     const aspectRatio = imageData.originalWidth / imageData.originalHeight;
     const newHeight = newWidth / aspectRatio;
     
-    updateElement(selectedElement.id, {
+    updateElement('UPDATE_ELEMENT', {
+      id: selectedElement.id,
       width: newWidth,
       height: newHeight
     });
   };
+
+  // Safe access to width and height with fallbacks
+  const currentWidth = selectedElement.width ?? imageData.originalWidth ?? 100;
+  const currentHeight = selectedElement.height ?? imageData.originalHeight ?? 100;
 
   return (
     <div className={`bg-white border border-gray-200 rounded-lg p-4 space-y-4 ${className}`}>
@@ -50,8 +65,8 @@ export default function ImageControls({ className = '' }: ImageControlsProps) {
       {/* Image Info */}
       <div className="bg-gray-50 p-3 rounded-lg">
         <div className="text-sm text-gray-600 space-y-1">
-          <div>Original: {imageData.originalWidth} × {imageData.originalHeight}px</div>
-          <div>Current: {Math.round(selectedElement.width)} × {Math.round(selectedElement.height)}px</div>
+          <div>Original: {imageData.originalWidth ?? 0} × {imageData.originalHeight ?? 0}px</div>
+          <div>Current: {Math.round(currentWidth)} × {Math.round(currentHeight)}px</div>
         </div>
       </div>
 
@@ -65,7 +80,7 @@ export default function ImageControls({ className = '' }: ImageControlsProps) {
             <label className="block text-xs text-gray-500 mb-1">Width</label>
             <input
               type="number"
-              value={Math.round(selectedElement.width)}
+              value={Math.round(currentWidth)}
               onChange={(e) => {
                 const newWidth = Math.max(20, parseInt(e.target.value) || 20);
                 handleMaintainAspectRatio(newWidth);
@@ -78,13 +93,16 @@ export default function ImageControls({ className = '' }: ImageControlsProps) {
             <label className="block text-xs text-gray-500 mb-1">Height</label>
             <input
               type="number"
-              value={Math.round(selectedElement.height)}
+              value={Math.round(currentHeight)}
               onChange={(e) => {
+                if (!imageData.originalWidth || !imageData.originalHeight) return;
+                
                 const newHeight = Math.max(20, parseInt(e.target.value) || 20);
                 const aspectRatio = imageData.originalWidth / imageData.originalHeight;
                 const newWidth = newHeight * aspectRatio;
                 
-                updateElement(selectedElement.id, {
+                updateElement('UPDATE_ELEMENT', {
+                  id: selectedElement.id,
                   width: newWidth,
                   height: newHeight
                 });
@@ -97,10 +115,13 @@ export default function ImageControls({ className = '' }: ImageControlsProps) {
             <label className="block text-xs text-gray-500 mb-1">X Position</label>
             <input
               type="number"
-              value={Math.round(selectedElement.x)}
+              value={Math.round(selectedElement.x ?? 0)}
               onChange={(e) => {
                 const newX = Math.max(0, parseInt(e.target.value) || 0);
-                updateElement(selectedElement.id, { x: newX });
+                updateElement('UPDATE_ELEMENT', {
+                  id: selectedElement.id,
+                  x: newX
+                });
               }}
               className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
               min="0"
@@ -110,10 +131,13 @@ export default function ImageControls({ className = '' }: ImageControlsProps) {
             <label className="block text-xs text-gray-500 mb-1">Y Position</label>
             <input
               type="number"
-              value={Math.round(selectedElement.y)}
+              value={Math.round(selectedElement.y ?? 0)}
               onChange={(e) => {
                 const newY = Math.max(0, parseInt(e.target.value) || 0);
-                updateElement(selectedElement.id, { y: newY });
+                updateElement('UPDATE_ELEMENT', {
+                  id: selectedElement.id,
+                  y: newY
+                });
               }}
               className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
               min="0"
@@ -164,8 +188,9 @@ export default function ImageControls({ className = '' }: ImageControlsProps) {
         <div className="text-xs text-gray-500 space-y-1">
           <div>Element ID: {selectedElement.id.slice(0, 8)}...</div>
           <div>Type: {selectedElement.type}</div>
-          <div>Rotation: {selectedElement.rotation}°</div>
-          <div>Aspect Ratio: {(imageData.originalWidth / imageData.originalHeight).toFixed(2)}</div>
+          <div>View: {currentView}</div>
+          <div>Rotation: {selectedElement.rotation ?? 0}°</div>
+          <div>Aspect Ratio: {((imageData.originalWidth ?? 100) / (imageData.originalHeight ?? 100)).toFixed(2)}</div>
         </div>
       </div>
     </div>

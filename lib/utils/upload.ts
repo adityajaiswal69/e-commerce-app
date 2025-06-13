@@ -1,89 +1,134 @@
 import { supabase } from "@/lib/supabase/client";
 import { v4 as uuidv4 } from "uuid";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { logError } from "./error-logger";
+
+interface UploadOptions {
+  isPublic?: boolean;
+  folder?: string;
+}
+
+// Get the current user's ID for private uploads
+async function getCurrentUserId() {
+  const supabase = createClientComponentClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  return user?.id;
+}
 
 export async function uploadProductImage(file: File) {
   try {
     const fileExt = file.name.split(".").pop();
     const fileName = `${uuidv4()}.${fileExt}`;
-    const filePath = `products/${fileName}`;
+    const filePath = `public/products/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
-      .from("product-images")
+      .from("designs_public")
       .upload(filePath, file);
 
     if (uploadError) {
+      logError(uploadError, "Product image upload failed");
       throw uploadError;
     }
 
     const {
       data: { publicUrl },
-    } = supabase.storage.from("product-images").getPublicUrl(filePath);
+    } = supabase.storage.from("designs_public").getPublicUrl(filePath);
 
     return publicUrl;
   } catch (error) {
-    // Re-throw with more context for debugging
-    throw new Error(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logError("Product image upload error", errorMessage);
+    throw new Error(`Failed to upload image: ${errorMessage}`);
   }
 }
 
-export async function uploadDesignImage(file: File) {
+export async function uploadDesignImage(file: File, options: UploadOptions = {}) {
   try {
     const fileExt = file.name.split(".").pop();
     const fileName = `${uuidv4()}.${fileExt}`;
-    const filePath = `designs/${fileName}`;
+    
+    // Determine the correct path based on public/private access
+    let filePath: string;
+    let bucket = 'designs';
+    
+    if (options.isPublic) {
+      filePath = `public/designs/${options.folder || ''}${fileName}`;
+      bucket = 'designs_public';
+    } else {
+      const userId = await getCurrentUserId();
+      if (!userId) throw new Error('User not authenticated');
+      filePath = `${userId}/designs/${options.folder || ''}${fileName}`;
+    }
 
     const { error: uploadError } = await supabase.storage
-      .from("design-images")
+      .from(bucket)
       .upload(filePath, file);
 
     if (uploadError) {
+      logError("Design image upload failed", uploadError.message);
       throw uploadError;
     }
 
     const {
       data: { publicUrl },
-    } = supabase.storage.from("design-images").getPublicUrl(filePath);
+    } = supabase.storage.from(bucket).getPublicUrl(filePath);
 
     return publicUrl;
   } catch (error) {
-    // Re-throw with more context for debugging
+    logError(error, "Design image upload error");
     throw new Error(`Failed to upload design image: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
-export async function uploadDesignPreview(canvas: HTMLCanvasElement, designId: string) {
+export async function uploadDesignPreview(canvas: HTMLCanvasElement, designId: string, view: string = 'front') {
   try {
     return new Promise<string>((resolve, reject) => {
       canvas.toBlob(async (blob) => {
         if (!blob) {
-          reject(new Error("Failed to create blob from canvas"));
+          const error = new Error("Failed to create blob from canvas");
+          logError("Design preview creation failed", error.message);
+          reject(error);
           return;
         }
 
-        const fileName = `preview-${designId}.png`;
-        const filePath = `previews/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("design-images")
-          .upload(filePath, blob, {
-            contentType: 'image/png',
-            upsert: true, // Allow overwriting existing previews
-          });
-
-        if (uploadError) {
-          reject(uploadError);
+        const fileExt = 'png';
+        const fileName = `${uuidv4()}.${fileExt}`;
+        const userId = await getCurrentUserId();
+        
+        if (!userId) {
+          const error = new Error('User not authenticated');
+          logError("Design preview upload failed - no user", error.message);
+          reject(error);
           return;
         }
 
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from("design-images").getPublicUrl(filePath);
+        const filePath = `${userId}/previews/${designId}/${view}_${fileName}`;
 
-        resolve(publicUrl);
-      }, 'image/png', 0.9);
+        try {
+          const { error: uploadError } = await supabase.storage
+            .from('designs')
+            .upload(filePath, blob);
+
+          if (uploadError) {
+            logError(uploadError, "Design preview upload failed");
+            reject(uploadError);
+            return;
+          }
+
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from('designs').getPublicUrl(filePath);
+
+          resolve(publicUrl);
+        } catch (error) {
+          logError("Design preview upload error", error instanceof Error ? error.message : 'Unknown error');
+          reject(error);
+        }
+      }, 'image/png');
     });
   } catch (error) {
-    // Re-throw with more context for debugging
+    logError(error, "Design preview generation error");
     throw new Error(`Failed to upload design preview: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
+

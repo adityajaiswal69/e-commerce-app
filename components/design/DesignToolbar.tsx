@@ -2,6 +2,7 @@
 
 import React, { useRef } from 'react';
 import { useDesign } from '@/contexts/DesignContext';
+import { DesignElement } from '@/types/database.types';
 import { 
   PlusIcon, 
   PhotoIcon, 
@@ -34,6 +35,7 @@ export default function DesignToolbar({ onSave, onPreview, className = '' }: Des
     switchView 
   } = useDesign();
   
+  const currentElements = state.elements_by_view[state.productView] || [];
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddText = () => {
@@ -116,7 +118,8 @@ export default function DesignToolbar({ onSave, onPreview, className = '' }: Des
   };
 
   const handleClearCanvas = () => {
-    if (state.elements.length > 0) {
+    const currentElements = state.elements_by_view[state.productView];
+    if (currentElements.length > 0) {
       if (confirm('Are you sure you want to clear all elements? This action cannot be undone.')) {
         clearCanvas();
         toast.success('Canvas cleared');
@@ -283,13 +286,13 @@ export default function DesignToolbar({ onSave, onPreview, className = '' }: Des
       {/* Status Bar */}
       <div className="mt-3 flex items-center justify-between text-xs text-gray-500 bg-gray-50 px-3 py-2 rounded-lg">
         <div className="flex items-center gap-4">
-          <span>{state.elements.length} element{state.elements.length !== 1 ? 's' : ''}</span>
+          <span>{currentElements.length} element{currentElements.length !== 1 ? 's' : ''}</span>
           {state.selectedElementId && (
             <>
               <span>•</span>
               <span className="text-blue-600 font-medium">
                 {(() => {
-                  const selected = state.elements.find(el => el.id === state.selectedElementId);
+                  const selected = currentElements.find((el: DesignElement) => el.id === state.selectedElementId);
                   if (!selected) return 'None selected';
                   return `${selected.type === 'text' ? 'Text' : 'Image'} selected`;
                 })()}

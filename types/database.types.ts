@@ -142,11 +142,21 @@ export type Design = {
   user_id: string;
   product_id: string;
   name: string;
-  elements: DesignElement[];
+  elements_by_view: {
+    front: DesignElement[];
+    back: DesignElement[];
+    left: DesignElement[];
+    right: DesignElement[];
+  };
   canvas_width: number;
   canvas_height: number;
-  product_view: 'front' | 'back';
-  preview_image_url?: string;
+  product_view: 'front' | 'back' | 'left' | 'right';
+  preview_images: {
+    front?: string;
+    back?: string;
+    left?: string;
+    right?: string;
+  };
   created_at: string;
   updated_at: string;
 };

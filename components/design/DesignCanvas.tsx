@@ -21,6 +21,16 @@ export default function DesignCanvas({ product, className = '' }: DesignCanvasPr
   const [initialSize, setInitialSize] = useState({ width: 0, height: 0 });
   const [initialMousePos, setInitialMousePos] = useState({ x: 0, y: 0 });
 
+  // Get current view elements
+  const getCurrentViewElements = useCallback(() => {
+    return state.elements_by_view[state.productView] || [];
+  }, [state.elements_by_view, state.productView]);
+
+  // Clear selection when changing views
+  useEffect(() => {
+    selectElement(null);
+  }, [state.productView, selectElement]);
+
   // Get current product image URL based on view
   const getCurrentProductImageUrl = () => {
     switch (state.productView) {
@@ -46,11 +56,10 @@ export default function DesignCanvas({ product, className = '' }: DesignCanvasPr
     img.crossOrigin = 'anonymous';
     img.onload = () => setProductImage(img);
     img.src = imageUrl;
-  }, [product, state.productView]);
-
-  // Load element images
+  }, [product, state.productView]);    // Load element images
   useEffect(() => {
-    const imageElements = state.elements.filter(el => el.type === 'image');
+    const currentElements = getCurrentViewElements();
+    const imageElements = currentElements.filter(el => el.type === 'image');
     
     imageElements.forEach(element => {
       const imageData = element.data as ImageElementData;
@@ -63,7 +72,7 @@ export default function DesignCanvas({ product, className = '' }: DesignCanvasPr
         img.src = imageData.src;
       }
     });
-  }, [state.elements, loadedImages]);
+  }, [getCurrentViewElements, loadedImages]);
 
   // Draw canvas
   const drawCanvas = useCallback(() => {
@@ -77,10 +86,9 @@ export default function DesignCanvas({ product, className = '' }: DesignCanvasPr
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw product image as background
-    ctx.drawImage(productImage, 0, 0, canvas.width, canvas.height);
-
-    // Draw elements
-    state.elements.forEach(element => {
+    ctx.drawImage(productImage, 0, 0, canvas.width, canvas.height);    // Draw elements for current view
+    const currentElements = getCurrentViewElements();
+    currentElements.forEach(element => {
       ctx.save();
       
       // Apply transformations
@@ -132,7 +140,7 @@ export default function DesignCanvas({ product, className = '' }: DesignCanvasPr
 
       ctx.restore();
     });
-  }, [productImage, state.elements, loadedImages]);
+  }, [productImage, getCurrentViewElements, loadedImages]);
 
   // Redraw canvas when state changes
   useEffect(() => {
@@ -177,13 +185,12 @@ export default function DesignCanvas({ product, className = '' }: DesignCanvasPr
 
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    console.log('Canvas click at:', x, y);
-    console.log('Available elements:', state.elements);
+    const y = e.clientY - rect.top;    console.log('Canvas click at:', x, y);
+    const currentElements = getCurrentViewElements();
+    console.log('Available elements:', currentElements);
 
     // Find clicked element (reverse order to check top elements first)
-    const clickedElement = [...state.elements].reverse().find(element => {
+    const clickedElement = [...currentElements].reverse().find(element => {
       const isInside = (
         x >= element.x &&
         x <= element.x + element.width &&
@@ -199,7 +206,7 @@ export default function DesignCanvas({ product, className = '' }: DesignCanvasPr
 
     console.log('Clicked element:', clickedElement?.id || 'none');
     selectElement(clickedElement?.id || null);
-  }, [state.elements, selectElement]);
+  }, [getCurrentViewElements, selectElement]);
 
   // Handle double click to add text
   const handleCanvasDoubleClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -208,10 +215,9 @@ export default function DesignCanvas({ product, className = '' }: DesignCanvasPr
 
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    // Check if we're not clicking on an existing element
-    const clickedElement = state.elements.find(element => {
+    const y = e.clientY - rect.top;    // Check if we're not clicking on an existing element in current view
+    const currentElements = getCurrentViewElements();
+    const clickedElement = currentElements.find(element => {
       return (
         x >= element.x &&
         x <= element.x + element.width &&
@@ -223,20 +229,17 @@ export default function DesignCanvas({ product, className = '' }: DesignCanvasPr
     if (!clickedElement) {
       dispatch({ type: 'ADD_TEXT', payload: { x: x - 100, y: y - 20, text: 'New Text' } });
     }
-  }, [state.elements, dispatch]);
+  }, [getCurrentViewElements, dispatch]);
 
   // Mouse event handlers for dragging
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (!state.selectedElementId) return;
-
-    const canvas = canvasRef.current;
+    if (!state.selectedElementId) return;    const canvas = canvasRef.current;
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    const selectedElement = state.elements.find(el => el.id === state.selectedElementId);
+    const y = e.clientY - rect.top;    const currentElements = getCurrentViewElements();
+    const selectedElement = currentElements.find((el: DesignElement) => el.id === state.selectedElementId);
     if (!selectedElement) return;
 
     // Check if clicking on resize handle (check overlay handles)
@@ -258,7 +261,7 @@ export default function DesignCanvas({ product, className = '' }: DesignCanvasPr
       console.log('Clicked resize handle:', clickedHandle.position);
       setResizeHandle(clickedHandle.position);
       setInitialSize({ width: selectedElement.width, height: selectedElement.height });
-      setInitialMousePos({ x, y });
+      setInitialMousePos({ x, y: y });
       dispatch({ type: 'SET_RESIZING', payload: true });
       e.preventDefault();
       e.stopPropagation();
@@ -275,7 +278,7 @@ export default function DesignCanvas({ product, className = '' }: DesignCanvasPr
       dispatch({ type: 'SET_DRAGGING', payload: true });
       dispatch({ type: 'SET_DRAG_OFFSET', payload: { x: x - selectedElement.x, y: y - selectedElement.y } });
     }
-  }, [state.selectedElementId, state.elements, dispatch]);
+  }, [state.selectedElementId, getCurrentViewElements, dispatch]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     const canvas = canvasRef.current;
@@ -285,7 +288,8 @@ export default function DesignCanvas({ product, className = '' }: DesignCanvasPr
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    const selectedElement = state.elements.find(el => el.id === state.selectedElementId);
+    const currentElements = getCurrentViewElements();
+    const selectedElement = currentElements.find((el: DesignElement) => el.id === state.selectedElementId);
     if (!selectedElement) return;
 
     if (state.isResizing && resizeHandle) {
@@ -378,7 +382,7 @@ export default function DesignCanvas({ product, className = '' }: DesignCanvasPr
     }
   }, [
     state.selectedElementId,
-    state.elements,
+    getCurrentViewElements,
     state.isDragging,
     state.isResizing,
     isMouseDown,
@@ -422,9 +426,9 @@ export default function DesignCanvas({ product, className = '' }: DesignCanvasPr
         onMouseLeave={handleMouseUp}
       />
 
-      {/* Selection overlay */}
-      {state.selectedElementId && (() => {
-        const selectedElement = state.elements.find(el => el.id === state.selectedElementId);
+      {/* Selection overlay */}      {state.selectedElementId && (() => {
+        const currentElements = getCurrentViewElements();
+        const selectedElement = currentElements.find(el => el.id === state.selectedElementId);
         console.log('Rendering selection overlay for:', selectedElement);
         return selectedElement ? (
           <SelectionOverlay

@@ -31,8 +31,8 @@ interface TextControlsProps {
 
 export default function TextControls({ className = '' }: TextControlsProps) {
   const { state, updateTextData, updateElement } = useDesign();
-
-  const selectedElement = state.elements.find(el => el.id === state.selectedElementId);
+  const currentElements = state.elements_by_view[state.productView];
+  const selectedElement = currentElements.find(el => el.id === state.selectedElementId);
   const isTextSelected = selectedElement?.type === 'text';
 
   if (!isTextSelected || !selectedElement) {

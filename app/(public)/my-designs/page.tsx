@@ -145,14 +145,14 @@ export default function MyDesignsPage() {
             >
               {/* Design Preview */}
               <div className="aspect-square relative bg-gray-100">
-                {design.preview_image_url ? (
-                  <Image
-                    src={design.preview_image_url}
-                    alt={design.name}
+                {design.preview_images?.front ? (
+                    <Image
+                      src={design.preview_images.front}
+                      alt={design.name}
                     fill
                     className="object-cover"
                   />
-                ) : (
+                  ) : (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-gray-400">
                       <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -177,7 +177,11 @@ export default function MyDesignsPage() {
                   Based on: {design.product.name}
                 </p>
                 <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-                  <span>{design.elements.length} elements</span>
+                  <span>
+                    {design.elements_by_view
+                      ? Object.values(design.elements_by_view).flat().length
+                      : 0} elements
+                  </span>
                   <span>{new Date(design.created_at).toLocaleDateString()}</span>
                 </div>
 

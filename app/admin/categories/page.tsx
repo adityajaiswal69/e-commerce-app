@@ -3,8 +3,19 @@ import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Image from "next/image";
-import { FiPlus, FiEdit2, FiTrash2 } from "react-icons/fi";
+import { FiPlus, FiEdit2 } from "react-icons/fi";
 import DeleteCategoryButton from "@/components/admin/DeleteCategoryButton";
+
+type Category = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  image_url: string | null;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+}
 
 export default async function CategoriesPage() {
   const supabase = createServerComponentClient({ cookies });
@@ -33,10 +44,11 @@ export default async function CategoriesPage() {
   const { data: categories, error } = await supabase
     .from("categories")
     .select("*")
-    .order("display_order", { ascending: true });
-    
+    .order('display_order', { ascending: true }) as { data: Category[] | null, error: { message: string } | null };
+
   if (error) {
-    console.error("Error fetching categories:", error);
+    console.error("Error fetching categories:", error.message);
+    throw new Error(error.message);
   }
 
   return (

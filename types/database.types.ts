@@ -29,6 +29,7 @@ export type ProductImage = {
   alt_text?: string;
   is_primary?: boolean;
   display_order: number;
+  view_type?: 'front' | 'back' | 'left' | 'right' | 'other';
   created_at: string;
 };
 
@@ -79,6 +80,10 @@ export type Product = {
   price: number;
   original_price?: number;
   image_url: string;
+  front_image_url?: string;
+  back_image_url?: string;
+  left_image_url?: string;
+  right_image_url?: string;
   category: string;
   subcategory_id: string | null;
   stock: number;

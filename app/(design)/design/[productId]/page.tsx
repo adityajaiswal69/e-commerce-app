@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, use } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { notFound } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
@@ -25,7 +25,7 @@ export default function DesignPage({ params }: DesignPageProps) {
   const { productId } = use(params);
   const router = useRouter();
   const supabase = createClientComponentClient();
-  const { state } = useDesign();
+  const { state, dispatch } = useDesign();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -103,14 +103,16 @@ export default function DesignPage({ params }: DesignPageProps) {
         throw new Error('Failed to create canvas context');
       }
 
-      // Draw product image
+      // Draw product image (use front view for preview)
       const productImg = new Image();
       productImg.crossOrigin = 'anonymous';
-      
+
+      const imageUrl = product.front_image_url || product.image_url;
+
       await new Promise((resolve, reject) => {
         productImg.onload = resolve;
         productImg.onerror = reject;
-        productImg.src = product.image_url;
+        productImg.src = imageUrl;
       });
 
       ctx.drawImage(productImg, 0, 0, canvas.width, canvas.height);
@@ -260,10 +262,66 @@ export default function DesignPage({ params }: DesignPageProps) {
       {/* Main Content */}
       <div className="flex h-[calc(100vh-140px)]">
         {/* Canvas Area */}
-        <div className="flex-1 flex items-center justify-center p-6">
+        <div className="flex-1 flex flex-col items-center justify-center p-6">
+          {/* View Switching Controls */}
+          <div className="mb-4 flex space-x-2">
+            <button
+              onClick={() => dispatch({ type: 'SWITCH_VIEW', payload: 'front' })}
+              className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+                state.productView === 'front'
+                  ? 'bg-gray-900 text-white shadow-md'
+                  : (product.front_image_url || product.image_url)
+                    ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+              }`}
+              disabled={!(product.front_image_url || product.image_url)}
+            >
+              Front
+            </button>
+            <button
+              onClick={() => dispatch({ type: 'SWITCH_VIEW', payload: 'back' })}
+              className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+                state.productView === 'back'
+                  ? 'bg-gray-900 text-white shadow-md'
+                  : product.back_image_url
+                    ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+              }`}
+              disabled={!product.back_image_url}
+            >
+              Back
+            </button>
+            <button
+              onClick={() => dispatch({ type: 'SWITCH_VIEW', payload: 'left' })}
+              className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+                state.productView === 'left'
+                  ? 'bg-gray-900 text-white shadow-md'
+                  : product.left_image_url
+                    ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+              }`}
+              disabled={!product.left_image_url}
+            >
+              Left
+            </button>
+            <button
+              onClick={() => dispatch({ type: 'SWITCH_VIEW', payload: 'right' })}
+              className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+                state.productView === 'right'
+                  ? 'bg-gray-900 text-white shadow-md'
+                  : product.right_image_url
+                    ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+              }`}
+              disabled={!product.right_image_url}
+            >
+              Right
+            </button>
+          </div>
+
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <DesignCanvas 
-              productImageUrl={product.image_url}
+            <DesignCanvas
+              product={product}
               className="mx-auto"
             />
           </div>
@@ -309,8 +367,8 @@ export default function DesignPage({ params }: DesignPageProps) {
             </div>
             <div className="p-6 text-center">
               <div className="inline-block bg-gray-100 p-4 rounded-lg">
-                <DesignCanvas 
-                  productImageUrl={product.image_url}
+                <DesignCanvas
+                  product={product}
                   className="pointer-events-none"
                 />
               </div>

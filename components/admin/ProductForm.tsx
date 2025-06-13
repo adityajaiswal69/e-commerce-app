@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import type { Product } from "@/types/database.types";
-import { uploadProductImage } from "@/lib/utils/upload";
-import Image from "next/image";
+import ProductImageUploader from "./ProductImageUploader";
 
 const STYLE_OPTIONS = [
   "Casual",
@@ -88,6 +87,8 @@ type ProductFormProps = {
   product?: Product;
 };
 
+type ViewType = 'front' | 'back' | 'left' | 'right';
+
 type FormData = {
   name: string;
   description: string;
@@ -105,6 +106,7 @@ type FormData = {
     shoes: string[];
   };
   occasions: string[];
+  viewImages: Record<ViewType, string>;
 };
 
 async function deleteProductImage(imageUrl: string) {
@@ -125,12 +127,8 @@ async function deleteProductImage(imageUrl: string) {
 
 export default function ProductForm({ product }: ProductFormProps) {
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(
-    product?.image_url || null
-  );
   const [showSubcategory, setShowSubcategory] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
@@ -150,43 +148,29 @@ export default function ProductForm({ product }: ProductFormProps) {
       shoes: product?.sizes?.shoes ?? [],
     },
     occasions: product?.occasions || [],
+    viewImages: {
+      front: product?.front_image_url || product?.image_url || "",
+      back: product?.back_image_url || "",
+      left: product?.left_image_url || "",
+      right: product?.right_image_url || ""
+    }
   });
   
+
+
   // Fetch subcategories when category changes
   useEffect(() => {
     const selectedCategory = CATEGORY_OPTIONS.find(cat => cat.value === formData.category);
     const hasSubcategories = selectedCategory?.hasSubcategories || false;
     setShowSubcategory(hasSubcategories);
-    
+
     // Reset subcategory when category changes
     if (formData.subcategory && !hasSubcategories) {
       setFormData(prev => ({ ...prev, subcategory: "" }));
     }
   }, [formData.category]);
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
 
-    // Preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-
-    try {
-      setLoading(true);
-      const imageUrl = await uploadProductImage(file);
-      setFormData({ ...formData, image_url: imageUrl });
-    } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "Failed to upload image"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleMultiSelect = (
     field: "style" | "colors" | "occasions",
@@ -215,13 +199,27 @@ export default function ProductForm({ product }: ProductFormProps) {
     }));
   };
 
+  const handleViewImageUpdate = (viewType: ViewType, imageUrl: string) => {
+    setFormData(prev => ({
+      ...prev,
+      viewImages: {
+        ...prev.viewImages,
+        [viewType]: imageUrl
+      },
+      // Update main image_url if front view is updated
+      ...(viewType === 'front' && { image_url: imageUrl })
+    }));
+  };
+
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.image_url) {
-      setError("Please upload an image");
+    if (!formData.viewImages.front) {
+      setError("Please upload a front view image");
       return;
     }
-    
+
     // Validate subcategory if category has subcategories
     if (showSubcategory && !formData.subcategory) {
       setError("Please select a subcategory");
@@ -237,7 +235,11 @@ export default function ProductForm({ product }: ProductFormProps) {
         name: formData.name,
         description: formData.description,
         price: formData.price,
-        image_url: formData.image_url,
+        image_url: formData.viewImages.front, // Use front view as main image
+        front_image_url: formData.viewImages.front,
+        back_image_url: formData.viewImages.back || null,
+        left_image_url: formData.viewImages.left || null,
+        right_image_url: formData.viewImages.right || null,
         category: formData.category,
         stock: formData.stock,
         active: formData.active,
@@ -246,7 +248,7 @@ export default function ProductForm({ product }: ProductFormProps) {
         sizes: formData.sizes,
         occasions: formData.occasions
       };
-      
+
       // If subcategory is selected, append it to the category
       if (showSubcategory && formData.subcategory) {
         // Use the subcategory as part of the category path
@@ -263,6 +265,8 @@ export default function ProductForm({ product }: ProductFormProps) {
         const { error } = await supabase.from("products").insert([productData]);
         if (error) throw error;
       }
+
+
 
       router.push("/admin/products");
       router.refresh();
@@ -312,40 +316,13 @@ export default function ProductForm({ product }: ProductFormProps) {
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && <div className="text-red-500">{error}</div>}
 
-      <div>
-        <label className="block text-sm font-medium">Product Image</label>
-        <div className="mt-1 flex items-center space-x-4">
-          <div className="relative h-32 w-32 overflow-hidden rounded-lg border">
-            {imagePreview ? (
-              <Image
-                src={imagePreview}
-                alt="Product preview"
-                fill
-                className="object-cover"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center bg-gray-50">
-                <span className="text-sm text-gray-500">No image</span>
-              </div>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={loading}
-            className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-          >
-            Change Image
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="hidden"
-          />
-        </div>
-      </div>
+      <ProductImageUploader
+        productImages={formData.viewImages}
+        onImageUpdate={handleViewImageUpdate}
+        loading={loading}
+        setLoading={setLoading}
+        setError={setError}
+      />
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div>
@@ -441,18 +418,7 @@ export default function ProductForm({ product }: ProductFormProps) {
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium">Image URL</label>
-        <input
-          type="url"
-          value={formData.image_url}
-          onChange={(e) =>
-            setFormData({ ...formData, image_url: e.target.value })
-          }
-          className="mt-1 block w-full rounded-md border p-2"
-          required
-        />
-      </div>
+
 
       <div>
         <label className="block text-sm font-medium mb-2">Styles</label>

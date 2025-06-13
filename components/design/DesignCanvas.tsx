@@ -2,17 +2,17 @@
 
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useDesign } from '@/contexts/DesignContext';
-import { DesignElement, TextElementData, ImageElementData } from '@/types/database.types';
+import { DesignElement, TextElementData, ImageElementData, Product } from '@/types/database.types';
 
 interface DesignCanvasProps {
-  productImageUrl: string;
+  product: Product;
   className?: string;
 }
 
-export default function DesignCanvas({ productImageUrl, className = '' }: DesignCanvasProps) {
+export default function DesignCanvas({ product, className = '' }: DesignCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { state, dispatch, selectElement, moveElement, commitChanges } = useDesign();
-  
+
   const [productImage, setProductImage] = useState<HTMLImageElement | null>(null);
   const [loadedImages, setLoadedImages] = useState<Map<string, HTMLImageElement>>(new Map());
   const [isMouseDown, setIsMouseDown] = useState(false);
@@ -21,13 +21,32 @@ export default function DesignCanvas({ productImageUrl, className = '' }: Design
   const [initialSize, setInitialSize] = useState({ width: 0, height: 0 });
   const [initialMousePos, setInitialMousePos] = useState({ x: 0, y: 0 });
 
+  // Get current product image URL based on view
+  const getCurrentProductImageUrl = () => {
+    switch (state.productView) {
+      case 'front':
+        return product.front_image_url || product.image_url;
+      case 'back':
+        return product.back_image_url || product.image_url;
+      case 'left':
+        return product.left_image_url || product.image_url;
+      case 'right':
+        return product.right_image_url || product.image_url;
+      default:
+        return product.image_url;
+    }
+  };
+
   // Load product image
   useEffect(() => {
+    const imageUrl = getCurrentProductImageUrl();
+    if (!imageUrl) return;
+
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => setProductImage(img);
-    img.src = productImageUrl;
-  }, [productImageUrl]);
+    img.src = imageUrl;
+  }, [product, state.productView]);
 
   // Load element images
   useEffect(() => {

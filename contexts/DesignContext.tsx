@@ -8,7 +8,7 @@ export type CanvasState = {
   selectedElementId: string | null;
   canvasWidth: number;
   canvasHeight: number;
-  productView: 'front' | 'back';
+  productView: 'front' | 'back' | 'left' | 'right';
   history: DesignElement[][];
   historyIndex: number;
   isDragging: boolean;
@@ -27,7 +27,7 @@ export type CanvasAction =
   | { type: 'RESIZE_ELEMENT'; payload: { id: string; width: number; height: number } }
   | { type: 'ROTATE_ELEMENT'; payload: { id: string; rotation: number } }
   | { type: 'UPDATE_TEXT_DATA'; payload: { id: string; textData: Partial<TextElementData> } }
-  | { type: 'SWITCH_VIEW'; payload: 'front' | 'back' }
+  | { type: 'SWITCH_VIEW'; payload: 'front' | 'back' | 'left' | 'right' }
   | { type: 'UNDO' }
   | { type: 'REDO' }
   | { type: 'CLEAR_CANVAS' }
@@ -332,7 +332,7 @@ type DesignContextType = {
   resizeElement: (id: string, width: number, height: number) => void;
   rotateElement: (id: string, rotation: number) => void;
   updateTextData: (id: string, textData: Partial<TextElementData>) => void;
-  switchView: (view: 'front' | 'back') => void;
+  switchView: (view: 'front' | 'back' | 'left' | 'right') => void;
   undo: () => void;
   redo: () => void;
   clearCanvas: () => void;
@@ -383,7 +383,7 @@ export function DesignProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'UPDATE_TEXT_DATA', payload: { id, textData } });
   }, []);
 
-  const switchView = useCallback((view: 'front' | 'back') => {
+  const switchView = useCallback((view: 'front' | 'back' | 'left' | 'right') => {
     dispatch({ type: 'SWITCH_VIEW', payload: view });
   }, []);
 

@@ -7,6 +7,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useState, useEffect, use } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import ReviewSection from "@/components/products/ReviewSection";
+import ProductImageGallery from "@/components/products/ProductImageGallery";
 import { Review } from "@/types/reviews";
 import { Product, ProductVariant, ProductImage, RelatedProduct } from "@/types/database.types";
 import { StarIcon, HeartIcon, ShareIcon, TruckIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
@@ -55,7 +56,7 @@ export default function ProductPage({
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
@@ -78,19 +79,7 @@ export default function ProductPage({
         }
 
         // Try to fetch related data, but don't fail if tables don't exist
-        let productImages: any[] = [];
         let productVariants: any[] = [];
-
-        try {
-          const { data: imagesData } = await supabase
-            .from("product_images")
-            .select("id, image_url, alt_text, is_primary, display_order")
-            .eq("product_id", id)
-            .order("display_order");
-          productImages = imagesData || [];
-        } catch (error) {
-          console.log("Product images table not found or error:", error);
-        }
 
         try {
           const { data: variantsData } = await supabase
@@ -107,7 +96,6 @@ export default function ProductPage({
         // Combine the data
         const enhancedProductData = {
           ...productData,
-          product_images: productImages,
           product_variants: productVariants
         };
 
@@ -249,20 +237,7 @@ export default function ProductPage({
     return product?.stock || 0;
   };
 
-  const getProductImages = () => {
-    if (product?.product_images && product.product_images.length > 0) {
-      return product.product_images
-        .sort((a: any, b: any) => (a.display_order || 0) - (b.display_order || 0))
-        .map((img: any) => ({
-          url: img.image_url || product.image_url || '/placeholder-image.svg',
-          alt: img.alt_text || product.name || 'Product image'
-        }));
-    }
-    return [{
-      url: product?.image_url || '/placeholder-image.svg',
-      alt: product?.name || 'Product image'
-    }];
-  };
+
 
   const handleAddToCart = async () => {
     if (!product) return;
@@ -301,7 +276,6 @@ export default function ProductPage({
     );
   }
 
-  const images = getProductImages();
   const currentPrice = getCurrentPrice();
   const originalPrice = getOriginalPrice();
   const discountPercentage = getDiscountPercentage();
@@ -329,56 +303,17 @@ export default function ProductPage({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Images */}
-          <div className="space-y-4">
-            {/* Main Image */}
-            <div className="relative aspect-square bg-white rounded-2xl overflow-hidden shadow-lg">
-              {discountPercentage > 0 && (
-                <div className="absolute top-4 left-4 z-10">
-                  <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                    -{discountPercentage}%
-                  </span>
-                </div>
-              )}
-              <Image
-                src={images[selectedImageIndex]?.url || '/placeholder-image.svg'}
-                alt={images[selectedImageIndex]?.alt || product.name}
-                fill
-                className="object-cover"
-                priority
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = '/placeholder-image.svg';
-                }}
-              />
-            </div>
-
-            {/* Thumbnail Images */}
-            {images.length > 1 && (
-              <div className="flex space-x-2 overflow-x-auto pb-2">
-                {images.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImageIndex(index)}
-                    className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
-                      selectedImageIndex === index
-                        ? 'border-gray-900 shadow-md'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <Image
-                      src={image.url}
-                      alt={image.alt}
-                      fill
-                      className="object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/placeholder-image.svg';
-                      }}
-                    />
-                  </button>
-                ))}
+          <div className="relative">
+            {discountPercentage > 0 && (
+              <div className="absolute top-4 left-4 z-10">
+                <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                  -{discountPercentage}%
+                </span>
               </div>
             )}
+            <ProductImageGallery
+              product={product}
+            />
           </div>
 
           {/* Product Details */}

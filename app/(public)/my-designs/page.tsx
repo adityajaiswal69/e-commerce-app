@@ -17,6 +17,7 @@ export default function MyDesignsPage() {
   const [designs, setDesigns] = useState<DesignWithProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [previewDesign, setPreviewDesign] = useState<DesignWithProduct | null>(null);
   const supabase = createClientComponentClient();
 
   const fetchDesigns = async () => {
@@ -212,8 +213,17 @@ export default function MyDesignsPage() {
                   </span>
                 </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-2">                  <Link
+                {/* Actions */}                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setPreviewDesign(design)}
+                    className="flex items-center justify-center gap-1 px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200 transition-colors"
+                    title="Preview Design"
+                  >
+                    <EyeIcon className="w-4 h-4" />
+                    Preview
+                  </button>
+
+                  <Link
                     href={`/edit/${design.id}`}
                     className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
                   >
@@ -231,7 +241,61 @@ export default function MyDesignsPage() {
                 </div>
               </div>
             </div>
-          ))}
+          ))}        </div>
+      )}
+
+      {/* Preview Modal */}
+      {previewDesign && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">{previewDesign.name}</h3>
+                <p className="text-sm text-gray-600">Based on: {previewDesign.product.name}</p>
+              </div>
+              <button
+                onClick={() => setPreviewDesign(null)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+              <div className="grid grid-cols-2 gap-6">
+                {previewDesign.preview_images && Object.entries(previewDesign.preview_images).map(([view, url]) => (
+                  <div key={view} className="space-y-2">
+                    <h4 className="text-sm font-medium text-gray-700 capitalize">{view} View</h4>
+                    <div className="aspect-square relative bg-gray-100 rounded-lg overflow-hidden">
+                      {url ? (
+                        <Image
+                          src={url}
+                          alt={`${view} view of ${previewDesign.name}`}
+                          fill
+                          className="object-contain"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-full">
+                          <div className="text-gray-400">
+                            <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={1}
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -24,6 +24,7 @@ export type CanvasState = {
   isDragging: boolean;
   isResizing: boolean;
   dragOffset: { x: number; y: number };
+  canvasRef: React.RefObject<HTMLCanvasElement | null> | null;
 };
 
 export type CanvasAction =
@@ -45,9 +46,11 @@ export type CanvasAction =
   | { type: 'SET_DRAGGING'; payload: boolean }
   | { type: 'SET_RESIZING'; payload: boolean }
   | { type: 'SET_DRAG_OFFSET'; payload: { x: number; y: number } }
+  | { type: 'SET_CANVAS_REF'; payload: React.RefObject<HTMLCanvasElement | null> }
   | { type: 'COMMIT_CHANGES' };
 
-const initialState: CanvasState = {  elements_by_view: {
+const initialState: CanvasState = {
+  elements_by_view: {
     front: [],
     back: [],
     left: [],
@@ -67,10 +70,11 @@ const initialState: CanvasState = {  elements_by_view: {
   isDragging: false,
   isResizing: false,
   dragOffset: { x: 0, y: 0 },
+  canvasRef: null,
 };
 
 function generateId(): string {
-  return Math.random().toString(36).substr(2, 9);
+  return Math.random().toString(36).substring(2, 11);
 }
 
 function addToHistory(state: CanvasState, newElements: DesignElement[]): CanvasState {
@@ -296,6 +300,12 @@ function canvasReducer(state: CanvasState, action: CanvasAction): CanvasState {
         dragOffset: action.payload,
       };
 
+    case 'SET_CANVAS_REF':
+      return {
+        ...state,
+        canvasRef: action.payload,
+      };
+
     default:
       return state;
   }
@@ -319,6 +329,8 @@ type DesignContextType = {
   clearCanvas: () => void;
   loadDesign: (elements: DesignElement[]) => void;
   commitChanges: () => void;
+  setCanvasRef: (ref: React.RefObject<HTMLCanvasElement | null>) => void;
+  capturePreviewImage: () => string | null;
   canUndo: boolean;
   canRedo: boolean;
 };
@@ -388,6 +400,20 @@ export function DesignProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'COMMIT_CHANGES' });
   }, []);
 
+  const setCanvasRef = useCallback((ref: React.RefObject<HTMLCanvasElement | null>) => {
+    dispatch({ type: 'SET_CANVAS_REF', payload: ref });
+  }, []);
+
+  const capturePreviewImage = useCallback((): string | null => {
+    if (!state.canvasRef?.current) return null;
+    try {
+      return state.canvasRef.current.toDataURL('image/png');
+    } catch (error) {
+      console.error('Failed to capture preview image:', error);
+      return null;
+    }
+  }, [state.canvasRef]);
+
   const canUndo = state.historyIndex > 0;
   const canRedo = state.historyIndex < state.history[state.productView].length - 1;
 
@@ -409,6 +435,8 @@ export function DesignProvider({ children }: { children: React.ReactNode }) {
     clearCanvas,
     loadDesign,
     commitChanges,
+    setCanvasRef,
+    capturePreviewImage,
     canUndo,
     canRedo,
   };

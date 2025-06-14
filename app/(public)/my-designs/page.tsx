@@ -6,7 +6,7 @@ import { getCurrentUser } from '@/lib/auth-utils';
 import { Design, Product } from '@/types/database.types';
 import Image from 'next/image';
 import Link from 'next/link';
-import { PencilIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, EyeIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
 type DesignWithProduct = Design & {
@@ -19,39 +19,54 @@ export default function MyDesignsPage() {
   const [user, setUser] = useState<any>(null);
   const supabase = createClientComponentClient();
 
-  useEffect(() => {
-    async function fetchDesigns() {
-      try {
-        const { user: currentUser } = await getCurrentUser();
-        if (!currentUser) {
-          return;
-        }
-        setUser(currentUser);
-
-        const { data, error } = await supabase
-          .from('designs')
-          .select(`
-            *,
-            product:products(*)
-          `)
-          .eq('user_id', currentUser.id)
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          throw error;
-        }
-
-        setDesigns(data || []);
-      } catch (error) {
-        console.error('Error fetching designs:', error);
-        toast.error('Failed to load designs');
-      } finally {
-        setLoading(false);
+  const fetchDesigns = async () => {
+    try {
+      setLoading(true);
+      const { user: currentUser } = await getCurrentUser();
+      if (!currentUser) {
+        return;
       }
-    }
+      setUser(currentUser);
 
+      const { data, error } = await supabase
+        .from('designs')
+        .select(`
+          *,
+          product:products(*)
+        `)
+        .eq('user_id', currentUser.id)
+        .order('updated_at', { ascending: false }); // Order by updated_at to show recently updated designs first
+
+      if (error) {
+        throw error;
+      }
+
+      setDesigns(data || []);
+    } catch (error) {
+      console.error('Error fetching designs:', error);
+      toast.error('Failed to load designs');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchDesigns();
   }, [supabase]);
+
+  // Refresh designs when the page becomes visible (e.g., returning from edit page)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchDesigns();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   const handleDeleteDesign = async (designId: string) => {
     if (!confirm('Are you sure you want to delete this design? This action cannot be undone.')) {
@@ -106,11 +121,21 @@ export default function MyDesignsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">My Designs</h1>
-        <p className="mt-2 text-gray-600">
-          Manage your custom uniform designs
-        </p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">My Designs</h1>
+          <p className="mt-2 text-gray-600">
+            Manage your custom uniform designs
+          </p>
+        </div>
+        <button
+          onClick={fetchDesigns}
+          disabled={loading}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <ArrowPathIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
       </div>
 
       {designs.length === 0 ? (
@@ -182,12 +207,14 @@ export default function MyDesignsPage() {
                       ? Object.values(design.elements_by_view).flat().length
                       : 0} elements
                   </span>
-                  <span>{new Date(design.created_at).toLocaleDateString()}</span>
+                  <span>
+                    Updated: {new Date(design.updated_at).toLocaleDateString()}
+                  </span>
                 </div>
 
                 {/* Actions */}
                 <div className="flex items-center gap-2">                  <Link
-                    href={`/my-designs/${design.id}`}
+                    href={`/edit/${design.id}`}
                     className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
                   >
                     <PencilIcon className="w-4 h-4" />

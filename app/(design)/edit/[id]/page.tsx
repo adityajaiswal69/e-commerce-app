@@ -88,5 +88,6 @@ export default function EditDesignPage({ params }: Props) {
         existingDesign={design}
       />
     </div>
+    
   );
 }

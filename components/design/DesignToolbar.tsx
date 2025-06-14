@@ -140,87 +140,109 @@ export default function DesignToolbar({ onSave, onPreview, className = '' }: Des
     const centerY = state.canvasHeight / 2 - 20;
     addText(centerX, centerY, text);
   };
-
   return (
-    <div className={`bg-white border-b border-gray-200 p-4 ${className}`}>
-      <div className="flex flex-wrap items-center gap-4">
+    <div className={`bg-white border-r border-gray-200 p-4 h-full flex flex-col justify-between ${className}`}>
+      <div className="flex flex-col gap-6">
         {/* View Switcher */}
-        <div className="flex bg-gray-100 rounded-lg p-1">
-          <button
-            onClick={() => switchView('front')}
-            className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-              state.productView === 'front'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Front
-          </button>
-          <button
-            onClick={() => switchView('back')}
-            className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-              state.productView === 'back'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Back
-          </button>
+        {/* <div className="space-y-2">
+          <h3 className="text-sm font-semibold text-gray-900 px-1">Views</h3>
+          <div className="flex flex-col bg-gray-100 rounded-lg p-1 gap-1">
+            <button
+              onClick={() => switchView('front')}
+              className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
+                state.productView === 'front'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Front View
+            </button>
+            <button
+              onClick={() => switchView('back')}
+              className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
+                state.productView === 'back'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Back View
+            </button>
+            <button
+              onClick={() => switchView('left')}
+              className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
+                state.productView === 'left'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Left View
+            </button>
+             <button
+              onClick={() => switchView('right')}
+              className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
+                state.productView === 'right'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              right View
+            </button>
+          </div>
+        </div> */}
+
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold text-gray-900 px-1">Add Elements</h3>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={handleAddText}
+              className="flex items-center gap-2 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors w-full"
+            >
+              <PlusIcon className="w-4 h-4 flex-shrink-0" />
+              <span className="text-sm">Add Text</span>
+            </button>
+
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors w-full"
+            >
+              <PhotoIcon className="w-4 h-4 flex-shrink-0" />
+              <span className="text-sm">Add Image</span>
+            </button>
+            
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+          </div>
         </div>
 
-        <div className="h-6 w-px bg-gray-300" />
-
-        {/* Add Elements */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleAddText}
-            className="flex items-center gap-2 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            <PlusIcon className="w-4 h-4" />
-            Add Text
-          </button>
-
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-2 px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-          >
-            <PhotoIcon className="w-4 h-4" />
-            Add Image
-          </button>
-          
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="hidden"
-          />
-        </div>
-
-        <div className="h-6 w-px bg-gray-300" />
+        <div className="w-full h-px bg-gray-300" />
 
         {/* Quick Text Options */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2">
           <span className="text-sm font-medium text-gray-700">Quick Add:</span>
           {quickTexts.map((text) => (
             <button
               key={text}
               onClick={() => handleQuickText(text)}
-              className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+              className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors w-full text-left"
             >
               {text}
             </button>
           ))}
         </div>
 
-        <div className="h-6 w-px bg-gray-300" />
+        <div className="w-full h-px bg-gray-300" />
 
         {/* Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2">
           <button
             onClick={undo}
             disabled={!canUndo}
-            className="flex items-center gap-1 px-3 py-2 text-gray-600 hover:text-gray-900 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors rounded-lg hover:bg-gray-100"
+            className="flex items-center justify-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-900 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors rounded-lg hover:bg-gray-100 w-full"
             title="Undo (Ctrl+Z)"
           >
             <ArrowUturnLeftIcon className="w-4 h-4" />
@@ -230,7 +252,7 @@ export default function DesignToolbar({ onSave, onPreview, className = '' }: Des
           <button
             onClick={redo}
             disabled={!canRedo}
-            className="flex items-center gap-1 px-3 py-2 text-gray-600 hover:text-gray-900 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors rounded-lg hover:bg-gray-100"
+            className="flex items-center justify-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-900 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors rounded-lg hover:bg-gray-100 w-full"
             title="Redo (Ctrl+Y)"
           >
             <ArrowUturnRightIcon className="w-4 h-4" />
@@ -240,7 +262,7 @@ export default function DesignToolbar({ onSave, onPreview, className = '' }: Des
           <button
             onClick={handleDeleteSelected}
             disabled={!state.selectedElementId}
-            className="flex items-center gap-1 px-3 py-2 text-red-600 hover:text-red-700 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors rounded-lg hover:bg-red-50"
+            className="flex items-center justify-center gap-2 px-3 py-2 text-red-600 hover:text-red-700 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors rounded-lg hover:bg-red-50 w-full"
             title="Delete Selected (Delete key)"
           >
             <TrashIcon className="w-4 h-4" />
@@ -249,7 +271,7 @@ export default function DesignToolbar({ onSave, onPreview, className = '' }: Des
 
           <button
             onClick={handleClearCanvas}
-            className="flex items-center gap-1 px-3 py-2 text-orange-600 hover:text-orange-700 transition-colors rounded-lg hover:bg-orange-50"
+            className="flex items-center justify-center gap-2 px-3 py-2 text-orange-600 hover:text-orange-700 transition-colors rounded-lg hover:bg-orange-50 w-full"
             title="Clear All Elements"
           >
             <DocumentArrowDownIcon className="w-4 h-4" />
@@ -257,27 +279,27 @@ export default function DesignToolbar({ onSave, onPreview, className = '' }: Des
           </button>
         </div>
 
-        <div className="h-6 w-px bg-gray-300" />
+        <div className="w-full h-px bg-gray-300" />
 
         {/* Save and Preview */}
-        <div className="flex items-center gap-2 ml-auto">
+        <div className="flex flex-col gap-2">
           {onPreview && (
             <button
               onClick={onPreview}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors w-full"
             >
               <EyeIcon className="w-4 h-4" />
-              Preview
+              <span className="text-sm">Preview</span>
             </button>
           )}
 
           {onSave && (
             <button
               onClick={onSave}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors w-full"
             >
               <DocumentArrowDownIcon className="w-4 h-4" />
-              Save Design
+              <span className="text-sm">Save Design</span>
             </button>
           )}
         </div>

@@ -11,7 +11,12 @@ interface DesignCanvasProps {
 
 export default function DesignCanvas({ product, className = '' }: DesignCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { state, dispatch, selectElement, moveElement, commitChanges } = useDesign();
+  const { state, dispatch, selectElement, moveElement, commitChanges, setCanvasRef } = useDesign();
+
+  // Register canvas ref with context
+  useEffect(() => {
+    setCanvasRef(canvasRef);
+  }, [setCanvasRef]);
 
   const [productImage, setProductImage] = useState<HTMLImageElement | null>(null);
   const [loadedImages, setLoadedImages] = useState<Map<string, HTMLImageElement>>(new Map());
@@ -146,11 +151,15 @@ export default function DesignCanvas({ product, className = '' }: DesignCanvasPr
   useEffect(() => {
     drawCanvas();
   }, [drawCanvas]);
-
   // Keyboard event handling
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Delete selected element
+      // If the target is an input or textarea, don't handle the event
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      // Delete selected element only when Delete key is pressed or Backspace when not in text input
       if (state.selectedElementId && (e.key === 'Delete' || e.key === 'Backspace')) {
         e.preventDefault();
         dispatch({ type: 'DELETE_ELEMENT', payload: state.selectedElementId });
@@ -867,7 +876,7 @@ function SelectionOverlay({
             // Duplicate functionality
             const newElement = {
               ...element,
-              id: Math.random().toString(36).substr(2, 9),
+              id: Math.random().toString(36).substring(2, 11),
               x: element.x + 20,
               y: element.y + 20,
             };

@@ -61,8 +61,10 @@ A fully custom design tool built from scratch using pure HTML5 Canvas and React 
 app/
 ├── (design)/
 │   ├── layout.tsx                    # Design-specific layout (no navbar/footer)
-│   └── design/[productId]/
-│       └── page.tsx                  # Main design page
+│   ├── design/[productId]/
+│   │   └── page.tsx                  # Main design page
+│   └── edit/[id]/
+│       └── page.tsx                  # Edit existing design page
 ├── (public)/
 │   └── my-designs/
 │       └── page.tsx                  # User's saved designs

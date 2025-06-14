@@ -309,16 +309,19 @@ export default function DesignPage({ params }: DesignPageProps) {
             </span>
           </div>
         </div>
-      </div>
+      </div>      {/* Main Content */}
+      <div className="flex h-[calc(100vh-80px)]">
+        {/* Left Toolbar */}
+        <div className="w-[280px] border-r border-gray-200 bg-white shrink-0">
+          <div className="h-full overflow-y-auto">
+            <DesignToolbar 
+              onSave={handleSaveDesign}
+              onPreview={handlePreview}
+              className="h-full"
+            />
+          </div>
+        </div>
 
-      {/* Toolbar */}
-      <DesignToolbar 
-        onSave={handleSaveDesign}
-        onPreview={handlePreview}
-      />
-
-      {/* Main Content */}
-      <div className="flex h-[calc(100vh-140px)]">
         {/* Canvas Area */}
         <div className="flex-1 flex flex-col items-center justify-center p-6">
           {/* View Switching Controls */}

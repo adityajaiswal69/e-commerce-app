@@ -12,8 +12,9 @@ type SearchParams = {
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: SearchParams;
+  searchParams: Promise<SearchParams>;
 }) {
+  const searchParamsData = await searchParams;
   const supabase = createServerSupabaseClient();
 
   // Get unique categories for filter
@@ -30,18 +31,18 @@ export default async function ProductsPage({
   let query = supabase.from("products").select("*").eq("active", true);
 
   // Apply search
-  if (searchParams.q) {
-    query = query.ilike("name", `%${searchParams.q}%`);
+  if (searchParamsData.q) {
+    query = query.ilike("name", `%${searchParamsData.q}%`);
   }
 
   // Apply category filter
-  if (searchParams.category) {
-    query = query.eq("category", searchParams.category);
+  if (searchParamsData.category) {
+    query = query.eq("category", searchParamsData.category);
   }
 
   // Apply price filter
-  if (searchParams.price) {
-    const [min, max] = searchParams.price.split("-");
+  if (searchParamsData.price) {
+    const [min, max] = searchParamsData.price.split("-");
     if (min && max) {
       query = query.gte("price", min).lte("price", max);
     } else if (min === "200+") {
@@ -50,8 +51,8 @@ export default async function ProductsPage({
   }
 
   // Apply sorting
-  if (searchParams.sort) {
-    switch (searchParams.sort) {
+  if (searchParamsData.sort) {
+    switch (searchParamsData.sort) {
       case "price_asc":
         query = query.order("price", { ascending: true });
         break;

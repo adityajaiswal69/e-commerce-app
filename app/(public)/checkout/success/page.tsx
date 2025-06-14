@@ -5,15 +5,16 @@ import { redirect } from "next/navigation";
 export default async function SuccessPage({
   searchParams,
 }: {
-  searchParams: { session_id: string };
+  searchParams: Promise<{ session_id: string }>;
 }) {
+  const { session_id } = await searchParams;
   const supabase = createServerComponentClient({ cookies });
 
   // Verify the order exists and is paid
   const { data: order } = await supabase
     .from("orders")
     .select("*, order_items(*)")
-    .eq("stripe_session_id", searchParams.session_id)
+    .eq("stripe_session_id", session_id)
     .single();
 
   if (!order) {

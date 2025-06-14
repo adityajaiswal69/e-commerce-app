@@ -186,9 +186,8 @@ export default function MyDesignsPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-2">
-                  <Link
-                    href={`/design/${design.product_id}?loadDesign=${design.id}`}
+                <div className="flex items-center gap-2">                  <Link
+                    href={`/my-designs/${design.id}`}
                     className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
                   >
                     <PencilIcon className="w-4 h-4" />

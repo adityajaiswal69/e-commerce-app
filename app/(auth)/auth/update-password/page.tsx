@@ -1,5 +1,8 @@
 import UpdatePasswordForm from "@/components/auth/UpdatePasswordForm";
 
+// Force dynamic rendering to avoid prerendering issues with Supabase client
+export const dynamic = 'force-dynamic';
+
 export default function UpdatePasswordPage() {
   return (
     <div className="mx-auto max-w-md p-6">

@@ -3,29 +3,32 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('Missing STRIPE_SECRET_KEY');
-}
-
-if (!process.env.STRIPE_WEBHOOK_SECRET) {
-  throw new Error('Missing STRIPE_WEBHOOK_SECRET');
-}
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: "2025-01-27.acacia",
-    typescript: true,
-  appInfo: {
-    name: "e-commerce-app",
-    version: "0.1.0"
-  }
-});
-
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
+    // Validate environment variables at runtime
+    if (!process.env.STRIPE_SECRET_KEY) {
+      console.error('Missing STRIPE_SECRET_KEY environment variable');
+      return new Response('Server configuration error', { status: 500 });
+    }
+
+    if (!process.env.STRIPE_WEBHOOK_SECRET) {
+      console.error('Missing STRIPE_WEBHOOK_SECRET environment variable');
+      return new Response('Server configuration error', { status: 500 });
+    }
+
+    // Initialize Stripe with validated environment variables
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2025-01-27.acacia",
+      typescript: true,
+      appInfo: {
+        name: "e-commerce-app",
+        version: "0.1.0"
+      }
+    });
+
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
     const body = await req.text();
     const signature = req.headers.get("stripe-signature");
     

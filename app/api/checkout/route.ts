@@ -4,21 +4,28 @@ import Stripe from "stripe";
 import { CartItem } from "@/types/cart";
 import { Database } from "@/types/database.types";
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("Missing STRIPE_SECRET_KEY");
-}
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2023-08-16",
-  appInfo: {
-    name: "e-commerce-app",
-    version: "0.1.0"
-  }
-});
-
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: Request) {  try {
+export async function POST(request: Request) {
+  try {
+    // Validate environment variables at runtime
+    if (!process.env.STRIPE_SECRET_KEY) {
+      console.error("Missing STRIPE_SECRET_KEY environment variable");
+      return new Response(
+        JSON.stringify({ error: "Server configuration error" }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Initialize Stripe with validated environment variable
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2025-01-27.acacia",
+      typescript: true,
+      appInfo: {
+        name: "e-commerce-app",
+        version: "0.1.0"
+      }
+    });
     const supabase = createRouteHandlerClient<Database>({ cookies });
     const { items, shippingAddress } = await request.json();
 

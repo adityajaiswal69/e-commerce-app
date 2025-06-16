@@ -1,7 +1,6 @@
-import UpdatePasswordForm from "@/components/auth/UpdatePasswordForm";
+"use client";
 
-// Force dynamic rendering to avoid prerendering issues with Supabase client
-export const dynamic = 'force-dynamic';
+import UpdatePasswordForm from "@/components/auth/UpdatePasswordForm";
 
 export default function UpdatePasswordPage() {
   return (

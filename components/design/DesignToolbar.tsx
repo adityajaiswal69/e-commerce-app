@@ -12,8 +12,29 @@ import {
   DocumentArrowDownIcon,
   EyeIcon,
 } from '@heroicons/react/24/outline';
-import { uploadDesignImage } from '@/lib/utils/upload';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import toast from 'react-hot-toast';
+
+async function uploadDesignImage(file: File): Promise<string> {
+  const supabase = createClientComponentClient();
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${Math.random()}.${fileExt}`;
+  const filePath = `designs/${fileName}`;
+
+  const { error: uploadError, data } = await supabase.storage
+    .from('designs')
+    .upload(filePath, file);
+
+  if (uploadError) {
+    throw uploadError;
+  }
+
+  const { data: { publicUrl } } = supabase.storage
+    .from('designs')
+    .getPublicUrl(filePath);
+
+  return publicUrl;
+}
 
 interface DesignToolbarProps {
   onSave?: () => void;

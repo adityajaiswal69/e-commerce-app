@@ -2,18 +2,24 @@ import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import Stripe from "stripe";
 import { CartItem } from "@/types/cart";
+import { Database } from "@/types/database.types";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error("Missing STRIPE_SECRET_KEY");
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2023-10-16",
+  apiVersion: "2023-08-16",
+  appInfo: {
+    name: "e-commerce-app",
+    version: "0.1.0"
+  }
 });
 
-export async function POST(request: Request) {
-  try {
-    const supabase = createRouteHandlerClient({ cookies });
+export const dynamic = 'force-dynamic';
+
+export async function POST(request: Request) {  try {
+    const supabase = createRouteHandlerClient<Database>({ cookies });
     const { items, shippingAddress } = await request.json();
 
     // Validate input data

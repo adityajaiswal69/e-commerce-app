@@ -10,11 +10,37 @@ import DesignCanvas from '@/components/design/DesignCanvas';
 import DesignToolbar from '@/components/design/DesignToolbar';
 import TextControls from '@/components/design/TextControls';
 import ImageControls from '@/components/design/ImageControls';
-import { uploadDesignPreview } from '@/lib/utils/upload';
-import { getCurrentUser } from '@/lib/auth-utils';
-import { logError, getErrorMessage } from '@/lib/utils/error-logger';
 import toast from 'react-hot-toast';
 import { XMarkIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
+
+async function uploadDesignPreview(blob: Blob, path: string): Promise<string> {
+  const supabase = createClientComponentClient();
+  const { data: { session }, error: authError } = await supabase.auth.getSession();
+  
+  if (authError || !session) {
+    throw new Error('You must be logged in to upload design previews');
+  }
+
+  const { error, data } = await supabase.storage
+    .from('designs')
+    .upload(path, blob, {
+      contentType: 'image/png',
+      upsert: true
+    });
+
+  if (error) throw error;
+
+  const { data: { publicUrl } } = supabase.storage
+    .from('designs')
+    .getPublicUrl(path);
+
+  return publicUrl;
+}
+
+async function getCurrentUser() {
+  const supabase = createClientComponentClient();
+  return await supabase.auth.getUser();
+}
 
 interface DesignPageProps {
   params: Promise<{
@@ -60,7 +86,7 @@ export default function DesignPage({ params }: DesignPageProps) {
     async function fetchData() {
       try {
         // Get current user
-        const { user: currentUser } = await getCurrentUser();
+        const { data: { user: currentUser } } = await getCurrentUser();
         if (!isMounted) return;
 
         if (!currentUser) {
@@ -216,7 +242,7 @@ export default function DesignPage({ params }: DesignPageProps) {
       // Optionally redirect to the designs list or the saved design
       router.push('/my-designs');
     } catch (error: unknown) {
-      logError(error, 'DesignSave');
+      console.error('Error saving design:', error);
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       toast.error(`Failed to save design: ${errorMessage}`);
     } finally {
@@ -498,8 +524,8 @@ async function uploadDesignImage(blob: Blob, path: string): Promise<string> {
     if (error instanceof Error && error.message.includes('row-level security')) {
       throw new Error('Permission denied: You may not have the right permissions to upload images');
     }
-    logError(error, 'DesignImageUpload');
-    throw new Error(`Failed to upload design image: ${getErrorMessage(error)}`);
+    console.error('Design Image Upload Error:', error);
+    throw new Error(`Failed to upload design image: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 

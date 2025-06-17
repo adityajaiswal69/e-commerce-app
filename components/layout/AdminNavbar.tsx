@@ -45,6 +45,12 @@ export default function AdminNavbar() {
                 Categories
               </Link>
               <Link
+                href="/admin/subcategories"
+                className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                Subcategories
+              </Link>
+              <Link
                 href="/admin/orders"
                 className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
               >
@@ -143,6 +149,12 @@ export default function AdminNavbar() {
                 className="text-gray-700 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
               >
                 Categories
+              </Link>
+              <Link
+                href="/admin/subcategories"
+                className="text-gray-700 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+              >
+                Subcategories
               </Link>
               <Link
                 href="/admin/orders"

@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
-import type { Product } from "@/types/database.types";
+import type { Product, Category, Subcategory } from "@/types/database.types";
 import ProductImageUploader from "./ProductImageUploader";
+// import DebugAuth from "./DebugAuth";
 
 const STYLE_OPTIONS = [
   "Casual",
@@ -42,53 +43,7 @@ const SIZE_OPTIONS = {
   shoes: ["6", "7", "8", "9", "10", "11", "12"],
 };
 
-// Category and subcategory structure based on LeftNavbar.tsx
-const CATEGORY_OPTIONS = [
-  { value: "", label: "Select Category" },
-  { value: "hotel-hospitality", label: "HOTEL/HOSPITALITY UNIFORM", hasSubcategories: true },
-  { value: "school", label: "SCHOOL", hasSubcategories: false },
-  { value: "automobile", label: "AUTOMOBILE", hasSubcategories: false },
-  { value: "corporate", label: "CORPORATE", hasSubcategories: false },
-  { value: "restaurant-cafe-pub", label: "RESTAURANT/CAFE/PUB", hasSubcategories: false },
-  { value: "speciality-industry", label: "SPECIALITY INDUSTRY UNIFORM", hasSubcategories: false },
-  { value: "hospital-uniform", label: "HOSPITAL UNIFORM", hasSubcategories: true },
-  { value: "medical-factory", label: "MEDICAL FACTORY UNIFORM", hasSubcategories: false },
-  { value: "factory-workers", label: "FACTORY WORKERS UNIFORM", hasSubcategories: false },
-  { value: "catering-uniform", label: "CATERING UNIFORM", hasSubcategories: false },
-  { value: "apron", label: "APRON", hasSubcategories: true },
-];
 
-// Subcategories for categories that have them
-const SUBCATEGORY_OPTIONS: Record<string, Array<{value: string, label: string}>> = {
-  "hotel-hospitality": [
-    { value: "milk-uniform", label: "Milk Uniform" },
-    { value: "maintenance-uniform", label: "Maintenance Uniform" },
-    { value: "kitchen-uniform", label: "Kitchen Uniform" },
-    { value: "chef-uniform", label: "Chef Uniform" },
-    { value: "fb-gsa-waiter", label: "F&B GSA/Waiter" },
-    { value: "pool-uniform", label: "Pool - Uniform" },
-    { value: "spa-uniform", label: "Spa - Uniform" },
-    { value: "manager", label: "Manager" },
-    { value: "bell-boy", label: "Bell Boy" },
-    { value: "valet-uniform", label: "Valet Uniform" },
-    { value: "hostess-uniform", label: "Hostess Uniform" },
-    { value: "security-guard-uniform", label: "Security Guard Uniform" },
-    { value: "back-office", label: "Back Office" }
-  ],
-  "hospital-uniform": [
-    { value: "doctor-coat", label: "Doctor Coat" },
-    { value: "nurse-uniform", label: "Nurse Uniform" },
-    { value: "patient-uniform", label: "Patient Uniform" },
-    { value: "back-office", label: "Back Office" }
-  ],
-   "apron": [
-    { value: "kst-apron", label: "KSt Apron" },
-    { value: "chef-apron", label: "Chef Apron" },
-    { value: "leather-apron", label: "Leather Apron" },
-    { value: "cafe-apron", label: "Cafe Apron" }
-]
-
-};
 
 type ProductFormProps = {
   product?: Product;
@@ -101,8 +56,8 @@ type FormData = {
   description: string;
   price: number;
   image_url: string;
-  category: string;
-  subcategory: string;
+  category_id: string;
+  subcategory_id: string | null;
   stock: number;
   active: boolean;
   style: string[];
@@ -118,8 +73,10 @@ type FormData = {
 
 async function deleteProductImage(imageUrl: string) {
   try {
-    // Extract file path from URL
-    const path = imageUrl.split("/").slice(-2).join("/"); // Gets "products/filename.ext"
+    // Extract file path from URL - for product-images bucket, path should be "products/filename.ext"
+    const urlParts = imageUrl.split("/");
+    const fileName = urlParts[urlParts.length - 1];
+    const path = `products/${fileName}`;
 
     const { error } = await supabase.storage
       .from("product-images")
@@ -136,15 +93,17 @@ export default function ProductForm({ product }: ProductFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showSubcategory, setShowSubcategory] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [filteredSubcategories, setFilteredSubcategories] = useState<Subcategory[]>([]);
 
   const [formData, setFormData] = useState<FormData>({
     name: product?.name || "",
     description: product?.description || "",
     price: product?.price || 0,
     image_url: product?.image_url || "",
-    category: product?.category || "",
-    subcategory: "", // Initialize subcategory as empty string
+    category_id: "", // Will be set from product data or selected
+    subcategory_id: product?.subcategory_id || null,
     stock: product?.stock || 0,
     active: product?.active ?? true,
     style: product?.style || [],
@@ -165,17 +124,57 @@ export default function ProductForm({ product }: ProductFormProps) {
   
 
 
-  // Fetch subcategories when category changes
+  // Fetch categories and subcategories
   useEffect(() => {
-    const selectedCategory = CATEGORY_OPTIONS.find(cat => cat.value === formData.category);
-    const hasSubcategories = selectedCategory?.hasSubcategories || false;
-    setShowSubcategory(hasSubcategories);
+    const fetchCategoriesAndSubcategories = async () => {
+      try {
+        // Fetch categories
+        const { data: categoriesData, error: categoriesError } = await supabase
+          .from("categories")
+          .select("*")
+          .order("display_order", { ascending: true });
 
-    // Reset subcategory when category changes
-    if (formData.subcategory && !hasSubcategories) {
-      setFormData(prev => ({ ...prev, subcategory: "" }));
+        if (categoriesError) throw categoriesError;
+        setCategories(categoriesData || []);
+
+        // Fetch subcategories
+        const { data: subcategoriesData, error: subcategoriesError } = await supabase
+          .from("subcategories")
+          .select("*")
+          .order("display_order", { ascending: true });
+
+        if (subcategoriesError) throw subcategoriesError;
+        setSubcategories(subcategoriesData || []);
+
+        // If editing a product, find and set the category_id from subcategory
+        if (product && product.subcategory_id && subcategoriesData) {
+          const productSubcategory = subcategoriesData.find(sub => sub.id === product.subcategory_id);
+          if (productSubcategory) {
+            setFormData(prev => ({
+              ...prev,
+              category_id: productSubcategory.category_id,
+              subcategory_id: product.subcategory_id
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching categories/subcategories:", error);
+        setError("Failed to load categories and subcategories");
+      }
+    };
+
+    fetchCategoriesAndSubcategories();
+  }, [product]);
+
+  // Filter subcategories based on selected category
+  useEffect(() => {
+    if (formData.category_id) {
+      const filtered = subcategories.filter(sub => sub.category_id === formData.category_id);
+      setFilteredSubcategories(filtered);
+    } else {
+      setFilteredSubcategories([]);
     }
-  }, [formData.category]);
+  }, [formData.category_id, subcategories]);
 
 
 
@@ -227,9 +226,9 @@ export default function ProductForm({ product }: ProductFormProps) {
       return;
     }
 
-    // Validate subcategory if category has subcategories
-    if (showSubcategory && !formData.subcategory) {
-      setError("Please select a subcategory");
+    // Validate category selection
+    if (!formData.category_id) {
+      setError("Please select a category");
       return;
     }
 
@@ -237,6 +236,10 @@ export default function ProductForm({ product }: ProductFormProps) {
     setError(null);
 
     try {
+      // Get category slug for the category field (for backward compatibility)
+      const selectedCategory = categories.find(cat => cat.id === formData.category_id);
+      const categorySlug = selectedCategory?.slug || '';
+
       // Create a product data object with the appropriate structure
       const productData = {
         name: formData.name,
@@ -247,7 +250,8 @@ export default function ProductForm({ product }: ProductFormProps) {
         back_image_url: formData.viewImages.back || null,
         left_image_url: formData.viewImages.left || null,
         right_image_url: formData.viewImages.right || null,
-        category: formData.category,
+        category: categorySlug, // Use category slug for backward compatibility
+        subcategory_id: formData.subcategory_id || null,
         stock: formData.stock,
         active: formData.active,
         style: formData.style,
@@ -255,12 +259,6 @@ export default function ProductForm({ product }: ProductFormProps) {
         sizes: formData.sizes,
         occasions: formData.occasions
       };
-
-      // If subcategory is selected, append it to the category
-      if (showSubcategory && formData.subcategory) {
-        // Use the subcategory as part of the category path
-        productData.category = `${formData.category}/${formData.subcategory}`;
-      }
 
       if (product) {
         const { error } = await supabase
@@ -322,6 +320,8 @@ export default function ProductForm({ product }: ProductFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && <div className="text-red-500">{error}</div>}
+{/* 
+      <DebugAuth /> */}
 
       <ProductImageUploader
         productImages={formData.viewImages}
@@ -346,16 +346,17 @@ export default function ProductForm({ product }: ProductFormProps) {
         <div>
           <label className="block text-sm font-medium">Category</label>
           <select
-            value={formData.category}
+            value={formData.category_id}
             onChange={(e) => {
-              setFormData({ ...formData, category: e.target.value, subcategory: "" });
+              setFormData({ ...formData, category_id: e.target.value, subcategory_id: null });
             }}
             className="mt-1 block w-full rounded-md border p-2"
             required
           >
-            {CATEGORY_OPTIONS.map((category, index) => (
-              <option key={index} value={category.value} disabled={index === 0 && category.value === ""}>
-                {category.label}
+            <option value="">Select a category</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
               </option>
             ))}
           </select>
@@ -390,21 +391,20 @@ export default function ProductForm({ product }: ProductFormProps) {
           />
         </div>
         
-        {showSubcategory && (
+        {filteredSubcategories.length > 0 && (
           <div>
             <label className="block text-sm font-medium">Subcategory</label>
             <select
-              value={formData.subcategory}
-              onChange={(e) => 
-                setFormData({ ...formData, subcategory: e.target.value })
+              value={formData.subcategory_id || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, subcategory_id: e.target.value || null })
               }
               className="mt-1 block w-full rounded-md border p-2"
-              required={showSubcategory}
             >
-              <option value="">Select Subcategory</option>
-              {formData.category && SUBCATEGORY_OPTIONS[formData.category]?.map((subcategory, index) => (
-                <option key={index} value={subcategory.value}>
-                  {subcategory.label}
+              <option value="">Select Subcategory (Optional)</option>
+              {filteredSubcategories.map((subcategory) => (
+                <option key={subcategory.id} value={subcategory.id}>
+                  {subcategory.name}
                 </option>
               ))}
             </select>

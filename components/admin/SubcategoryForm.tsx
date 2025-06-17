@@ -258,25 +258,45 @@ export default function SubcategoryForm({ subcategory }: SubcategoryFormProps) {
         </p>
       </div>
 
-      <div className="flex justify-end gap-4">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="px-4 py-2 border rounded-md"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-4 py-2 bg-[#333333] text-white rounded-md hover:bg-opacity-90 disabled:opacity-50"
-        >
-          {loading
-            ? "Saving..."
-            : subcategory
-            ? "Update Subcategory"
-            : "Create Subcategory"}
-        </button>
+      <div className="flex justify-between">
+        <div className="flex gap-4">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="px-4 py-2 border rounded-md"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-4 py-2 bg-[#333333] text-white rounded-md hover:bg-opacity-90 disabled:opacity-50"
+          >
+            {loading
+              ? "Saving..."
+              : subcategory
+              ? "Update Subcategory"
+              : "Create Subcategory"}
+          </button>
+        </div>
+
+        {/* Quick Links */}
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => router.push('/admin/categories')}
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+          >
+            Manage Categories
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push('/admin/products')}
+            className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+          >
+            Manage Products
+          </button>
+        </div>
       </div>
     </form>
   );

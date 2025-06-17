@@ -55,13 +55,21 @@ export default async function CategoriesPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-[#333333]">Categories Management</h1>
-        <Link 
-          href="/admin/categories/new" 
-          className="flex items-center gap-2 bg-[#333333] text-white px-4 py-2 rounded-md hover:bg-opacity-90"
-        >
-          <FiPlus size={18} />
-          <span>Add Category</span>
-        </Link>
+        <div className="flex gap-3">
+          <Link
+            href="/admin/subcategories"
+            className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+          >
+            Manage Subcategories
+          </Link>
+          <Link
+            href="/admin/categories/new"
+            className="flex items-center gap-2 bg-[#333333] text-white px-4 py-2 rounded-md hover:bg-opacity-90"
+          >
+            <FiPlus size={18} />
+            <span>Add Category</span>
+          </Link>
+        </div>
       </div>
       
       {categories && categories.length === 0 ? (

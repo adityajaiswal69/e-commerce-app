@@ -45,7 +45,7 @@ export default function ProductManagement({
             <div className="flex-1">
               <h3 className="font-medium">{product.name}</h3>
               <p className="text-sm text-gray-500">
-                ${product.price.toFixed(2)}
+                ₹{product.price.toFixed(2)}
               </p>
             </div>
             <Link

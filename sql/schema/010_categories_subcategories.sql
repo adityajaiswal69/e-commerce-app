@@ -117,56 +117,85 @@ CREATE TRIGGER update_subcategories_modtime
 BEFORE UPDATE ON public.subcategories
 FOR EACH ROW EXECUTE FUNCTION update_modified_column();
 
--- Insert common uniform categories and subcategories
+-- Insert categories matching navigation structure
 INSERT INTO public.categories (name, slug, description, display_order) VALUES
-('Hospitality', 'hospitality', 'Uniforms for hotels, restaurants, and hospitality industry', 1),
-('Healthcare', 'healthcare', 'Medical and healthcare professional uniforms', 2),
-('Corporate', 'corporate', 'Business and office wear uniforms', 3),
-('Education', 'education', 'School and educational institution uniforms', 4),
-('Industrial', 'industrial', 'Factory, construction and industrial uniforms', 5),
-('Security', 'security', 'Security and safety personnel uniforms', 6),
-('Events', 'events', 'Event staff and promotional uniforms', 7);
+('Hotel/Hospitality Uniform', 'hotel-hospitality', 'Uniforms for hotels, restaurants, and hospitality industry', 1),
+('School', 'school', 'School uniforms and educational institution wear', 2),
+('Automobile', 'automobile', 'Automotive industry uniforms and workwear', 3),
+('Corporate', 'corporate', 'Business and office wear uniforms', 4),
+('Restaurant/Cafe/Pub', 'restaurant-cafe-pub', 'Food service and restaurant uniforms', 5),
+('Speciality Industry Uniform', 'speciality-industry', 'Specialized industry uniforms', 6),
+('Hospital Uniform', 'hospital-uniform', 'Medical and healthcare professional uniforms', 7),
+('Medical Factory Uniform', 'medical-factory', 'Medical manufacturing and factory uniforms', 8),
+('Catering Uniform', 'catering-uniform', 'Catering and food service uniforms', 9),
+('Apron', 'apron', 'Various types of aprons for different industries', 10);
 
--- Insert subcategories for Hospitality
-INSERT INTO public.subcategories (category_id, name, slug, display_order) 
-SELECT id, 'Chef Coats', 'chef-coats', 1 FROM public.categories WHERE slug = 'hospitality';
+-- Insert subcategories for Hotel/Hospitality
+INSERT INTO public.subcategories (category_id, name, slug, display_order)
+SELECT id, 'Milk Uniform', 'milk-uniform', 1 FROM public.categories WHERE slug = 'hotel-hospitality';
 
-INSERT INTO public.subcategories (category_id, name, slug, display_order) 
-SELECT id, 'Waiter Uniforms', 'waiter-uniforms', 2 FROM public.categories WHERE slug = 'hospitality';
+INSERT INTO public.subcategories (category_id, name, slug, display_order)
+SELECT id, 'Maintenance Uniform', 'maintenance-uniform', 2 FROM public.categories WHERE slug = 'hotel-hospitality';
 
-INSERT INTO public.subcategories (category_id, name, slug, display_order) 
-SELECT id, 'Housekeeping', 'housekeeping', 3 FROM public.categories WHERE slug = 'hospitality';
+INSERT INTO public.subcategories (category_id, name, slug, display_order)
+SELECT id, 'Kitchen Uniform', 'kitchen-uniform', 3 FROM public.categories WHERE slug = 'hotel-hospitality';
 
-INSERT INTO public.subcategories (category_id, name, slug, display_order) 
-SELECT id, 'Front Desk', 'front-desk', 4 FROM public.categories WHERE slug = 'hospitality';
+INSERT INTO public.subcategories (category_id, name, slug, display_order)
+SELECT id, 'Chef Uniform', 'chef-uniform', 4 FROM public.categories WHERE slug = 'hotel-hospitality';
 
-INSERT INTO public.subcategories (category_id, name, slug, display_order) 
-SELECT id, 'Bartender', 'bartender', 5 FROM public.categories WHERE slug = 'hospitality';
+INSERT INTO public.subcategories (category_id, name, slug, display_order)
+SELECT id, 'F&B GSA/Waiter', 'fb-gsa-waiter', 5 FROM public.categories WHERE slug = 'hotel-hospitality';
 
--- Insert subcategories for Healthcare
-INSERT INTO public.subcategories (category_id, name, slug, display_order) 
-SELECT id, 'Doctor Coats', 'doctor-coats', 1 FROM public.categories WHERE slug = 'healthcare';
+INSERT INTO public.subcategories (category_id, name, slug, display_order)
+SELECT id, 'Pool - Uniform', 'pool-uniform', 6 FROM public.categories WHERE slug = 'hotel-hospitality';
 
-INSERT INTO public.subcategories (category_id, name, slug, display_order) 
-SELECT id, 'Nurse Uniforms', 'nurse-uniforms', 2 FROM public.categories WHERE slug = 'healthcare';
+INSERT INTO public.subcategories (category_id, name, slug, display_order)
+SELECT id, 'Spa - Uniform', 'spa-uniform', 7 FROM public.categories WHERE slug = 'hotel-hospitality';
 
-INSERT INTO public.subcategories (category_id, name, slug, display_order) 
-SELECT id, 'Scrubs', 'scrubs', 3 FROM public.categories WHERE slug = 'healthcare';
+INSERT INTO public.subcategories (category_id, name, slug, display_order)
+SELECT id, 'Manager', 'manager', 8 FROM public.categories WHERE slug = 'hotel-hospitality';
 
-INSERT INTO public.subcategories (category_id, name, slug, display_order) 
-SELECT id, 'Lab Coats', 'lab-coats', 4 FROM public.categories WHERE slug = 'healthcare';
+INSERT INTO public.subcategories (category_id, name, slug, display_order)
+SELECT id, 'Bell Boy', 'bell-boy', 9 FROM public.categories WHERE slug = 'hotel-hospitality';
 
--- Insert subcategories for Corporate
-INSERT INTO public.subcategories (category_id, name, slug, display_order) 
-SELECT id, 'Business Suits', 'business-suits', 1 FROM public.categories WHERE slug = 'corporate';
+INSERT INTO public.subcategories (category_id, name, slug, display_order)
+SELECT id, 'Valet Uniform', 'valet-uniform', 10 FROM public.categories WHERE slug = 'hotel-hospitality';
 
-INSERT INTO public.subcategories (category_id, name, slug, display_order) 
-SELECT id, 'Formal Shirts', 'formal-shirts', 2 FROM public.categories WHERE slug = 'corporate';
+INSERT INTO public.subcategories (category_id, name, slug, display_order)
+SELECT id, 'Hostess Uniform', 'hostess-uniform', 11 FROM public.categories WHERE slug = 'hotel-hospitality';
 
-INSERT INTO public.subcategories (category_id, name, slug, display_order) 
-SELECT id, 'Blazers', 'blazers', 3 FROM public.categories WHERE slug = 'corporate';
+INSERT INTO public.subcategories (category_id, name, slug, display_order)
+SELECT id, 'Security Guard Uniform', 'security-guard-uniform', 12 FROM public.categories WHERE slug = 'hotel-hospitality';
 
-INSERT INTO public.subcategories (category_id, name, slug, display_order) 
-SELECT id, 'Corporate T-shirts', 'corporate-tshirts', 4 FROM public.categories WHERE slug = 'corporate';
+INSERT INTO public.subcategories (category_id, name, slug, display_order)
+SELECT id, 'Back Office', 'back-office', 13 FROM public.categories WHERE slug = 'hotel-hospitality';
 
--- Add more subcategories for other categories as needed
+-- Insert subcategories for Hospital Uniform
+INSERT INTO public.subcategories (category_id, name, slug, display_order)
+SELECT id, 'Doctor Coat', 'doctor-coat', 1 FROM public.categories WHERE slug = 'hospital-uniform';
+
+INSERT INTO public.subcategories (category_id, name, slug, display_order)
+SELECT id, 'Nurse Uniform', 'nurse-uniform', 2 FROM public.categories WHERE slug = 'hospital-uniform';
+
+INSERT INTO public.subcategories (category_id, name, slug, display_order)
+SELECT id, 'Patient Uniform', 'patient-uniform', 3 FROM public.categories WHERE slug = 'hospital-uniform';
+
+INSERT INTO public.subcategories (category_id, name, slug, display_order)
+SELECT id, 'Back Office', 'back-office', 4 FROM public.categories WHERE slug = 'hospital-uniform';
+
+-- Insert subcategories for Medical Factory
+INSERT INTO public.subcategories (category_id, name, slug, display_order)
+SELECT id, 'Factory Workers', 'factory-workers', 1 FROM public.categories WHERE slug = 'medical-factory';
+
+-- Insert subcategories for Apron
+INSERT INTO public.subcategories (category_id, name, slug, display_order)
+SELECT id, 'KSt Apron', 'kst-apron', 1 FROM public.categories WHERE slug = 'apron';
+
+INSERT INTO public.subcategories (category_id, name, slug, display_order)
+SELECT id, 'Chef Apron', 'chef-apron', 2 FROM public.categories WHERE slug = 'apron';
+
+INSERT INTO public.subcategories (category_id, name, slug, display_order)
+SELECT id, 'Leather Apron', 'leather-apron', 3 FROM public.categories WHERE slug = 'apron';
+
+INSERT INTO public.subcategories (category_id, name, slug, display_order)
+SELECT id, 'Cafe Apron', 'cafe-apron', 4 FROM public.categories WHERE slug = 'apron';

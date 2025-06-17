@@ -54,6 +54,10 @@ type NavigationItem = {
   href: string
   label: string;
   children?: NavigationItem[];
+  filter?: {
+    category: string;
+    subcategory?: string;
+  };
 };
 
 // Mobile Cart Badge Component
@@ -78,6 +82,7 @@ export default function LeftNavbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [navigationItems, setNavigationItems] = useState<NavigationItem[]>([]);
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClientComponentClient<Database>();
@@ -98,8 +103,64 @@ export default function LeftNavbar() {
     }
   };
 
+  // Fetch categories and subcategories to build navigation
+  const fetchNavigationData = async () => {
+    try {
+      const { data: categories, error: categoriesError } = await supabase
+        .from('categories')
+        .select(`
+          *,
+          subcategories:subcategories(*)
+        `)
+        .order('display_order', { ascending: true });
+
+      if (categoriesError) throw categoriesError;
+
+      // Build navigation items from database
+      const dynamicNavItems: NavigationItem[] = [
+        { href: "/", label: "HOME" },
+        { href: "/products", label: "ALL PRODUCTS" },
+        { href: "/cart", label: "CART" },
+        { href: "/my-designs", label: "MY DESIGNS" },
+      ];
+
+      // Add categories with their subcategories
+      categories?.forEach((category: any) => {
+        const categoryItem: NavigationItem = {
+          href: `/${category.slug}`,
+          label: category.name.toUpperCase(),
+          filter: { category: category.slug },
+          children: []
+        };
+
+        // Add subcategories as children
+        if (category.subcategories && category.subcategories.length > 0) {
+          categoryItem.children = category.subcategories.map((subcategory: any) => ({
+            href: `/${category.slug}/${subcategory.slug}`,
+            label: subcategory.name,
+            filter: { category: category.slug, subcategory: subcategory.slug }
+          }));
+        }
+
+        dynamicNavItems.push(categoryItem);
+      });
+
+      setNavigationItems(dynamicNavItems);
+    } catch (error) {
+      console.error('Error fetching navigation data:', error);
+      // Fallback to basic navigation if database fetch fails
+      setNavigationItems([
+        { href: "/", label: "HOME" },
+        { href: "/products", label: "ALL PRODUCTS" },
+        { href: "/cart", label: "CART" },
+        { href: "/my-designs", label: "MY DESIGNS" },
+      ]);
+    }
+  };
+
   useEffect(() => {
     checkAuth();
+    fetchNavigationData();
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
@@ -139,6 +200,19 @@ export default function LeftNavbar() {
     return name ? name.charAt(0).toUpperCase() : <UserCircleIcon className="w-6 h-6" />;
   };
 
+  // Helper function to generate product filter URLs
+  const getProductFilterUrl = (item: NavigationItem): string => {
+    if (item.filter) {
+      const params = new URLSearchParams();
+      // If subcategory exists, use it as the category filter
+      // Otherwise use the main category
+      const categoryFilter = item.filter.subcategory || item.filter.category;
+      params.set('category', categoryFilter);
+      return `/products?${params.toString()}`;
+    }
+    return item.href;
+  };
+
   const isActive = (path: string) => pathname === path;
 
   const toggleExpanded = (href: string) => {
@@ -174,62 +248,7 @@ export default function LeftNavbar() {
     setSearchQuery(e.target.value);
   };
 
-  const navigationItems: NavigationItem[] = [
-    { href: "/", label: "HOME" },
-    { href: "/products", label: "ALL PRODUCTS" },
-    { href: "/cart", label: "CART" },
-    { href: "/my-designs", label: "MY DESIGNS" },
-    {
-      href: "/hotel-hospitality",
-      label: "HOTEL/HOSPITALITY UNIFORM",
-      children: [
-        { href: "/hotel-hospitality/milk-uniform", label: "Milk Uniform" },
-        { href: "/hotel-hospitality/maintenance-uniform", label: "Maintenance Uniform" },
-        { href: "/hotel-hospitality/kitchen-uniform", label: "Kitchen Uniform" },
-        { href: "/hotel-hospitality/chef-uniform", label: "Chef Uniform" },
-        { href: "/hotel-hospitality/fb-gsa-waiter", label: "F&B GSA/Waiter" },
-        { href: "/hotel-hospitality/pool-uniform", label: "Pool - Uniform" },
-        { href: "/hotel-hospitality/spa-uniform", label: "Spa - Uniform" },
-        { href: "/hotel-hospitality/manager", label: "Manager" },
-        { href: "/hotel-hospitality/bell-boy", label: "Bell Boy" },
-        { href: "/hotel-hospitality/valet-uniform", label: "Valet Uniform" },
-        { href: "/hotel-hospitality/hostess-uniform", label: "Hostess Uniform" },
-        { href: "/hotel-hospitality/security-guard-uniform", label: "Security Guard Uniform" },
-        { href: "/hotel-hospitality/back-office", label: "Back Office" }
-      ]
-    },
-    { href: "/school", label: "SCHOOL" },
-    { href: "/automobile", label: "AUTOMOBILE" },
-    { href: "/corporate", label: "CORPORATE" },
-    { href: "/restaurant-cafe-pub", label: "RESTAURANT/CAFE/PUB" },
-    { href: "/speciality-industry", label: "SPECIALITY INDUSTRY UNIFORM" },
-    {
-      href: "/hospital-uniform",
-      label: "HOSPITAL UNIFORM",
-      children: [
-        { href: "/hospital-uniform/doctor-coat", label: "Doctor Coat" },
-        { href: "/hospital-uniform/nurse-uniform", label: "Nurse Uniform" },
-        { href: "/hospital-uniform/patient-uniform", label: "Patient Uniform" },
-        { href: "/hospital-uniform/back-office", label: "Back Office" }
-      ]
-    },
-    {
-      href: "/medical-factory",
-      label: "MEDICAL FACTORY UNIFORM"
-    },
-    { href: "/medical-factory/factory-workers", label: "FACTORY WORKERS UNIFORM" },
-    { href: "/catering-uniform", label: "CATERING UNIFORM" },
-    {
-      href: "/apron",
-      label: "APRON",
-      children: [
-        { href: "/apron/kst-apron", label: "KSt Apron" },
-        { href: "/apron/chef-apron", label: "Chef Apron" },
-        { href: "/apron/leather-apron", label: "Leather Apron" },
-        { href: "/apron/cafe-apron", label: "Cafe Apron" }
-        ]
-     }
-  ];
+
 
   const renderNavigationItem = (item: NavigationItem, level: number = 0) => {
     const hasChildren = item.children && item.children.length > 0;
@@ -240,7 +259,7 @@ export default function LeftNavbar() {
       <div key={item.href}>
         <div className="flex items-center">
           <Link
-            href={item.href}
+            href={getProductFilterUrl(item)}
             className={`flex-1 block py-1.5 text-sm font-medium rounded-md transition-colors ${paddingLeft} ${
               isActive(item.href)
                 ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700"

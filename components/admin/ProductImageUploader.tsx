@@ -165,7 +165,9 @@ export default function ProductImageUploader({
 
               {/* Hidden file input */}
               <input
-                ref={(el) => (fileInputRefs.current[viewType] = el)}
+                ref={(el) => {
+                  fileInputRefs.current[viewType] = el;
+                }}
                 type="file"
                 accept="image/*"
                 onChange={handleFileChange(viewType)}
@@ -190,3 +192,4 @@ export default function ProductImageUploader({
     </div>
   );
 }
+

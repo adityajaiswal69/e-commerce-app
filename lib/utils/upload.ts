@@ -17,12 +17,29 @@ async function getCurrentUserId() {
 
 export async function uploadProductImage(file: File) {
   try {
+    // Check authentication and role before upload
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    if (authError || !session) {
+      throw new Error('You must be logged in to upload product images');
+    }
+
+    // Check if user has admin role
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', session.user.id)
+      .single();
+
+    if (profileError || !profile || profile.role !== 'admin') {
+      throw new Error('You must be an admin to upload product images');
+    }
+
     const fileExt = file.name.split(".").pop();
     const fileName = `${uuidv4()}.${fileExt}`;
-    const filePath = `public/products/${fileName}`;
+    const filePath = `products/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
-      .from("designs_public")
+      .from("product-images")
       .upload(filePath, file);
 
     if (uploadError) {
@@ -32,13 +49,12 @@ export async function uploadProductImage(file: File) {
 
     const {
       data: { publicUrl },
-    } = supabase.storage.from("designs_public").getPublicUrl(filePath);
+    } = supabase.storage.from("product-images").getPublicUrl(filePath);
 
     return publicUrl;
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logError("Product image upload error", errorMessage);
-    throw new Error(`Failed to upload image: ${errorMessage}`);
+    logError(error, "Product image upload error");
+    throw new Error(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 

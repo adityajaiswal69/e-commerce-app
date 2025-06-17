@@ -374,7 +374,7 @@ export default function LeftNavbar() {
             <Link href="/" className="block">
               <div className="">
                 <Image
-                  src="/Logo-3.JPG"
+                  src="/Logo-3.jpg"
                   alt="Uniformat Logo"
                   width={150}
                   height={50}

@@ -55,7 +55,7 @@ const CATEGORY_OPTIONS = [
   { value: "medical-factory", label: "MEDICAL FACTORY UNIFORM", hasSubcategories: false },
   { value: "factory-workers", label: "FACTORY WORKERS UNIFORM", hasSubcategories: false },
   { value: "catering-uniform", label: "CATERING UNIFORM", hasSubcategories: false },
-  { value: "fashion", label: "FASHION", hasSubcategories: false },
+  { value: "apron", label: "APRON", hasSubcategories: true },
 ];
 
 // Subcategories for categories that have them
@@ -80,7 +80,14 @@ const SUBCATEGORY_OPTIONS: Record<string, Array<{value: string, label: string}>>
     { value: "nurse-uniform", label: "Nurse Uniform" },
     { value: "patient-uniform", label: "Patient Uniform" },
     { value: "back-office", label: "Back Office" }
-  ]
+  ],
+   "apron": [
+    { value: "kst-apron", label: "KSt Apron" },
+    { value: "chef-apron", label: "Chef Apron" },
+    { value: "leather-apron", label: "Leather Apron" },
+    { value: "cafe-apron", label: "Cafe Apron" }
+]
+
 };
 
 type ProductFormProps = {

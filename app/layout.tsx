@@ -7,7 +7,7 @@ import { Toaster } from "react-hot-toast";
 const geist = Geist({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "E-Commerce Store",
+  title: "Uniformat",
   description: "Your one-stop shop for everything",
 };
 

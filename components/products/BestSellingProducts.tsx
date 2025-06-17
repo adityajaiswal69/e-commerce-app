@@ -18,7 +18,7 @@ const CATEGORIES = [
   { id: "corporate", name: "Corporate" },
   { id: "school", name: "School" },
   { id: "restaurant-cafe-pub", name: "Restaurant" },
-  { id: "fashion", name: "Fashion" },
+  { id: "apron", name: "Apron" },
 ];
 
 export default function BestSellingProducts({ products }: BestSellingProductsProps) {

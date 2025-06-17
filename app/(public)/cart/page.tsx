@@ -34,13 +34,13 @@ export default function CartPage() {
       <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
 
       {/* Debug section - remove this after fixing */}
-      {process.env.NODE_ENV === 'development' && (
+      {/* {process.env.NODE_ENV === 'development' && (
         <div className="mb-4 p-4 bg-yellow-100 border border-yellow-300 rounded">
           <h3 className="font-bold">Debug Info:</h3>
           <p>Items count: {items.length}</p>
           <p>Items data: {JSON.stringify(items, null, 2)}</p>
         </div>
-      )}
+      )} */}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items */}
@@ -67,7 +67,7 @@ export default function CartPage() {
                   <p className="text-sm text-gray-600">
                     Category: {item.category}
                   </p>
-                  <p className="text-gray-600">${item.price.toFixed(2)}</p>
+                  <p className="text-gray-600">₹{item.price.toFixed(2)}</p>
                 </div>
 
                 <div className="flex items-center gap-2 mt-2">
@@ -83,7 +83,7 @@ export default function CartPage() {
 
               <div className="text-right">
                 <p className="font-medium">
-                  ${(item.price * item.quantity).toFixed(2)}
+                  ₹{(item.price * item.quantity).toFixed(2)}
                 </p>
               </div>
             </div>
@@ -98,7 +98,7 @@ export default function CartPage() {
             <div className="space-y-2 mb-4">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span>${total.toFixed(2)}</span>
+                <span>₹{total.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Shipping</span>
@@ -107,7 +107,7 @@ export default function CartPage() {
               <div className="border-t pt-2 mt-2">
                 <div className="flex justify-between font-bold">
                   <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>₹{total.toFixed(2)}</span>
                 </div>
               </div>
             </div>

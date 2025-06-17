@@ -219,7 +219,16 @@ export default function LeftNavbar() {
     },
     { href: "/medical-factory/factory-workers", label: "FACTORY WORKERS UNIFORM" },
     { href: "/catering-uniform", label: "CATERING UNIFORM" },
-    { href: "/fashion", label: "FASHION" }
+    {
+      href: "/apron",
+      label: "APRON",
+      children: [
+        { href: "/apron/kst-apron", label: "KSt Apron" },
+        { href: "/apron/chef-apron", label: "Chef Apron" },
+        { href: "/apron/leather-apron", label: "Leather Apron" },
+        { href: "/apron/cafe-apron", label: "Cafe Apron" }
+        ]
+     }
   ];
 
   const renderNavigationItem = (item: NavigationItem, level: number = 0) => {

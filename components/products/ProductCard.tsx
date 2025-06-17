@@ -64,7 +64,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             <span className="text-sm text-gray-500">({reviewCount})</span>
           )}
         </div>
-        <p className="mt-2 text-lg font-bold">${product.price.toFixed(2)}</p>
+        <p className="mt-2 text-lg font-bold">₹{product.price.toFixed(2)}</p>
       </div>
     </Link>
   );

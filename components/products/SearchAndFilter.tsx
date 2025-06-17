@@ -71,10 +71,10 @@ export default function SearchAndFilter({
           className="rounded-md border p-2"
         >
           <option value="">Any Price</option>
-          <option value="0-50">Under $50</option>
-          <option value="50-100">$50 - $100</option>
-          <option value="100-200">$100 - $200</option>
-          <option value="200+">$200 & Above</option>
+          <option value="0-50">Under ₹50</option>
+          <option value="50-100">₹50 - ₹100</option>
+          <option value="100-200">₹100 - ₹200</option>
+          <option value="200+">₹200 & Above</option>
         </select>
 
         {/* Sort Options */}

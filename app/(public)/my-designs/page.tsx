@@ -8,6 +8,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { PencilIcon, TrashIcon, EyeIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import { useAuthGuard } from '@/hooks/useAuthGuard';
 
 type DesignWithProduct = Design & {
   product: Product;
@@ -19,6 +20,12 @@ export default function MyDesignsPage() {
   const [user, setUser] = useState<any>(null);
   const [previewDesign, setPreviewDesign] = useState<DesignWithProduct | null>(null);
   const supabase = createClientComponentClient();
+
+  // Authentication check
+  const { loading: authLoading, isAuthenticated } = useAuthGuard({
+    message: 'Please sign in to view your designs',
+    redirectTo: '/sign-in'
+  });
 
   const fetchDesigns = async () => {
     try {
@@ -52,8 +59,22 @@ export default function MyDesignsPage() {
   };
 
   useEffect(() => {
-    fetchDesigns();
-  }, [supabase]);
+    if (isAuthenticated) {
+      fetchDesigns();
+    }
+  }, [supabase, isAuthenticated]);
+
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading your designs...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Refresh designs when the page becomes visible (e.g., returning from edit page)
   useEffect(() => {

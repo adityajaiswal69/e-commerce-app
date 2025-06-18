@@ -17,6 +17,13 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // Design routes - require authentication
+  if (req.nextUrl.pathname.startsWith("/design") || req.nextUrl.pathname.startsWith("/my-designs")) {
+    if (!session) {
+      return NextResponse.redirect(new URL("/sign-in", req.url));
+    }
+  }
+
   // Admin routes - check for admin role
   if (req.nextUrl.pathname.startsWith("/admin")) {
     if (!session) {
@@ -60,6 +67,8 @@ export const config = {
   matcher: [
     "/admin/:path*",
     "/profile/:path*",
+    "/design/:path*",
+    "/my-designs/:path*",
     "/sign-in",
     "/sign-up",
     "/reset-password",

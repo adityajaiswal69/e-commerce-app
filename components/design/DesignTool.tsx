@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ImageControls from './ImageControls';
 import TextControls from './TextControls';
+import { useDesignAuth } from '@/hooks/useAuthGuard';
 
 interface DesignToolProps {
   product: Product;
@@ -26,6 +27,9 @@ function DesignToolContent({ product, isEditing = false, existingDesign }: Desig
   const [design, setDesign] = useState<Partial<Design> | null>(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
 
+  // Authentication check
+  const { user, loading: authLoading, isAuthenticated } = useDesignAuth();
+
   const {
     state,
     switchView,
@@ -33,6 +37,36 @@ function DesignToolContent({ product, isEditing = false, existingDesign }: Desig
     clearCanvas,
     capturePreviewImage,
   } = useDesign();
+
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading design tool...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // This should not be reached due to AuthGuard, but keeping as fallback
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Authentication Required</h2>
+          <p className="text-gray-600 mb-6">Please sign in to use the design tool.</p>
+          <button
+            onClick={() => router.push('/sign-in')}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Sign In
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Initialize design state with existing design data if editing
   useEffect(() => {

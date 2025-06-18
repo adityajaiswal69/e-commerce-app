@@ -354,11 +354,11 @@ export default function ProductPage({
               {/* Price */}
               <div className="flex items-center space-x-3">
                 <span className="text-3xl font-bold text-gray-900">
-                  ${currentPrice.toFixed(2)}
+                  ₹{currentPrice.toFixed(2)}
                 </span>
                 {originalPrice && originalPrice > currentPrice && (
                   <span className="text-xl text-gray-500 line-through">
-                    ${originalPrice.toFixed(2)}
+                    ₹{originalPrice.toFixed(2)}
                   </span>
                 )}
               </div>
@@ -406,7 +406,7 @@ export default function ProductPage({
                       >
                         <div className="space-y-1">
                           <p className="font-medium text-sm">{variant.name}</p>
-                          <p className="text-lg font-bold">${variant.price.toFixed(2)}</p>
+                          <p className="text-lg font-bold">₹{variant.price.toFixed(2)}</p>
                           {variant.stock <= 5 && variant.stock > 0 && (
                             <p className="text-xs text-orange-600">Only {variant.stock} left</p>
                           )}
@@ -540,7 +540,7 @@ export default function ProductPage({
                 <TruckIcon className="w-6 h-6 text-gray-600" />
                 <div>
                   <p className="font-medium text-gray-900">Free Shipping</p>
-                  <p className="text-sm text-gray-500">On orders over $100</p>
+                  <p className="text-sm text-gray-500">On orders over ₹200</p>
                 </div>
               </div>
               <div className="flex items-center space-x-3">

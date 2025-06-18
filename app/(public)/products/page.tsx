@@ -6,6 +6,7 @@ import { Metadata } from "next";
 type SearchParams = {
   q?: string;
   category?: string;
+  subcategory?: string;
   price?: string;
   sort?: string;
 };
@@ -60,14 +61,25 @@ export default async function ProductsPage({
   const searchParamsData = await searchParams;
   const supabase = createServerSupabaseClient();
 
-  // Get unique categories for filter
-  const { data: categories } = await supabase
+  // Get categories with subcategories for filter
+  const { data: categoriesData } = await supabase
+    .from("categories")
+    .select(`
+      id,
+      name,
+      slug,
+      subcategories(id, name, slug)
+    `)
+    .order('display_order', { ascending: true });
+
+  // For backward compatibility, also get unique product categories
+  const { data: productCategories } = await supabase
     .from("products")
     .select("category")
     .eq("active", true);
 
   const uniqueCategories = Array.from(
-    new Set(categories?.map((item) => item.category))
+    new Set(productCategories?.map((item) => item.category))
   );
 
   // Build query
@@ -78,39 +90,47 @@ export default async function ProductsPage({
     query = query.ilike("name", `%${searchParamsData.q}%`);
   }
 
-  // Apply category filter - this now handles both main categories and subcategory slugs
-  if (searchParamsData.category) {
-    // First try to match as a main category
-    const mainCategoryQuery = supabase.from("products").select("*").eq("active", true).eq("category", searchParamsData.category);
+  // Apply category and subcategory filters
+  if (searchParamsData.category || searchParamsData.subcategory) {
+    if (searchParamsData.subcategory) {
+      // Filter by specific subcategory - get products that belong to this subcategory
+      const { data: subcategoryData } = await supabase
+        .from("subcategories")
+        .select("id, categories!inner(slug)")
+        .eq("slug", searchParamsData.subcategory)
+        .eq("categories.slug", searchParamsData.category)
+        .single();
 
-    // Also try to match as a subcategory slug
-    const subcategoryQuery = supabase
-      .from("products")
-      .select(`
-        *,
-        subcategories!inner(slug)
-      `)
-      .eq("active", true)
-      .eq("subcategories.slug", searchParamsData.category);
+      if (subcategoryData) {
+        query = query.eq("subcategory_id", subcategoryData.id);
+      } else {
+        // If subcategory not found, return empty results
+        query = query.eq("id", "00000000-0000-0000-0000-000000000000");
+      }
+    } else if (searchParamsData.category) {
+      // Filter by category - show all products in this category
+      // This includes both direct category products and subcategory products
+      const { data: categoryData } = await supabase
+        .from("categories")
+        .select("id, subcategories(id)")
+        .eq("slug", searchParamsData.category)
+        .single();
 
-    // For now, let's use a simpler approach - check if it's a known main category
-    const mainCategories = [
-      'hotel-hospitality', 'school', 'automobile', 'corporate',
-      'restaurant-cafe-pub', 'speciality-industry', 'hospital-uniform',
-      'medical-factory', 'catering-uniform', 'apron'
-    ];
+      if (categoryData) {
+        // Get all subcategory IDs for this category
+        const subcategoryIds = categoryData.subcategories?.map((sub: any) => sub.id) || [];
 
-    if (mainCategories.includes(searchParamsData.category)) {
-      // It's a main category
-      query = query.eq("category", searchParamsData.category);
-    } else {
-      // It's likely a subcategory slug
-      query = query
-        .select(`
-          *,
-          subcategories!inner(slug)
-        `)
-        .eq("subcategories.slug", searchParamsData.category);
+        if (subcategoryIds.length > 0) {
+          // Filter products that either have the main category OR belong to any subcategory
+          query = query.or(`category.eq.${searchParamsData.category},subcategory_id.in.(${subcategoryIds.join(',')})`);
+        } else {
+          // No subcategories, just filter by main category
+          query = query.eq("category", searchParamsData.category);
+        }
+      } else {
+        // If category not found, return empty results
+        query = query.eq("id", "00000000-0000-0000-0000-000000000000");
+      }
     }
   }
 
@@ -153,7 +173,10 @@ export default async function ProductsPage({
       <h1 className="mb-8 text-2xl font-bold">{pageTitle}</h1>
 
       <div className="mb-8">
-        <SearchAndFilter categories={uniqueCategories} />
+        <SearchAndFilter
+          categories={uniqueCategories}
+          categoriesData={categoriesData || []}
+        />
       </div>
 
       <ProductGrid products={products || []} />

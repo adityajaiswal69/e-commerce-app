@@ -40,7 +40,7 @@ const industries = [
     title: "HOTELS &",
     subtitle: "RESORTS",
     description: "Luxury hospitality solutions",
-    image: "/images/industries/hotels-resorts.jpg", // Add your image path here or set to null
+    image: "/images/industries/hotelANDresort.jpg", // Add your image path here or set to null
     fallbackColor: "from-slate-800 to-slate-600",
     icon: (
       <svg className="h-6 w-6 text-[#333333]" fill="currentColor" viewBox="0 0 20 20">
@@ -67,7 +67,7 @@ const industries = [
     title: "MANUFACTURING",
     subtitle: "& FACTORIES",
     description: "Industrial excellence solutions",
-    image: "/images/industries/manufacturing.jpg", // Add your image path here or set to null
+    image: "/images/industries/manufact.jpg", // Add your image path here or set to null
     fallbackColor: "from-blue-900 to-blue-700",
     icon: (
       <svg className="h-6 w-6 text-[#333333]" fill="currentColor" viewBox="0 0 20 20">
@@ -94,7 +94,7 @@ const industries = [
     subtitle: "EDUCATIONAL",
     extraSubtitle: "INSTITUTIONS",
     description: "Educational excellence solutions",
-    image: "/images/industries/education.jpg", // Add your image path here or set to null
+    image: "/images/industries/school.jpg", // Add your image path here or set to null
     fallbackColor: "from-indigo-800 to-indigo-600",
     icon: (
       <svg className="h-6 w-6 text-[#333333]" fill="currentColor" viewBox="0 0 20 20">

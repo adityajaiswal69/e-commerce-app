@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const SLIDER_IMAGES = [
   {
     id: 1,
-    src: "/images/hero/hotel-hospitality.jpg",
+    src: "/images/hero/hotel.jpg",
     alt: "Hotel & Hospitality Uniforms",
     category: "hotel-hospitality",
     title: "Hotel & Hospitality",
@@ -17,7 +17,7 @@ const SLIDER_IMAGES = [
   },
   {
     id: 2,
-    src: "/images/hero/school.jpg",
+    src: "/images/hero/school2.jpg",
     alt: "School Uniforms",
     category: "school",
     title: "School Uniforms",
@@ -51,15 +51,25 @@ const SLIDER_IMAGES = [
 
 export default function HeroSlider() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showLogo, setShowLogo] = useState(true);
   
+  // Auto-hide logo after 3 seconds
+  useEffect(() => {
+    const logoTimer = setTimeout(() => {
+      setShowLogo(false);
+    }, 3000); // Hide logo after 3 seconds
+
+    return () => clearTimeout(logoTimer);
+  }, []);
+
   // Auto-advance the slider
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => 
+      setCurrentIndex((prevIndex) =>
         prevIndex === SLIDER_IMAGES.length - 1 ? 0 : prevIndex + 1
       );
     }, 5000); // Change slide every 5 seconds
-    
+
     return () => clearInterval(interval);
   }, []);
   
@@ -97,16 +107,27 @@ export default function HeroSlider() {
       
       {/* Content overlay */}
       <div className="relative z-20 flex flex-col items-center justify-center h-full text-center px-4">
-        <div className="mx-auto mb-6 md:mb-8 max-w-xs">
-          <Image 
-            src="/Logo-3.jpg" 
-            alt="Uniformat Logo" 
-            width={300} 
-            height={100} 
-            className="mx-auto w-48 md:w-auto bg-[#e9e2a3]/90 p-2 rounded-md"
-            priority
-          />
-        </div>
+        {/* Uniformat Logo - Shows only on first slide */}
+        <AnimatePresence>
+          {currentIndex === 0 && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: -20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: -20 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="mx-auto mb-6 md:mb-8 max-w-xs"
+            >
+              <Image
+                src="/Logo-3.jpg"
+                alt="Uniformat Logo"
+                width={300}
+                height={100}
+                className="mx-auto w-48 md:w-auto bg-[#e9e2a3]/90 p-2 rounded-md shadow-lg"
+                priority
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
         
         <motion.h1 
           key={`title-${currentIndex}`}

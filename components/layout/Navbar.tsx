@@ -21,7 +21,7 @@ export default function TopNavbar() {
     <div>
       {/* Desktop Version - Only visible on medium screens and up */}
       <div className="hidden md:block bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-7 py-2 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-12">
             {/* Left side - Contact Info */}
             <div className="flex items-center space-x-6">
@@ -41,10 +41,10 @@ export default function TopNavbar() {
                   />
                 </svg>
                 <a 
-                  href="tel:18004523331" 
+                  href="tel:00000000" 
                   className="hover:text-[#e9e2a3] transition-colors"
                 >
-                  1 800 452 3331
+                  000000 0000 000
                 </a>
               </div>
 
@@ -67,7 +67,7 @@ export default function TopNavbar() {
                   href="mailto:CUSTOMERSERVICE@TOPHATIW.COM" 
                   className="hover:text-[#e9e2a3] transition-colors"
                 >
-                  CUSTOMERSERVICE@TOPHATIW.COM
+                  CUSTOMERSERVICE@UNIFORMAT.COM
                 </a>
               </div>
             </div>
@@ -75,13 +75,13 @@ export default function TopNavbar() {
             {/* Right side - Portfolio and Search */}
             <div className="flex items-center space-x-4">
               {/* Portfolio Link */}
-              <Link 
+              {/* <Link 
                 href="/portfolio" 
                 className="flex items-center space-x-1 text-sm text-[#555555] hover:text-[#333333] transition-colors"
               >
                 <span>+</span>
                 <span>PORTFOLIO</span>
-              </Link>
+              </Link> */}
 
               {/* Search */}
               <form onSubmit={handleSearch} className="relative">

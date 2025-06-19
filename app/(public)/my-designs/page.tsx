@@ -58,23 +58,12 @@ export default function MyDesignsPage() {
     }
   };
 
+  // ✅ FIXED: Move all useEffect hooks to the top, before any conditional returns
   useEffect(() => {
     if (isAuthenticated) {
       fetchDesigns();
     }
   }, [supabase, isAuthenticated]);
-
-  // Show loading state while checking authentication
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading your designs...</p>
-        </div>
-      </div>
-    );
-  }
 
   // Refresh designs when the page becomes visible (e.g., returning from edit page)
   useEffect(() => {
@@ -89,6 +78,20 @@ export default function MyDesignsPage() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
+
+  // ✅ FIXED: All hooks are now called before any conditional returns
+
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading your designs...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleDeleteDesign = async (designId: string) => {
     if (!confirm('Are you sure you want to delete this design? This action cannot be undone.')) {

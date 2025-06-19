@@ -5,6 +5,7 @@ import { CartItem } from "@/types/cart";
 
 type CartContextType = {
   items: CartItem[];
+  total: number;
   addItem: (item: CartItem) => Promise<void>;
   removeItem: (cartItemId: string) => void;
   clearCart: () => void;
@@ -16,6 +17,9 @@ export const CartContext = createContext<CartContextType | undefined>(
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+
+  // Calculate total price
+  const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -77,7 +81,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, clearCart }}>
+    <CartContext.Provider value={{ items, total, addItem, removeItem, clearCart }}>
       {children}
     </CartContext.Provider>
   );

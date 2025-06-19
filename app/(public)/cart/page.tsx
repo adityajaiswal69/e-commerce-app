@@ -1,22 +1,18 @@
 "use client";
 
 import { useCart } from "@/contexts/CartContext";
-import CheckoutForm from "@/components/checkout/CheckoutForm";
+import CheckoutForm from "@/components/checkout/NewCheckoutForm";
+import CheckoutErrorBoundary from "@/components/checkout/CheckoutErrorBoundary";
 import Image from "next/image";
 
 const DEFAULT_IMAGE = "/placeholder-image.svg";
 
 export default function CartPage() {
-  const { items, removeItem } = useCart();
+  const { items, total, removeItem } = useCart();
 
   // Debug logging
   console.log("Cart page - items:", items);
   console.log("Cart page - items length:", items.length);
-
-  const total = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
 
   if (items.length === 0) {
     return (
@@ -112,7 +108,9 @@ export default function CartPage() {
               </div>
             </div>
 
-            <CheckoutForm />
+            <CheckoutErrorBoundary>
+              <CheckoutForm />
+            </CheckoutErrorBoundary>
           </div>
         </div>
       </div>

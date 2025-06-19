@@ -8,11 +8,10 @@ import { useState } from "react";
 const DEFAULT_IMAGE = "/placeholder-image.svg";
 
 export default function CompactCart() {
-  const { items } = useCart();
+  const { items, total } = useCart();
   const [isHovered, setIsHovered] = useState(false);
 
-  const cartItemCount = items.reduce((total, item) => total + item.quantity, 0);
-  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const cartItemCount = items.reduce((count, item) => count + item.quantity, 0);
 
   return (
     <div 
@@ -100,7 +99,7 @@ export default function CompactCart() {
               <div className="border-t bg-gray-50 p-3">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-900">Total:</span>
-                  <span className="text-sm font-bold text-gray-900">${total.toFixed(2)}</span>
+                  <span className="text-sm font-bold text-gray-900">₹{total.toFixed(2)}</span>
                 </div>
                 <Link
                   href="/cart"

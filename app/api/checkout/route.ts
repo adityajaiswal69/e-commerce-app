@@ -1,8 +1,6 @@
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import Stripe from "stripe";
 import { CartItem } from "@/types/cart";
-import { Database } from "@/types/database.types";
 
 export const dynamic = 'force-dynamic';
 
@@ -26,7 +24,8 @@ export async function POST(request: Request) {
         version: "0.1.0"
       }
     });
-    const supabase = createRouteHandlerClient<Database>({ cookies });
+
+    const supabase = createServerSupabaseClient();
     const { items, shippingAddress } = await request.json();
 
     // Validate input data

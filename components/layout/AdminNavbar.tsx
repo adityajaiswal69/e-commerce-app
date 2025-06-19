@@ -56,6 +56,12 @@ export default function AdminNavbar() {
               >
                 Orders
               </Link>
+              <Link
+                href="/admin/payment-settings"
+                className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                Payments
+              </Link>
             </div>
           </div>
 
@@ -161,6 +167,12 @@ export default function AdminNavbar() {
                 className="text-gray-700 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
               >
                 Orders
+              </Link>
+              <Link
+                href="/admin/payment-settings"
+                className="text-gray-700 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+              >
+                Payments
               </Link>
             </div>
           </div>

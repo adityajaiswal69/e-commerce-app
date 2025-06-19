@@ -38,36 +38,7 @@ function DesignToolContent({ product, isEditing = false, existingDesign }: Desig
     capturePreviewImage,
   } = useDesign();
 
-  // Show loading state while checking authentication
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading design tool...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // This should not be reached due to AuthGuard, but keeping as fallback
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Authentication Required</h2>
-          <p className="text-gray-600 mb-6">Please sign in to use the design tool.</p>
-          <button
-            onClick={() => router.push('/sign-in')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Sign In
-          </button>
-        </div>
-      </div>
-    );
-  }
-
+  // ✅ FIXED: Move useEffect hook BEFORE any conditional returns
   // Initialize design state with existing design data if editing
   useEffect(() => {
     if (isEditing && existingDesign) {
@@ -117,6 +88,38 @@ function DesignToolContent({ product, isEditing = false, existingDesign }: Desig
       clearCanvas();
     }
   }, [isEditing, existingDesign, product.id, switchView, loadDesign, clearCanvas]);
+
+  // ✅ FIXED: All hooks are now called before any conditional returns
+
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading design tool...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // This should not be reached due to AuthGuard, but keeping as fallback
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Authentication Required</h2>
+          <p className="text-gray-600 mb-6">Please sign in to use the design tool.</p>
+          <button
+            onClick={() => router.push('/sign-in')}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Sign In
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const handleSave = async () => {
     if (!design) return;

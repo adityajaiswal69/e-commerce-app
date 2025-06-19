@@ -161,6 +161,56 @@ export type Design = {
   updated_at: string;
 };
 
+export type Order = {
+  id: string;
+  user_id: string;
+  order_number: string;
+  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
+  payment_status: 'pending' | 'paid' | 'failed' | 'refunded' | 'partially_refunded';
+  payment_method?: 'razorpay' | 'stripe' | 'paytm' | 'cod';
+  subtotal: number;
+  tax_amount: number;
+  shipping_amount: number;
+  discount_amount: number;
+  total_amount: number;
+  currency: string;
+  shipping_address?: Record<string, any>;
+  billing_address?: Record<string, any>;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type OrderItem = {
+  id: string;
+  order_id: string;
+  product_id: string;
+  design_id?: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  product_snapshot?: Record<string, any>;
+  customization_details?: Record<string, any>;
+  created_at: string;
+};
+
+export type PaymentTransaction = {
+  id: string;
+  order_id: string;
+  payment_provider: 'razorpay' | 'stripe' | 'paytm';
+  provider_transaction_id?: string;
+  provider_payment_id?: string;
+  provider_order_id?: string;
+  amount: number;
+  currency: string;
+  status: 'pending' | 'success' | 'failed' | 'cancelled' | 'refunded';
+  gateway_response?: Record<string, any>;
+  failure_reason?: string;
+  processed_at?: string;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -203,6 +253,21 @@ export type Database = {
         Row: RelatedProduct;
         Insert: Omit<RelatedProduct, "id" | "created_at">;
         Update: Partial<Omit<RelatedProduct, "id" | "created_at">>;
+      };
+      orders: {
+        Row: Order;
+        Insert: Omit<Order, "id" | "created_at" | "updated_at">;
+        Update: Partial<Omit<Order, "id" | "created_at" | "updated_at">>;
+      };
+      order_items: {
+        Row: OrderItem;
+        Insert: Omit<OrderItem, "id" | "created_at">;
+        Update: Partial<Omit<OrderItem, "id" | "created_at">>;
+      };
+      payment_transactions: {
+        Row: PaymentTransaction;
+        Insert: Omit<PaymentTransaction, "id" | "created_at" | "updated_at">;
+        Update: Partial<Omit<PaymentTransaction, "id" | "created_at" | "updated_at">>;
       };
     };
   };

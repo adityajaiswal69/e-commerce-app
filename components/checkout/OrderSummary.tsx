@@ -19,7 +19,6 @@ interface OrderItem {
 
 interface OrderTotals {
   subtotal: number;
-  taxAmount: number;
   shippingAmount: number;
   discountAmount: number;
   totalAmount: number;
@@ -34,7 +33,6 @@ export default function OrderSummary({ items, totals }: OrderSummaryProps) {
   // Provide default values if totals is undefined
   const safeTotals = totals || {
     subtotal: 0,
-    taxAmount: 0,
     shippingAmount: 0,
     discountAmount: 0,
     totalAmount: 0,
@@ -86,11 +84,6 @@ export default function OrderSummary({ items, totals }: OrderSummaryProps) {
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Subtotal</span>
           <span className="text-gray-900">₹{safeTotals.subtotal.toFixed(2)}</span>
-        </div>
-
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Tax (GST 18%)</span>
-          <span className="text-gray-900">₹{safeTotals.taxAmount.toFixed(2)}</span>
         </div>
 
         <div className="flex justify-between text-sm">

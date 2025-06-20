@@ -4,6 +4,14 @@ import Image from "next/image";
 import { toast } from "react-hot-toast";
 import type { Order } from "@/types/orders";
 
+// Type for product info that can come from either products relation or product_snapshot
+type ProductInfo = {
+  id?: string;
+  name?: string;
+  image_url?: string;
+  image?: string;
+};
+
 type OrderDetailsProps = {
   order: Order;
   onUpdate: () => void;
@@ -61,7 +69,7 @@ export default function OrderDetails({
                     Date: {new Date(order.created_at).toLocaleDateString()}
                   </p>
                   <p className="text-sm text-gray-500">
-                    Total: ${order.total?.toFixed(2)}
+                    Total: ₹{order.total_amount?.toFixed(2)}
                   </p>
 
                   <div className="mt-4">
@@ -85,40 +93,48 @@ export default function OrderDetails({
                   <div className="mt-4">
                     <h4 className="text-sm font-medium text-gray-700">Items</h4>
                     <div className="mt-2 space-y-2">
-                      {order.order_items.map((item) => (
-                        <div
-                          key={`${order.id}-${item.products.id}`}
-                          className="flex items-center gap-4 rounded-lg border p-2"
-                        >
-                          <div className="relative h-12 w-12 overflow-hidden rounded-md">
-                            <Image
-                              src={item.products.image_url}
-                              alt={item.products.name}
-                              fill
-                              className="object-cover"
-                            />
+                      {order.order_items.map((item, index) => {
+                        // Get product info from either products relation or product_snapshot
+                        const productInfo = (item.products || item.product_snapshot || {}) as ProductInfo;
+                        const productId = productInfo.id || `item-${index}`;
+                        const productName = productInfo.name || 'Unknown Product';
+                        const productImage = productInfo.image_url || productInfo.image || '/placeholder-product.jpg';
+
+                        return (
+                          <div
+                            key={`${order.id}-${productId}`}
+                            className="flex items-center gap-4 rounded-lg border p-2"
+                          >
+                            <div className="relative h-12 w-12 overflow-hidden rounded-md">
+                              <Image
+                                src={productImage}
+                                alt={productName}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">
+                                {productName}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                {item.quantity} × ₹{(item.unit_price || 0).toFixed(2)}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                Category: {item.category}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                Size: {item.selected_size}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-medium">
+                                ₹{(item.quantity * (item.unit_price || 0)).toFixed(2)}
+                              </p>
+                            </div>
                           </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">
-                              {item.products.name}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {item.quantity} × ${(item.price || 0).toFixed(2)}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              Category: {item.category}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              Size: {item.selected_size}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm font-medium">
-                              ${(item.quantity * item.price).toFixed(2)}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
 

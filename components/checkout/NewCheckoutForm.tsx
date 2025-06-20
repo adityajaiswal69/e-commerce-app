@@ -64,15 +64,12 @@ export default function CheckoutForm({ onOrderComplete }: CheckoutFormProps) {
 
   const calculateTotals = () => {
     const subtotal = total || 0; // Ensure subtotal is never undefined
-    const taxRate = 0.18; // 18% GST
-    const taxAmount = subtotal * taxRate;
     const shippingAmount = subtotal > 500 ? 0 : 50; // Free shipping above ₹500
     const discountAmount = 0; // Can be implemented later
-    const totalAmount = subtotal + taxAmount + shippingAmount - discountAmount;
+    const totalAmount = subtotal + shippingAmount - discountAmount;
 
     return {
       subtotal,
-      taxAmount,
       shippingAmount,
       discountAmount,
       totalAmount,
@@ -90,7 +87,7 @@ export default function CheckoutForm({ onOrderComplete }: CheckoutFormProps) {
       console.log('Attempting fallback order creation...');
 
       // Strategy 1: Try with minimal required fields
-      let orderData = {
+      let orderData: any = {
         user_id: user.id,
         total_amount: Number(totals.totalAmount.toFixed(2)),
         status: 'pending',
@@ -216,7 +213,7 @@ export default function CheckoutForm({ onOrderComplete }: CheckoutFormProps) {
         user_id: user.id,
         payment_method: paymentMethod,
         subtotal: Number(totals.subtotal.toFixed(2)),
-        tax_amount: Number(totals.taxAmount.toFixed(2)),
+        tax_amount: 0, // GST removed
         shipping_amount: Number(totals.shippingAmount.toFixed(2)),
         discount_amount: Number(totals.discountAmount.toFixed(2)),
         total_amount: Number(totals.totalAmount.toFixed(2)),

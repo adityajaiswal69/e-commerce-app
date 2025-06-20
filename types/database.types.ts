@@ -169,7 +169,6 @@ export type Order = {
   payment_status: 'pending' | 'paid' | 'failed' | 'refunded' | 'partially_refunded';
   payment_method?: 'razorpay' | 'stripe' | 'paytm' | 'cod';
   subtotal: number;
-  tax_amount: number;
   shipping_amount: number;
   discount_amount: number;
   total_amount: number;

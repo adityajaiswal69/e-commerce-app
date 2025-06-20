@@ -38,12 +38,13 @@ export default async function AdminDashboard() {
       `
       id,
       created_at,
-      total,
+      total_amount,
       status,
-      order_items!inner (
+      order_items (
         quantity,
-        price,
-        products!inner (
+        unit_price,
+        product_snapshot,
+        products (
           id,
           name,
           image_url
@@ -57,6 +58,19 @@ export default async function AdminDashboard() {
   if (ordersError) {
     console.error("Error fetching orders:", ordersError);
   }
+
+  // Debug: Check if there are any orders at all
+  const { data: allOrders, error: allOrdersError } = await supabase
+    .from("orders")
+    .select("id, created_at, total_amount, status")
+    .order("created_at", { ascending: false });
+
+  console.log("All orders in database:", allOrders);
+  console.log("All orders error:", allOrdersError);
+
+  // Debug: Log the raw orders data
+  console.log("Raw orders data:", ordersData);
+  console.log("Orders error:", ordersError);
 
   const orders = ordersData as unknown as Order[];
 
@@ -73,10 +87,10 @@ export default async function AdminDashboard() {
     .select("*", { count: "exact", head: true });
 
   // Get orders stats
-  const { data: stats } = await supabase.from("orders").select("status, total");
+  const { data: stats } = await supabase.from("orders").select("status, total_amount");
 
   const totalRevenue =
-    stats?.reduce((sum, order) => sum + (order.total || 0), 0) || 0;
+    stats?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0;
 
   const pendingOrders =
     stats?.filter((order) => order.status === "pending").length || 0;
@@ -110,7 +124,7 @@ export default async function AdminDashboard() {
       <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-lg border bg-white p-4">
           <h3 className="text-sm font-medium text-gray-500">Total Revenue</h3>
-          <p className="mt-2 text-2xl font-bold">${totalRevenue.toFixed(2)}</p>
+          <p className="mt-2 text-2xl font-bold">₹{totalRevenue.toFixed(2)}</p>
         </div>
 
         <div className="rounded-lg border bg-white p-4">

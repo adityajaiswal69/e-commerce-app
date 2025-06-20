@@ -55,7 +55,6 @@ export interface Order {
   payment_status: PaymentStatus;
   payment_method?: PaymentProvider | 'cod';
   subtotal: number;
-  tax_amount: number;
   shipping_amount: number;
   discount_amount: number;
   total_amount: number;
@@ -158,7 +157,6 @@ export interface CartItem {
 export interface CheckoutData {
   items: CartItem[];
   subtotal: number;
-  tax_amount: number;
   shipping_amount: number;
   discount_amount: number;
   total_amount: number;

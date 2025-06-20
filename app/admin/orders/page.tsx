@@ -5,6 +5,14 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import type { Order } from "@/types/orders";
+
+// Type for product info that can come from either products relation or product_snapshot
+type ProductInfo = {
+  id?: string;
+  name?: string;
+  image_url?: string;
+  image?: string;
+};
 import OrderDetails from "@/components/admin/OrderDetails";
 
 export default function AdminOrdersPage() {
@@ -51,15 +59,14 @@ export default function AdminOrdersPage() {
           `
           id,
           created_at,
-          total,
+          total_amount,
           status,
           shipping_address,
-          order_items!inner (
+          order_items (
             quantity,
-            price,
-            category,
-            selected_size,
-            products!inner (
+            unit_price,
+            product_snapshot,
+            products (
               id,
               name,
               image_url
@@ -146,19 +153,27 @@ export default function AdminOrdersPage() {
                 <td className="px-6 py-4">
                   <div className="flex items-center space-x-2">
                     <div className="flex -space-x-2">
-                      {order.order_items?.map((item) => (
-                        <div
-                          key={`${order.id}-${item.products.id}`}
-                          className="relative h-8 w-8 overflow-hidden rounded-full border-2 border-white"
-                        >
-                          <Image
-                            src={item.products.image_url}
-                            alt={item.products.name}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                      ))}
+                      {order.order_items?.map((item, index) => {
+                        // Get product info from either products relation or product_snapshot
+                        const productInfo = (item.products || item.product_snapshot || {}) as ProductInfo;
+                        const productId = productInfo.id || `snapshot-${index}`;
+                        const productName = productInfo.name || 'Unknown Product';
+                        const productImage = productInfo.image_url || productInfo.image || '/placeholder-product.jpg';
+
+                        return (
+                          <div
+                            key={`${order.id}-${productId}`}
+                            className="relative h-8 w-8 overflow-hidden rounded-full border-2 border-white"
+                          >
+                            <Image
+                              src={productImage}
+                              alt={productName}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        );
+                      })}
                     </div>
                     <span className="text-sm text-gray-500">
                       {order.order_items?.length} items
@@ -166,7 +181,7 @@ export default function AdminOrdersPage() {
                   </div>
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
-                  ${(order.total || 0).toFixed(2)}
+                  ${(order.total_amount || 0).toFixed(2)}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4">
                   <span

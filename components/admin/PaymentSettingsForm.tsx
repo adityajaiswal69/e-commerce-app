@@ -45,6 +45,16 @@ const PAYMENT_PROVIDERS = [
       { key: 'industry_type', label: 'Industry Type', type: 'text', required: true },
     ],
   },
+  {
+    id: 'cod' as PaymentProvider,
+    name: 'Cash on Delivery',
+    description: 'Accept cash payments on delivery',
+    logo: '/images/cod-logo.png',
+    fields: [
+      { key: 'additional_charges', label: 'Additional Charges (₹)', type: 'number', required: false },
+      { key: 'description', label: 'Description', type: 'text', required: false },
+    ],
+  },
 ];
 
 export default function PaymentSettingsForm({ initialSettings }: PaymentSettingsFormProps) {
@@ -73,6 +83,7 @@ export default function PaymentSettingsForm({ initialSettings }: PaymentSettings
     razorpay: false,
     stripe: false,
     paytm: false,
+    cod: false,
   });
 
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
@@ -151,71 +162,110 @@ export default function PaymentSettingsForm({ initialSettings }: PaymentSettings
                     <p className="text-sm text-gray-500">{provider.description}</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={setting.is_active}
-                      onChange={(e) => updateSetting(provider.id, 'is_active', e.target.checked)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Active</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={setting.is_test_mode}
-                      onChange={(e) => updateSetting(provider.id, 'is_test_mode', e.target.checked)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Test Mode</span>
-                  </label>
+                <div className="flex items-center space-x-6">
+                  {/* Active Toggle Switch */}
+                  <div className="flex items-center">
+                    <span className="text-sm text-gray-700 mr-3">Active</span>
+                    <button
+                      type="button"
+                      onClick={() => updateSetting(provider.id, 'is_active', !setting.is_active)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                        setting.is_active ? 'bg-blue-600' : 'bg-gray-200'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          setting.is_active ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Test Mode Toggle Switch (only show for non-COD providers) */}
+                  {provider.id !== 'cod' && (
+                    <div className="flex items-center">
+                      <span className="text-sm text-gray-700 mr-3">Test Mode</span>
+                      <button
+                        type="button"
+                        onClick={() => updateSetting(provider.id, 'is_test_mode', !setting.is_test_mode)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                          setting.is_test_mode ? 'bg-blue-600' : 'bg-gray-200'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            setting.is_test_mode ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            <div className="px-6 py-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {provider.fields.map(field => {
-                  const fieldKey = `${provider.id}_${field.key}`;
-                  const isSecret = field.type === 'password';
-                  const showSecret = showSecrets[fieldKey];
+            {/* Configuration Fields - Only show if provider is active */}
+            {setting.is_active && (
+              <div className="px-6 py-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {provider.fields.map(field => {
+                    const fieldKey = `${provider.id}_${field.key}`;
+                    const isSecret = field.type === 'password';
+                    const showSecret = showSecrets[fieldKey];
 
-                  return (
-                    <div key={field.key}>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        {field.label}
-                        {field.required && <span className="text-red-500 ml-1">*</span>}
-                      </label>
-                      <div className="relative">
-                        <input
-                          type={isSecret && !showSecret ? 'password' : 'text'}
-                          value={setting.settings[field.key] || ''}
-                          onChange={(e) => updateSetting(provider.id, field.key, e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder={`Enter ${field.label.toLowerCase()}`}
-                          required={field.required}
-                        />
-                        {isSecret && (
-                          <button
-                            type="button"
-                            onClick={() => toggleSecretVisibility(fieldKey)}
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                          >
-                            {showSecret ? (
-                              <EyeSlashIcon className="h-5 w-5 text-gray-400" />
-                            ) : (
-                              <EyeIcon className="h-5 w-5 text-gray-400" />
-                            )}
-                          </button>
-                        )}
+                    return (
+                      <div key={field.key}>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          {field.label}
+                          {field.required && <span className="text-red-500 ml-1">*</span>}
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={isSecret && !showSecret ? 'password' : field.type === 'number' ? 'number' : 'text'}
+                            value={setting.settings[field.key] || ''}
+                            onChange={(e) => {
+                              const value = field.type === 'number' ? parseFloat(e.target.value) || 0 : e.target.value;
+                              updateSetting(provider.id, field.key, value);
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder={`Enter ${field.label.toLowerCase()}`}
+                            required={field.required}
+                            min={field.type === 'number' ? 0 : undefined}
+                          />
+                          {isSecret && (
+                            <button
+                              type="button"
+                              onClick={() => toggleSecretVisibility(fieldKey)}
+                              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                            >
+                              {showSecret ? (
+                                <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                              ) : (
+                                <EyeIcon className="h-5 w-5 text-gray-400" />
+                              )}
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
 
-              <div className="mt-6 flex justify-end">
+                <div className="mt-6 flex justify-end">
+                  <button
+                    onClick={() => saveSetting(provider.id)}
+                    disabled={isLoading}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? 'Saving...' : 'Save Settings'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Save button for inactive providers */}
+            {!setting.is_active && (
+              <div className="px-6 py-4 border-t border-gray-200">
                 <button
                   onClick={() => saveSetting(provider.id)}
                   disabled={isLoading}
@@ -224,7 +274,7 @@ export default function PaymentSettingsForm({ initialSettings }: PaymentSettings
                   {isLoading ? 'Saving...' : 'Save Settings'}
                 </button>
               </div>
-            </div>
+            )}
           </div>
         );
       })}

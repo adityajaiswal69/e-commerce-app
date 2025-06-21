@@ -1,4 +1,4 @@
-export type PaymentProvider = 'razorpay' | 'stripe' | 'paytm';
+export type PaymentProvider = 'razorpay' | 'stripe' | 'paytm' | 'cod';
 
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded' | 'partially_refunded';
 

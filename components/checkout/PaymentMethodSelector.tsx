@@ -6,6 +6,7 @@ interface PaymentMethodSelectorProps {
   selectedMethod: PaymentProvider | 'cod';
   onMethodChange: (method: PaymentProvider | 'cod') => void;
   availableMethods: PaymentProvider[];
+  codEnabled?: boolean;
 }
 
 const PAYMENT_METHOD_INFO = {
@@ -35,8 +36,11 @@ export default function PaymentMethodSelector({
   selectedMethod,
   onMethodChange,
   availableMethods,
+  codEnabled = true,
 }: PaymentMethodSelectorProps) {
-  const allMethods = [...availableMethods, 'cod' as const];
+  // Filter out 'cod' from availableMethods if it exists there, and add it separately based on codEnabled
+  const gatewayMethods = availableMethods.filter(method => method !== 'cod');
+  const allMethods = codEnabled ? [...gatewayMethods, 'cod' as const] : gatewayMethods;
 
   return (
     <div className="space-y-3">

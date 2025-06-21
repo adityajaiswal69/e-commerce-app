@@ -35,6 +35,7 @@ export default function CheckoutForm({ onOrderComplete }: CheckoutFormProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentProvider | 'cod'>('razorpay');
   const [notes, setNotes] = useState('');
   const [availablePaymentMethods, setAvailablePaymentMethods] = useState<PaymentProvider[]>([]);
+  const [codEnabled, setCodEnabled] = useState(false);
   const [databaseSetupError, setDatabaseSetupError] = useState(false);
 
   useEffect(() => {
@@ -58,7 +59,21 @@ export default function CheckoutForm({ onOrderComplete }: CheckoutFormProps) {
       .eq('is_active', true);
 
     if (settings) {
-      setAvailablePaymentMethods(settings.map(s => s.provider));
+      const providers = settings.map(s => s.provider);
+      // Separate COD from other payment gateways
+      const gatewayProviders = providers.filter(p => p !== 'cod') as PaymentProvider[];
+      const isCodEnabled = providers.includes('cod');
+
+      setAvailablePaymentMethods(gatewayProviders);
+      setCodEnabled(isCodEnabled);
+
+      // Update selected payment method if current selection is not available
+      const allAvailableMethods = isCodEnabled ? [...gatewayProviders, 'cod'] : gatewayProviders;
+      if (!allAvailableMethods.includes(paymentMethod)) {
+        if (allAvailableMethods.length > 0) {
+          setPaymentMethod(allAvailableMethods[0] as PaymentProvider | 'cod');
+        }
+      }
     }
   };
 
@@ -489,11 +504,30 @@ export default function CheckoutForm({ onOrderComplete }: CheckoutFormProps) {
       {/* Payment Method */}
       <div>
         <h3 className="text-lg font-medium text-gray-900 mb-4">Payment Method</h3>
-        <PaymentMethodSelector
-          selectedMethod={paymentMethod}
-          onMethodChange={setPaymentMethod}
-          availableMethods={availablePaymentMethods}
-        />
+        {availablePaymentMethods.length === 0 && !codEnabled ? (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-yellow-800">No Payment Methods Available</h3>
+                <div className="mt-2 text-sm text-yellow-700">
+                  <p>No payment methods are currently enabled. Please contact the administrator to enable payment options.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <PaymentMethodSelector
+            selectedMethod={paymentMethod}
+            onMethodChange={setPaymentMethod}
+            availableMethods={availablePaymentMethods}
+            codEnabled={codEnabled}
+          />
+        )}
       </div>
 
       {/* Order Notes */}
@@ -520,10 +554,12 @@ export default function CheckoutForm({ onOrderComplete }: CheckoutFormProps) {
       {/* Submit Button */}
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || (availablePaymentMethods.length === 0 && !codEnabled)}
         className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {loading ? 'Processing...' : paymentMethod === 'cod' ? 'Place Order' : 'Proceed to Payment'}
+        {loading ? 'Processing...' :
+         (availablePaymentMethods.length === 0 && !codEnabled) ? 'No Payment Methods Available' :
+         paymentMethod === 'cod' ? 'Place Order' : 'Proceed to Payment'}
       </button>
     </form>
   );

@@ -35,27 +35,43 @@ This will:
 #### Configuring Payment Methods
 
 **For each payment method, you can:**
-- **Toggle Active Status**: Use the "Active" toggle switch to enable/disable the payment method
-- **Configure Settings**: When a payment method is active, you can configure its specific settings
-- **Test Mode**: For gateway providers (not COD), you can toggle between test and live mode
+- **Toggle Active Status**: Use the "Active" toggle switch to enable/disable the payment method for orders
+- **Configure Settings**: When a payment method is active, you can configure both test and live API keys
+- **Test Mode**: For gateway providers (not COD), toggle between test and live mode for processing orders
 
 **Payment Method Specific Settings:**
 
 **Razorpay:**
-- Key ID (required)
-- Key Secret (required)
-- Webhook Secret (optional)
+- **Test Mode Configuration:**
+  - Test Key ID (required)
+  - Test Key Secret (required)
+  - Test Webhook Secret (optional)
+- **Live Mode Configuration:**
+  - Live Key ID (required)
+  - Live Key Secret (required)
+  - Live Webhook Secret (optional)
 
 **Stripe:**
-- Publishable Key (required)
-- Secret Key (required)
-- Webhook Secret (optional)
+- **Test Mode Configuration:**
+  - Test Publishable Key (required)
+  - Test Secret Key (required)
+  - Test Webhook Secret (optional)
+- **Live Mode Configuration:**
+  - Live Publishable Key (required)
+  - Live Secret Key (required)
+  - Live Webhook Secret (optional)
 
 **Paytm:**
-- Merchant ID (required)
-- Merchant Key (required)
-- Website (required)
-- Industry Type (required)
+- **Test Mode Configuration:**
+  - Test Merchant ID (required)
+  - Test Merchant Key (required)
+  - Test Website (required)
+  - Test Industry Type (required)
+- **Live Mode Configuration:**
+  - Live Merchant ID (required)
+  - Live Merchant Key (required)
+  - Live Website (required)
+  - Live Industry Type (required)
 
 **COD (Cash on Delivery):**
 - Additional Charges (optional, in ₹)

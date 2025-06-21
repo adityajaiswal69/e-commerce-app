@@ -10,16 +10,38 @@ interface PaymentSettingsFormProps {
   initialSettings: PaymentSettings[];
 }
 
-const PAYMENT_PROVIDERS = [
+interface PaymentField {
+  key: string;
+  label: string;
+  type: string;
+  required: boolean;
+}
+
+interface PaymentProviderConfig {
+  id: PaymentProvider;
+  name: string;
+  description: string;
+  logo: string;
+  fields?: PaymentField[];
+  testFields?: PaymentField[];
+  liveFields?: PaymentField[];
+}
+
+const PAYMENT_PROVIDERS: PaymentProviderConfig[] = [
   {
     id: 'razorpay' as PaymentProvider,
     name: 'Razorpay',
     description: 'Accept payments via UPI, Cards, Net Banking, and Wallets',
     logo: '/images/razorpay-logo.png',
-    fields: [
-      { key: 'key_id', label: 'Key ID', type: 'text', required: true },
-      { key: 'key_secret', label: 'Key Secret', type: 'password', required: true },
-      { key: 'webhook_secret', label: 'Webhook Secret', type: 'password', required: false },
+    testFields: [
+      { key: 'test_key_id', label: 'Test Key ID', type: 'text', required: true },
+      { key: 'test_key_secret', label: 'Test Key Secret', type: 'password', required: true },
+      { key: 'test_webhook_secret', label: 'Test Webhook Secret', type: 'password', required: false },
+    ],
+    liveFields: [
+      { key: 'live_key_id', label: 'Live Key ID', type: 'text', required: true },
+      { key: 'live_key_secret', label: 'Live Key Secret', type: 'password', required: true },
+      { key: 'live_webhook_secret', label: 'Live Webhook Secret', type: 'password', required: false },
     ],
   },
   {
@@ -27,10 +49,15 @@ const PAYMENT_PROVIDERS = [
     name: 'Stripe',
     description: 'Global payment processing platform',
     logo: '/images/stripe-logo.png',
-    fields: [
-      { key: 'publishable_key', label: 'Publishable Key', type: 'text', required: true },
-      { key: 'secret_key', label: 'Secret Key', type: 'password', required: true },
-      { key: 'webhook_secret', label: 'Webhook Secret', type: 'password', required: false },
+    testFields: [
+      { key: 'test_publishable_key', label: 'Test Publishable Key', type: 'text', required: true },
+      { key: 'test_secret_key', label: 'Test Secret Key', type: 'password', required: true },
+      { key: 'test_webhook_secret', label: 'Test Webhook Secret', type: 'password', required: false },
+    ],
+    liveFields: [
+      { key: 'live_publishable_key', label: 'Live Publishable Key', type: 'text', required: true },
+      { key: 'live_secret_key', label: 'Live Secret Key', type: 'password', required: true },
+      { key: 'live_webhook_secret', label: 'Live Webhook Secret', type: 'password', required: false },
     ],
   },
   {
@@ -38,11 +65,17 @@ const PAYMENT_PROVIDERS = [
     name: 'Paytm',
     description: 'Popular Indian payment gateway',
     logo: '/images/paytm-logo.png',
-    fields: [
-      { key: 'merchant_id', label: 'Merchant ID', type: 'text', required: true },
-      { key: 'merchant_key', label: 'Merchant Key', type: 'password', required: true },
-      { key: 'website', label: 'Website', type: 'text', required: true },
-      { key: 'industry_type', label: 'Industry Type', type: 'text', required: true },
+    testFields: [
+      { key: 'test_merchant_id', label: 'Test Merchant ID', type: 'text', required: true },
+      { key: 'test_merchant_key', label: 'Test Merchant Key', type: 'password', required: true },
+      { key: 'test_website', label: 'Test Website', type: 'text', required: true },
+      { key: 'test_industry_type', label: 'Test Industry Type', type: 'text', required: true },
+    ],
+    liveFields: [
+      { key: 'live_merchant_id', label: 'Live Merchant ID', type: 'text', required: true },
+      { key: 'live_merchant_key', label: 'Live Merchant Key', type: 'password', required: true },
+      { key: 'live_website', label: 'Live Website', type: 'text', required: true },
+      { key: 'live_industry_type', label: 'Live Industry Type', type: 'text', required: true },
     ],
   },
   {
@@ -207,49 +240,150 @@ export default function PaymentSettingsForm({ initialSettings }: PaymentSettings
             {/* Configuration Fields - Only show if provider is active */}
             {setting.is_active && (
               <div className="px-6 py-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {provider.fields.map(field => {
-                    const fieldKey = `${provider.id}_${field.key}`;
-                    const isSecret = field.type === 'password';
-                    const showSecret = showSecrets[fieldKey];
+                {/* COD has simple fields, others have test/live separation */}
+                {provider.id === 'cod' ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {provider.fields?.map(field => {
+                      const fieldKey = `${provider.id}_${field.key}`;
+                      const isSecret = field.type === 'password';
+                      const showSecret = showSecrets[fieldKey];
 
-                    return (
-                      <div key={field.key}>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          {field.label}
-                          {field.required && <span className="text-red-500 ml-1">*</span>}
-                        </label>
-                        <div className="relative">
-                          <input
-                            type={isSecret && !showSecret ? 'password' : field.type === 'number' ? 'number' : 'text'}
-                            value={setting.settings[field.key] || ''}
-                            onChange={(e) => {
-                              const value = field.type === 'number' ? parseFloat(e.target.value) || 0 : e.target.value;
-                              updateSetting(provider.id, field.key, value);
-                            }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder={`Enter ${field.label.toLowerCase()}`}
-                            required={field.required}
-                            min={field.type === 'number' ? 0 : undefined}
-                          />
-                          {isSecret && (
-                            <button
-                              type="button"
-                              onClick={() => toggleSecretVisibility(fieldKey)}
-                              className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                            >
-                              {showSecret ? (
-                                <EyeSlashIcon className="h-5 w-5 text-gray-400" />
-                              ) : (
-                                <EyeIcon className="h-5 w-5 text-gray-400" />
-                              )}
-                            </button>
-                          )}
+                      return (
+                        <div key={field.key}>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            {field.label}
+                            {field.required && <span className="text-red-500 ml-1">*</span>}
+                          </label>
+                          <div className="relative">
+                            <input
+                              type={isSecret && !showSecret ? 'password' : field.type === 'number' ? 'number' : 'text'}
+                              value={setting.settings[field.key] || ''}
+                              onChange={(e) => {
+                                const value = field.type === 'number' ? parseFloat(e.target.value) || 0 : e.target.value;
+                                updateSetting(provider.id, field.key, value);
+                              }}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder={`Enter ${field.label.toLowerCase()}`}
+                              required={field.required}
+                              min={field.type === 'number' ? 0 : undefined}
+                            />
+                            {isSecret && (
+                              <button
+                                type="button"
+                                onClick={() => toggleSecretVisibility(fieldKey)}
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                              >
+                                {showSecret ? (
+                                  <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                                ) : (
+                                  <EyeIcon className="h-5 w-5 text-gray-400" />
+                                )}
+                              </button>
+                            )}
+                          </div>
                         </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {/* Test Mode Fields */}
+                    <div className={`p-4 rounded-lg border-2 ${setting.is_test_mode ? 'border-orange-200 bg-orange-50' : 'border-gray-200 bg-gray-50'}`}>
+                      <div className="flex items-center mb-4">
+                        <div className={`w-3 h-3 rounded-full mr-2 ${setting.is_test_mode ? 'bg-orange-500' : 'bg-gray-400'}`}></div>
+                        <h4 className="text-lg font-medium text-gray-900">Test Mode Configuration</h4>
+                        {setting.is_test_mode && <span className="ml-2 px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full">ACTIVE</span>}
                       </div>
-                    );
-                  })}
-                </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {provider.testFields?.map(field => {
+                          const fieldKey = `${provider.id}_${field.key}`;
+                          const isSecret = field.type === 'password';
+                          const showSecret = showSecrets[fieldKey];
+
+                          return (
+                            <div key={field.key}>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                {field.label}
+                                {field.required && <span className="text-red-500 ml-1">*</span>}
+                              </label>
+                              <div className="relative">
+                                <input
+                                  type={isSecret && !showSecret ? 'password' : 'text'}
+                                  value={setting.settings[field.key] || ''}
+                                  onChange={(e) => updateSetting(provider.id, field.key, e.target.value)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder={`Enter ${field.label.toLowerCase()}`}
+                                  required={field.required}
+                                />
+                                {isSecret && (
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleSecretVisibility(fieldKey)}
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                  >
+                                    {showSecret ? (
+                                      <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                                    ) : (
+                                      <EyeIcon className="h-5 w-5 text-gray-400" />
+                                    )}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Live Mode Fields */}
+                    <div className={`p-4 rounded-lg border-2 ${!setting.is_test_mode ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'}`}>
+                      <div className="flex items-center mb-4">
+                        <div className={`w-3 h-3 rounded-full mr-2 ${!setting.is_test_mode ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                        <h4 className="text-lg font-medium text-gray-900">Live Mode Configuration</h4>
+                        {!setting.is_test_mode && <span className="ml-2 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">ACTIVE</span>}
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {provider.liveFields?.map(field => {
+                          const fieldKey = `${provider.id}_${field.key}`;
+                          const isSecret = field.type === 'password';
+                          const showSecret = showSecrets[fieldKey];
+
+                          return (
+                            <div key={field.key}>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                {field.label}
+                                {field.required && <span className="text-red-500 ml-1">*</span>}
+                              </label>
+                              <div className="relative">
+                                <input
+                                  type={isSecret && !showSecret ? 'password' : 'text'}
+                                  value={setting.settings[field.key] || ''}
+                                  onChange={(e) => updateSetting(provider.id, field.key, e.target.value)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder={`Enter ${field.label.toLowerCase()}`}
+                                  required={field.required}
+                                />
+                                {isSecret && (
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleSecretVisibility(fieldKey)}
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                  >
+                                    {showSecret ? (
+                                      <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                                    ) : (
+                                      <EyeIcon className="h-5 w-5 text-gray-400" />
+                                    )}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="mt-6 flex justify-end">
                   <button

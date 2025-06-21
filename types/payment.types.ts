@@ -141,6 +141,59 @@ export interface PaymentVerificationResult {
   error?: string;
 }
 
+// Cancellation System Types
+export type CancellationStatus = 'pending' | 'approved' | 'rejected';
+export type RefundStatus = 'pending' | 'processing' | 'completed' | 'failed';
+
+export interface CancellationRequest {
+  id: string;
+  order_id: string;
+  user_id: string;
+  reason: string;
+  additional_details?: string;
+  status: CancellationStatus;
+  admin_notes?: string;
+  processed_by?: string;
+  processed_at?: string;
+  refund_amount?: number;
+  refund_status?: RefundStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CancellationReason {
+  id: string;
+  reason: string;
+  description?: string;
+  is_active: boolean;
+  display_order: number;
+  created_at: string;
+}
+
+export interface CancellationNotification {
+  id: string;
+  cancellation_request_id: string;
+  notification_type: 'request_created' | 'request_approved' | 'request_rejected' | 'refund_processed';
+  recipient_email: string;
+  sent_at?: string;
+  email_status: 'pending' | 'sent' | 'failed';
+  error_message?: string;
+  created_at: string;
+}
+
+export interface CreateCancellationRequest {
+  order_id: string;
+  reason: string;
+  additional_details?: string;
+}
+
+export interface ProcessCancellationRequest {
+  cancellation_request_id: string;
+  action: 'approve' | 'reject';
+  admin_notes?: string;
+  refund_amount?: number;
+}
+
 // Cart types for checkout
 export interface CartItem {
   id: string;

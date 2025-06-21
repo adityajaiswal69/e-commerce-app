@@ -236,6 +236,7 @@ export default function CheckoutForm({ onOrderComplete }: CheckoutFormProps) {
         shipping_address: shippingAddress,
         billing_address: useSameAddress ? shippingAddress : billingAddress,
         notes: notes || null,
+        // Don't include order_number - let the trigger generate it
       };
 
       console.log('Inserting order data:', orderData);
@@ -247,6 +248,29 @@ export default function CheckoutForm({ onOrderComplete }: CheckoutFormProps) {
         .single();
 
       if (error) {
+        // Handle specific error cases
+        if (error.code === '23505' && error.message.includes('order_number')) {
+          // Duplicate order number - retry with a delay
+          console.log('Duplicate order number detected, retrying...');
+          await new Promise(resolve => setTimeout(resolve, 100 + Math.random() * 200));
+
+          // Retry the order creation
+          const retryResult = await supabase
+            .from('orders')
+            .insert(orderData)
+            .select()
+            .single();
+
+          if (retryResult.error) {
+            console.error('Retry failed:', retryResult.error);
+            toast.error('Order creation failed due to duplicate order number. Please try again.');
+            return null;
+          }
+
+          console.log('Order created successfully on retry');
+          return retryResult.data?.id || null;
+        }
+
         handleSupabaseError('Order Creation', error);
         return null;
       }

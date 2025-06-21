@@ -5,7 +5,8 @@ type Product = {
   id: string;
   name: string;
   price: number;
-  image_url: string;
+  image_url?: string;
+  front_image_url?: string;
   created_at: string;
 };
 
@@ -36,7 +37,7 @@ export default function ProductManagement({
           <div key={product.id} className="flex items-center gap-4 p-4">
             <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
               <Image
-                src={product.image_url}
+                src={product.front_image_url || product.image_url || '/placeholder-product.jpg'}
                 alt={product.name}
                 fill
                 className="object-cover"

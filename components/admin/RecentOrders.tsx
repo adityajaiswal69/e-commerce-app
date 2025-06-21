@@ -7,14 +7,19 @@ type RecentOrdersProps = {
 };
 
 export default function RecentOrders({ orders }: RecentOrdersProps) {
-  // Remove or comment out console.log for production
-  // console.log("Orders received in component:", orders);
+  // Debug logging for development
+  console.log("📊 RecentOrders received:", orders?.length || 0, "orders");
 
   if (!orders || orders.length === 0) {
     return (
       <div className="rounded-lg border bg-white p-4">
         <h2 className="text-lg font-medium">Recent Orders</h2>
         <p className="mt-2 text-sm text-gray-500">No orders found</p>
+        <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+          <p className="text-xs text-blue-600">
+            💡 Tip: Create some test orders to see them here
+          </p>
+        </div>
       </div>
     );
   }
@@ -30,10 +35,17 @@ export default function RecentOrders({ orders }: RecentOrdersProps) {
           <div key={order.id} className="p-4">
             <div className="mb-2 flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Order #{order.id}</p>
+                <p className="text-sm font-medium text-gray-900">
+                  Order #{order.order_number || order.id.slice(0, 8)}
+                </p>
                 <p className="text-sm text-gray-500">
                   {new Date(order.created_at).toLocaleDateString()}
                 </p>
+                {order.payment_status && (
+                  <p className="text-xs text-gray-400 capitalize">
+                    Payment: {order.payment_status}
+                  </p>
+                )}
               </div>
               <div className="text-right">
                 <p className="font-medium">₹{(order.total_amount || 0).toFixed(2)}</p>
@@ -43,14 +55,14 @@ export default function RecentOrders({ orders }: RecentOrdersProps) {
               </div>
             </div>
 
-            {order.order_items && order.order_items.length > 0 && (
+            {order.order_items && order.order_items.length > 0 ? (
               <div className="mt-4">
                 <div className="space-y-2">
                   {order.order_items.map((item, index) => {
                     // Get product info from either products relation or product_snapshot
                     const productId = item.products?.id || `snapshot-${index}`;
                     const productName = item.products?.name || item.product_snapshot?.name || 'Unknown Product';
-                    const productImage = item.products?.image_url || item.product_snapshot?.image_url || item.product_snapshot?.image || '/placeholder-product.jpg';
+                    const productImage = item.products?.front_image_url || item.products?.image_url || item.product_snapshot?.image_url || item.product_snapshot?.image || '/placeholder-product.jpg';
 
                     return (
                       <div
@@ -70,18 +82,22 @@ export default function RecentOrders({ orders }: RecentOrdersProps) {
                             {productName}
                           </p>
                           <p className="text-sm text-gray-500">
-                            {item.quantity} × ₹{item.unit_price.toFixed(2)}
+                            {item.quantity} × ₹{item.unit_price?.toFixed(2) || '0.00'}
                           </p>
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-medium">
-                            ₹{(item.quantity * item.unit_price).toFixed(2)}
+                            ₹{((item.quantity || 1) * (item.unit_price || 0)).toFixed(2)}
                           </p>
                         </div>
                       </div>
                     );
                   })}
                 </div>
+              </div>
+            ) : (
+              <div className="mt-3 p-2 bg-gray-50 rounded text-center">
+                <p className="text-xs text-gray-500">No items details available</p>
               </div>
             )}
           </div>

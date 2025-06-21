@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
-import type { Product } from "@/types/database.types";
-import { uploadProductImage } from "@/lib/utils/upload";
-import Image from "next/image";
+import type { Product, Category, Subcategory } from "@/types/database.types";
+import ProductImageUploader from "./ProductImageUploader";
+// import DebugAuth from "./DebugAuth";
 
 const STYLE_OPTIONS = [
   "Casual",
@@ -43,28 +43,21 @@ const SIZE_OPTIONS = {
   shoes: ["6", "7", "8", "9", "10", "11", "12"],
 };
 
-const CATEGORY_OPTIONS = [
-  { value: "tshirt", label: "T-Shirt" },
-  { value: "shirt", label: "Shirt" },
-  { value: "jacket", label: "Jacket" },
-  { value: "pants", label: "Pants" },
-  { value: "jeans", label: "Jeans" },
-  { value: "shorts", label: "Shorts" },
-  { value: "shoes", label: "Shoes" },
-  { value: "sneakers", label: "Sneakers" },
-  { value: "boots", label: "Boots" },
-];
+
 
 type ProductFormProps = {
   product?: Product;
 };
+
+type ViewType = 'front' | 'back' | 'left' | 'right';
 
 type FormData = {
   name: string;
   description: string;
   price: number;
   image_url: string;
-  category: string;
+  category_id: string;
+  subcategory_id: string | null;
   stock: number;
   active: boolean;
   style: string[];
@@ -75,12 +68,15 @@ type FormData = {
     shoes: string[];
   };
   occasions: string[];
+  viewImages: Record<ViewType, string>;
 };
 
 async function deleteProductImage(imageUrl: string) {
   try {
-    // Extract file path from URL
-    const path = imageUrl.split("/").slice(-2).join("/"); // Gets "products/filename.ext"
+    // Extract file path from URL - for product-images bucket, path should be "products/filename.ext"
+    const urlParts = imageUrl.split("/");
+    const fileName = urlParts[urlParts.length - 1];
+    const path = `products/${fileName}`;
 
     const { error } = await supabase.storage
       .from("product-images")
@@ -95,54 +91,92 @@ async function deleteProductImage(imageUrl: string) {
 
 export default function ProductForm({ product }: ProductFormProps) {
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(
-    product?.image_url || null
-  );
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [filteredSubcategories, setFilteredSubcategories] = useState<Subcategory[]>([]);
 
   const [formData, setFormData] = useState<FormData>({
     name: product?.name || "",
     description: product?.description || "",
     price: product?.price || 0,
     image_url: product?.image_url || "",
-    category: product?.category || "",
+    category_id: "", // Will be set from product data or selected
+    subcategory_id: product?.subcategory_id || null,
     stock: product?.stock || 0,
     active: product?.active ?? true,
     style: product?.style || [],
     colors: product?.colors || [],
-    sizes: product?.sizes || {
-      top: [] as string[],
-      bottom: [] as string[],
-      shoes: [] as string[],
+    sizes: {
+      top: product?.sizes?.top ?? [],
+      bottom: product?.sizes?.bottom ?? [],
+      shoes: product?.sizes?.shoes ?? [],
     },
     occasions: product?.occasions || [],
-  });
-
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-
-    try {
-      setLoading(true);
-      const imageUrl = await uploadProductImage(file);
-      setFormData({ ...formData, image_url: imageUrl });
-    } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "Failed to upload image"
-      );
-    } finally {
-      setLoading(false);
+    viewImages: {
+      front: product?.front_image_url || product?.image_url || "",
+      back: product?.back_image_url || "",
+      left: product?.left_image_url || "",
+      right: product?.right_image_url || ""
     }
-  };
+  });
+  
+
+
+  // Fetch categories and subcategories
+  useEffect(() => {
+    const fetchCategoriesAndSubcategories = async () => {
+      try {
+        // Fetch categories
+        const { data: categoriesData, error: categoriesError } = await supabase
+          .from("categories")
+          .select("*")
+          .order("display_order", { ascending: true });
+
+        if (categoriesError) throw categoriesError;
+        setCategories(categoriesData || []);
+
+        // Fetch subcategories
+        const { data: subcategoriesData, error: subcategoriesError } = await supabase
+          .from("subcategories")
+          .select("*")
+          .order("display_order", { ascending: true });
+
+        if (subcategoriesError) throw subcategoriesError;
+        setSubcategories(subcategoriesData || []);
+
+        // If editing a product, find and set the category_id from subcategory
+        if (product && product.subcategory_id && subcategoriesData) {
+          const productSubcategory = subcategoriesData.find(sub => sub.id === product.subcategory_id);
+          if (productSubcategory) {
+            setFormData(prev => ({
+              ...prev,
+              category_id: productSubcategory.category_id,
+              subcategory_id: product.subcategory_id
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching categories/subcategories:", error);
+        setError("Failed to load categories and subcategories");
+      }
+    };
+
+    fetchCategoriesAndSubcategories();
+  }, [product]);
+
+  // Filter subcategories based on selected category
+  useEffect(() => {
+    if (formData.category_id) {
+      const filtered = subcategories.filter(sub => sub.category_id === formData.category_id);
+      setFilteredSubcategories(filtered);
+    } else {
+      setFilteredSubcategories([]);
+    }
+  }, [formData.category_id, subcategories]);
+
+
 
   const handleMultiSelect = (
     field: "style" | "colors" | "occasions",
@@ -171,10 +205,30 @@ export default function ProductForm({ product }: ProductFormProps) {
     }));
   };
 
+  const handleViewImageUpdate = (viewType: ViewType, imageUrl: string) => {
+    setFormData(prev => ({
+      ...prev,
+      viewImages: {
+        ...prev.viewImages,
+        [viewType]: imageUrl
+      },
+      // Update main image_url if front view is updated
+      ...(viewType === 'front' && { image_url: imageUrl })
+    }));
+  };
+
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.image_url) {
-      setError("Please upload an image");
+    if (!formData.viewImages.front) {
+      setError("Please upload a front view image");
+      return;
+    }
+
+    // Validate category selection
+    if (!formData.category_id) {
+      setError("Please select a category");
       return;
     }
 
@@ -182,16 +236,42 @@ export default function ProductForm({ product }: ProductFormProps) {
     setError(null);
 
     try {
+      // Get category slug for the category field (for backward compatibility)
+      const selectedCategory = categories.find(cat => cat.id === formData.category_id);
+      const categorySlug = selectedCategory?.slug || '';
+
+      // Create a product data object with the appropriate structure
+      const productData = {
+        name: formData.name,
+        description: formData.description,
+        price: formData.price,
+        image_url: formData.viewImages.front, // Use front view as main image
+        front_image_url: formData.viewImages.front,
+        back_image_url: formData.viewImages.back || null,
+        left_image_url: formData.viewImages.left || null,
+        right_image_url: formData.viewImages.right || null,
+        category: categorySlug, // Use category slug for backward compatibility
+        subcategory_id: formData.subcategory_id || null,
+        stock: formData.stock,
+        active: formData.active,
+        style: formData.style,
+        colors: formData.colors,
+        sizes: formData.sizes,
+        occasions: formData.occasions
+      };
+
       if (product) {
         const { error } = await supabase
           .from("products")
-          .update(formData)
+          .update(productData)
           .eq("id", product.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("products").insert([formData]);
+        const { error } = await supabase.from("products").insert([productData]);
         if (error) throw error;
       }
+
+
 
       router.push("/admin/products");
       router.refresh();
@@ -240,41 +320,16 @@ export default function ProductForm({ product }: ProductFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && <div className="text-red-500">{error}</div>}
+{/* 
+      <DebugAuth /> */}
 
-      <div>
-        <label className="block text-sm font-medium">Product Image</label>
-        <div className="mt-1 flex items-center space-x-4">
-          <div className="relative h-32 w-32 overflow-hidden rounded-lg border">
-            {imagePreview ? (
-              <Image
-                src={imagePreview}
-                alt="Product preview"
-                fill
-                className="object-cover"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center bg-gray-50">
-                <span className="text-sm text-gray-500">No image</span>
-              </div>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={loading}
-            className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-          >
-            Change Image
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="hidden"
-          />
-        </div>
-      </div>
+      <ProductImageUploader
+        productImages={formData.viewImages}
+        onImageUpdate={handleViewImageUpdate}
+        loading={loading}
+        setLoading={setLoading}
+        setError={setError}
+      />
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div>
@@ -291,17 +346,17 @@ export default function ProductForm({ product }: ProductFormProps) {
         <div>
           <label className="block text-sm font-medium">Category</label>
           <select
-            value={formData.category}
-            onChange={(e) =>
-              setFormData({ ...formData, category: e.target.value })
-            }
+            value={formData.category_id}
+            onChange={(e) => {
+              setFormData({ ...formData, category_id: e.target.value, subcategory_id: null });
+            }}
             className="mt-1 block w-full rounded-md border p-2"
             required
           >
-            <option value="">Select Category</option>
-            {CATEGORY_OPTIONS.map((category) => (
-              <option key={category.value} value={category.value}>
-                {category.label}
+            <option value="">Select a category</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
               </option>
             ))}
           </select>
@@ -335,6 +390,26 @@ export default function ProductForm({ product }: ProductFormProps) {
             min="0"
           />
         </div>
+        
+        {filteredSubcategories.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium">Subcategory</label>
+            <select
+              value={formData.subcategory_id || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, subcategory_id: e.target.value || null })
+              }
+              className="mt-1 block w-full rounded-md border p-2"
+            >
+              <option value="">Select Subcategory (Optional)</option>
+              {filteredSubcategories.map((subcategory) => (
+                <option key={subcategory.id} value={subcategory.id}>
+                  {subcategory.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       <div>
@@ -350,18 +425,7 @@ export default function ProductForm({ product }: ProductFormProps) {
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium">Image URL</label>
-        <input
-          type="url"
-          value={formData.image_url}
-          onChange={(e) =>
-            setFormData({ ...formData, image_url: e.target.value })
-          }
-          className="mt-1 block w-full rounded-md border p-2"
-          required
-        />
-      </div>
+
 
       <div>
         <label className="block text-sm font-medium mb-2">Styles</label>

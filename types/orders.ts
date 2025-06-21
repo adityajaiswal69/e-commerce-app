@@ -7,17 +7,30 @@ export type Product = {
 
 export type OrderItem = {
   quantity: number;
-  price: number;
-  products: Product;
-  category: string;
-  selected_size: string;
+  unit_price: number;
+  total_price?: number;
+  products?: Product;
+  product_snapshot?: {
+    name: string;
+    image?: string;
+    image_url?: string;
+    size?: string;
+    category?: string;
+  };
+  category?: string;
+  selected_size?: string;
+  product_id?: string;
 };
 
 export type Order = {
   id: string;
   created_at: string;
-  total: number | null;
+  total_amount: number | null;
   status: string;
+  order_number?: string;
+  payment_status?: string;
+  payment_method?: string;
+  user_id?: string;
   order_items: OrderItem[];
   shipping_address?: {
     name: string;

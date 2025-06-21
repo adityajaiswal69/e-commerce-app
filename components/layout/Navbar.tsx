@@ -1,209 +1,122 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { useEffect, useState } from "react";
-import Image from "next/image";
-import MiniCart from "@/components/cart/MiniCart";
+import { useRouter } from "next/navigation";
 
-type Profile = {
-  avatar_url: string | null;
-  full_name: string | null;
-};
+export default function TopNavbar() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
 
-export default function Navbar() {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const pathname = usePathname();
-  const supabase = createClientComponentClient();
-
-  useEffect(() => {
-    async function getProfile() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (session) {
-        const { data } = await supabase
-          .from("profiles")
-          .select("avatar_url, full_name")
-          .eq("id", session.user.id)
-          .single();
-
-        setProfile(data);
-      }
-      setLoading(false);
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      // Redirect to products page with search query
+      router.push(`/products?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery(""); // Clear search after submitting
     }
-
-    getProfile();
-  }, [supabase]);
-
-  const getInitial = (name: string | null) => {
-    return name ? name.charAt(0).toUpperCase() : "?";
   };
 
-  const isActive = (path: string) => pathname === path;
-
   return (
-    <nav className="border-b">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="text-xl font-bold">
-            Store
-          </Link>
+    <div>
+      {/* Desktop Version - Only visible on medium screens and up */}
+      <div className="hidden md:block bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-7 py-2 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-12">
+            {/* Left side - Contact Info */}
+            <div className="flex items-center space-x-6">
+              {/* Phone */}
+              <div className="flex items-center space-x-2 text-sm text-[#555555]">
+                <svg 
+                  className="h-4 w-4" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" 
+                  />
+                </svg>
+                <a 
+                  href="tel:00000000" 
+                  className="hover:text-[#e9e2a3] transition-colors"
+                >
+                  000000 0000 000
+                </a>
+              </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden space-x-8 md:flex">
-            <Link
-              href="/"
-              className={`${
-                isActive("/")
-                  ? "text-blue-600"
-                  : "text-gray-600 hover:text-blue-600"
-              }`}
-            >
-              Home
-            </Link>
-            <Link
-              href="/products"
-              className={`${
-                isActive("/products")
-                  ? "text-blue-600"
-                  : "text-gray-600 hover:text-blue-600"
-              }`}
-            >
-              Products
-            </Link>
-            <MiniCart />
-            {!loading &&
-              (profile ? (
-                <div className="flex items-center gap-4">
-                  <Link
-                    href="/profile"
-                    className="text-gray-600 hover:text-blue-600"
+              {/* Email */}
+              <div className="flex items-center space-x-2 text-sm text-[#555555]">
+                <svg 
+                  className="h-4 w-4" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" 
+                  />
+                </svg>
+                <a 
+                  href="mailto:CUSTOMERSERVICE@TOPHATIW.COM" 
+                  className="hover:text-[#e9e2a3] transition-colors"
+                >
+                  CUSTOMERSERVICE@UNIFORMAT.COM
+                </a>
+              </div>
+            </div>
+
+            {/* Right side - Portfolio and Search */}
+            <div className="flex items-center space-x-4">
+              {/* Portfolio Link */}
+              {/* <Link 
+                href="/portfolio" 
+                className="flex items-center space-x-1 text-sm text-[#555555] hover:text-[#333333] transition-colors"
+              >
+                <span>+</span>
+                <span>PORTFOLIO</span>
+              </Link> */}
+
+              {/* Search */}
+              <form onSubmit={handleSearch} className="relative">
+                <div className="flex items-center">
+                <input
+  type="text"
+  value={searchQuery}
+  onChange={(e) => setSearchQuery(e.target.value)}
+  placeholder="Search products..."
+  className="w-full  md:w-80 lg:w-96 px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#e9e2a3] focus:border-transparent"
+/>
+                  <button
+                    type="submit"
+                    className="absolute right-2 p-1 hover:bg-[#f8f6e1] rounded-md transition-colors"
                   >
-                    {profile.avatar_url ? (
-                      <div className="relative h-8 w-8 overflow-hidden rounded-full">
-                        <Image
-                          src={profile.avatar_url}
-                          alt="Profile"
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-sm text-white">
-                        {getInitial(profile.full_name)}
-                      </div>
-                    )}
-                  </Link>
-                </div>
-              ) : (
-                <Link
-                  href="/sign-in"
-                  className="text-gray-600 hover:text-blue-600"
-                >
-                  Sign In
-                </Link>
-              ))}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button className="md:hidden" onClick={() => setIsMenuOpen(false)}>
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              {isMenuOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              )}
-            </svg>
-          </button>
-        </div>
-
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="space-y-4 pb-4 md:hidden">
-            <Link
-              href="/"
-              className={`block ${
-                isActive("/")
-                  ? "text-blue-600"
-                  : "text-gray-600 hover:text-blue-600"
-              }`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Home
-            </Link>
-            <Link
-              href="/products"
-              className={`block ${
-                isActive("/products")
-                  ? "text-blue-600"
-                  : "text-gray-600 hover:text-blue-600"
-              }`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Products
-            </Link>
-            <Link
-              href="/cart"
-              className="block text-gray-600 hover:text-blue-600"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Cart
-            </Link>
-            {!loading &&
-              (profile ? (
-                <Link
-                  href="/profile"
-                  className="block text-gray-600 hover:text-blue-600"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {profile.avatar_url ? (
-                    <div className="relative h-8 w-8 overflow-hidden rounded-full">
-                      <Image
-                        src={profile.avatar_url}
-                        alt="Profile"
-                        fill
-                        className="object-cover"
+                    <svg 
+                      className="h-4 w-4 text-[#333333]" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
                       />
-                    </div>
-                  ) : (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-sm text-white">
-                      {getInitial(profile.full_name)}
-                    </div>
-                  )}
-                </Link>
-              ) : (
-                <Link
-                  href="/sign-in"
-                  className="block text-gray-600 hover:text-blue-600"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Sign In
-                </Link>
-              ))}
+                    </svg>
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        )}
+        </div>
       </div>
-    </nav>
+    </div>
   );
 }

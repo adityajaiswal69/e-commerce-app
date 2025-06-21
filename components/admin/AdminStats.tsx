@@ -23,7 +23,7 @@ export default function AdminStats({
 
       <div className="rounded-lg border bg-white p-6">
         <h3 className="text-sm font-medium text-gray-500">Total Revenue</h3>
-        <p className="mt-2 text-3xl font-bold">${totalRevenue.toFixed(2)}</p>
+        <p className="mt-2 text-3xl font-bold">₹{totalRevenue.toFixed(2)}</p>
       </div>
     </div>
   );

@@ -26,18 +26,31 @@ type SizeCategory = "top" | "bottom" | "shoes";
 
 function getSizeCategory(category: string): SizeCategory | null {
   const categoryMap: Record<string, SizeCategory> = {
+    // Uniform categories
+    'school-uniform': "top",
+    'office-uniform': "top",
+    'hospital-uniform': "top",
+    'chef-uniform': "top",
+    'lab-coat': "top",
+    'apron': "top",
+
+    // Clothing categories
     tshirt: "top",
     shirt: "top",
     jacket: "top",
+    blazer: "top",
+    top: "top",
+
     pants: "bottom",
+    trousers: "bottom",
     jeans: "bottom",
     shorts: "bottom",
-    shoes: "shoes",
-    sneakers: "shoes",
-    boots: "shoes",
+    bottom: "bottom",
+
+    // Removed all shoe-related categories since we don't sell shoes
   };
 
-  return categoryMap[category.toLowerCase()] || null;
+  return categoryMap[category.toLowerCase()] || "top"; // Default to "top" instead of null
 }
 
 export default function ProductPage({
@@ -60,6 +73,7 @@ export default function ProductPage({
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [sizeQuantities, setSizeQuantities] = useState<Record<string, number>>({});
 
   useEffect(() => {
     async function fetchData() {
@@ -242,20 +256,37 @@ export default function ProductPage({
   const handleAddToCart = async () => {
     if (!product) return;
 
+    // Calculate total quantity from size selections
+    const totalQuantity = Object.values(sizeQuantities).reduce((sum, qty) => sum + qty, 0);
+
+    if (totalQuantity === 0) {
+      toast.error('Please select at least one size with quantity');
+      return;
+    }
+
     setAddingToCart(true);
     try {
-      const cartItem = {
-        productId: selectedVariant?.id || product.id,
-        name: selectedVariant ? `${product.name} - ${selectedVariant.name}` : product.name,
-        price: getCurrentPrice(),
-        image_url: selectedVariant?.image_url || product.image_url,
-        category: product.category,
-        size: selectedSize || 'default',
-        quantity
-      };
+      // Add each size with its quantity as separate cart items
+      for (const [size, qty] of Object.entries(sizeQuantities)) {
+        if (qty > 0) {
+          const cartItem = {
+            productId: selectedVariant?.id || product.id,
+            name: selectedVariant ? `${product.name} - ${selectedVariant.name}` : product.name,
+            price: getCurrentPrice(),
+            image_url: selectedVariant?.image_url || product.image_url,
+            category: product.category,
+            size: size,
+            quantity: qty
+          };
 
-      addItem(cartItem);
-      toast.success(`Added ${quantity} item(s) to cart!`);
+          addItem(cartItem);
+        }
+      }
+
+      toast.success(`Added ${totalQuantity} items to cart successfully!`);
+
+      // Reset size quantities after successful add
+      setSizeQuantities({});
     } catch (error) {
       toast.error("Failed to add item to cart");
     } finally {
@@ -420,33 +451,73 @@ export default function ProductPage({
               </div>
             )}
 
-            {/* Size Selection */}
-            {product.sizes && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">Size</h3>
-                <div className="flex flex-wrap gap-3">
-                  {(() => {
-                    const sizeCategory = getSizeCategory(product.category);
-                    if (!sizeCategory || !product.sizes[sizeCategory]) {
-                      return null;
-                    }
-                    return product.sizes[sizeCategory].map((size) => (
-                      <button
-                        key={size}
-                        onClick={() => setSelectedSize(size)}
-                        className={`px-6 py-3 border-2 rounded-lg font-medium transition-all ${
-                          selectedSize === size
-                            ? 'border-gray-900 bg-gray-900 text-white'
-                            : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ));
-                  })()}
+            {/* Size Selection with Quantity (Bulk Style) */}
+            {(() => {
+              const sizeCategory = getSizeCategory(product.category);
+              const availableSizes = (product.sizes && sizeCategory && product.sizes[sizeCategory]) || [];
+
+              // Debug logging
+              console.log('🔍 Size Debug Info:', {
+                category: product.category,
+                sizeCategory,
+                productSizes: product.sizes,
+                availableSizes
+              });
+
+              if (availableSizes.length === 0) {
+                return null;
+              }
+
+              return (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900">SIZE</h3>
+                  <div className="space-y-3">
+                    {availableSizes.map((size) => (
+                      <div key={size} className="flex items-center justify-between py-2 border-b border-gray-100">
+                        <span className="font-medium text-gray-900 min-w-[40px]">{size}</span>
+                        <div className="flex items-center space-x-3">
+                          <button
+                            onClick={() => {
+                              const currentQty = sizeQuantities[size] || 0;
+                              if (currentQty > 0) {
+                                setSizeQuantities(prev => ({
+                                  ...prev,
+                                  [size]: currentQty - 1
+                                }));
+                              }
+                            }}
+                            className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-gray-600 hover:bg-gray-50 transition-colors"
+                          >
+                            -
+                          </button>
+                          <span className="w-8 text-center font-medium">
+                            {sizeQuantities[size] || 0}
+                          </span>
+                          <button
+                            onClick={() => {
+                              setSizeQuantities(prev => ({
+                                ...prev,
+                                [size]: (prev[size] || 0) + 1
+                              }));
+                            }}
+                            className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-gray-600 hover:bg-gray-50 transition-colors"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-600">
+                      Total Quantity: <span className="font-semibold">
+                        {Object.values(sizeQuantities).reduce((sum, qty) => sum + qty, 0)}
+                      </span>
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Color Selection */}
             {product.colors && product.colors.length > 0 && (
@@ -470,30 +541,8 @@ export default function ProductPage({
               </div>
             )}
 
-            {/* Quantity and Add to Cart */}
+            {/* Add to Cart */}
             <div className="space-y-6">
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center border-2 border-gray-200 rounded-lg">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="px-4 py-3 hover:bg-gray-50 transition-colors"
-                    disabled={quantity <= 1}
-                  >
-                    -
-                  </button>
-                  <span className="px-6 py-3 font-medium">{quantity}</span>
-                  <button
-                    onClick={() => setQuantity(Math.min(availableStock, quantity + 1))}
-                    className="px-4 py-3 hover:bg-gray-50 transition-colors"
-                    disabled={quantity >= availableStock}
-                  >
-                    +
-                  </button>
-                </div>
-                <span className="text-sm text-gray-500">
-                  {availableStock} available
-                </span>
-              </div>
 
               <div className="flex space-x-4">
                 <button

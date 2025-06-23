@@ -217,7 +217,7 @@ export default function AdminNavbar({ children }: AdminNavbarProps) {
             {/* User Dropdown */}
             {isUserMenuOpen && !isSidebarCollapsed && (
               <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
-                <Link
+                {/* <Link
                   href="/admin/profile"
                   className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                 >
@@ -225,7 +225,7 @@ export default function AdminNavbar({ children }: AdminNavbarProps) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                   Profile
-                </Link>
+                </Link> */}
                 <Link
                   href="/"
                   className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"

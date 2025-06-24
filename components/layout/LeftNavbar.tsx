@@ -127,23 +127,13 @@ export default function LeftNavbar() {
       ];
 
       // Add categories with their subcategories
-      categories?.forEach((category: any) => {
+      categories?.forEach((category: any, categoryIndex: number) => {
         const categoryItem: NavigationItem = {
           href: `/${category.slug}`,
           label: category.name.toUpperCase(),
           filter: { category: category.slug },
-          children: []
+          // Remove children property to not display subcategories
         };
-
-        // Add subcategories as children
-        if (category.subcategories && category.subcategories.length > 0) {
-          categoryItem.children = category.subcategories.map((subcategory: any) => ({
-            href: `/${category.slug}/${subcategory.slug}`,
-            label: subcategory.name,
-            filter: { category: category.slug, subcategory: subcategory.slug }
-          }));
-        }
-
         dynamicNavItems.push(categoryItem);
       });
 
@@ -258,13 +248,15 @@ export default function LeftNavbar() {
 
 
 
-  const renderNavigationItem = (item: NavigationItem, level: number = 0) => {
-    const hasChildren = item.children && item.children.length > 0;
-    const isExpanded = expandedItems.includes(item.href);
+  const renderNavigationItem = (item: NavigationItem, level: number = 0, parentKey: string = '') => {
+    // Remove subcategory rendering logic
     const paddingLeft = level === 0 ? "px-3" : level === 1 ? "px-6" : "px-9";
+    const uniqueKey = parentKey
+      ? `${parentKey}-${item.href}-${item.label.replace(/\s+/g, '-')}-${level}`
+      : `${item.href}-${item.label.replace(/\s+/g, '-')}-${level}`;
 
     return (
-      <div key={item.href}>
+      <div key={uniqueKey}>
         <div className="flex items-center">
           <Link
             href={getProductFilterUrl(item)}
@@ -277,35 +269,7 @@ export default function LeftNavbar() {
           >
             {item.label}
           </Link>
-          {hasChildren && (
-            <button
-              onClick={() => toggleExpanded(item.href)}
-              className="p-2 hover:bg-gray-100 rounded-md mr-2"
-            >
-              <svg
-                className={`h-4 w-4 transform transition-transform ${
-                  isExpanded ? "rotate-90" : ""
-                }`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </button>
-          )}
         </div>
-
-        {hasChildren && isExpanded && (
-          <div className="ml-1 border-l border-gray-200">
-            {item.children!.map((child) => renderNavigationItem(child, level + 1))}
-          </div>
-        )}
       </div>
     );
   };
@@ -451,25 +415,7 @@ export default function LeftNavbar() {
           {/* Navigation Items */}
           <div className="flex-1 overflow-y-auto py-4">
             <div className="space-y-1 px-2">
-              {navigationItems.map((item) => renderNavigationItem(item))}
-            </div>
-
-            {/* Search Section */}
-            <div className="mt-6 px-3">
-              <div className="flex items-center space-x-2 text-xs text-gray-600">
-                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <span>SEARCH</span>
-              </div>
-            </div>
-
-            {/* Portfolio Section */}
-            <div className="mt-3 px-3">
-              <div className="flex items-center space-x-2 text-xs text-gray-600">
-                <span>+</span>
-                <span>PORTFOLIO</span>
-              </div>
+              {navigationItems.map((item, index) => renderNavigationItem(item, 0, `nav-${index}`))}
             </div>
           </div>
 
@@ -527,13 +473,16 @@ export default function LeftNavbar() {
                         </Link>
                         {user?.role === 'admin' && (
                           <button
-                            onClick={() => handleLogout(true)}
+                            
                             className="flex w-full items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
                           >
                             <span className="mr-2">
                               <LogOutIcon />
                             </span>
-                            Admin
+                          
+                            <Link href="/admin" >
+                                   Admin
+                            </Link>
                           </button>
                         )}
                         <button

@@ -101,6 +101,16 @@ export default function AdminNavbar({ children }: AdminNavbarProps) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
         </svg>
       )
+    },
+    {
+      name: 'Art Assets',
+      href: '/admin/art-assets',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
+          <path d="M8 12l2 2 4-4" stroke="currentColor" strokeWidth="2" fill="none" />
+        </svg>
+      )
     }
   ];
 

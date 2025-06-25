@@ -53,6 +53,7 @@ export default function ArtAssetsForm() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [categoryIcon, setCategoryIcon] = useState<File | null>(null);
+  const [assetTag, setAssetTag] = useState('');
   
   // Helper function to generate slug
   const generateSlug = (str: string) => {
@@ -278,6 +279,11 @@ export default function ArtAssetsForm() {
       return;
     }
 
+    if (!assetTag.trim()) {
+      setError('Tag is required');
+      return;
+    }
+
     if (!user) {
       setError('You must be logged in to upload assets');
       return;
@@ -315,6 +321,7 @@ export default function ArtAssetsForm() {
           image_url: imageUrl,
           file_type: fileType,
           user_id: user.id,
+          tag: assetTag.trim(),
           active: true
         })
         .select()
@@ -328,6 +335,7 @@ export default function ArtAssetsForm() {
       // Reset form
       setAssetName('');
       setSelectedFile(null);
+      setAssetTag('');
       setSuccess("Asset uploaded successfully!");
       
       // Clear success message after 3 seconds
@@ -478,6 +486,22 @@ export default function ArtAssetsForm() {
               />
             </div>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tag *
+              </label>
+              <input
+                type="text"
+                value={assetTag}
+                onChange={e => setAssetTag(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter tag (e.g. emoji, icon, heart)"
+                required
+              />
+            </div>
+          </div>
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -534,7 +558,7 @@ export default function ArtAssetsForm() {
                     className="max-h-full max-w-full object-contain p-2"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyOEMxNi42ODYzIDI4IDEzLjUwNTQgMjYuNjgzOSAxMS4xNzE2IDI0LjM1MDNDOC44Mzc4NCAyMi4wMTY3IDcuNTIxNzMgMTguODM1OCA3LjUyMTczIDE1LjUyMThDNy41MjE3MyAxMi4yMDc4IDguODM3ODQgOS4wMjY5MSAxMS4xNzE2IDYuNjkzMjlDMTMuNTA1NCA0LjM1OTY3IDE2LjY4NjMgMy4wNDM1NiAyMCAzLjA0MzU2QzIzLjMxMzcgMy4wNDM1NiAyNi40OTQ2IDQuMzU5NjcgMjguODI4NCA2LjY5MzI5QzMxLjE2MjIgOS4wMjY5MSAzMi40NzgzIDEyLjIwNzggMzIuNDc4MyAxNS41MjE4QzMyLjQ3ODMgMTguODM1OCAzMS4xNjIyIDIyLjAxNjcgMjguODI4NCAyNC4zNTAzQzI2LjQ5NDYgMjYuNjgzOSAyMy4zMTM3IDI4IDIwIDI4WiIgZmlsbD0iI0Q0RUREMCI+CjxwYXRoIGQ9Ik0yMC4wMDAxIDM1LjY1MjJDMjIuNTc5NyAzNS42NTIyIDI0LjY5NTcgMzMuNTM2MiAyNC42OTU3IDMwLjk1NjVDMjQuNjk1NyAyOC4zNzY5IDIyLjU3OTcgMjYuMjYwOSAyMC4wMDAxIDI2LjI2MDlDMTcuNDIwNCAyNi4yNjA5IDE1LjMwNDQgMjguMzc2OSAxNS4zMDQ0IDMwLjk1NjVDMTUuMzA0NCAzMy41MzYyIDE3LjQyMDQgMzUuNjUyMiAyMC4wMDAxIDM1LjY1MjJaIiBmaWxsPSIjRDRFREQwIj4KPC9zdmc+';
+                      target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyOCwxNi42ODYzIDI4IDEzLjUwNTQgMjYuNjgzOSAxMS4xNzE2IDI0LjM1MDNDOC44Mzc4NCAyMi4wMTY3IDcuNTIxNzMgMTguODM1OCA3LjUyMTczIDE1LjUyMThDNy41MjE3MyAxMi4yMDc4IDguODM3ODQgOS4wMjY5MSAxMS4xNzE2IDYuNjkzMjlDMTMuNTA1NCA0LjM1OTY3IDE2LjY4NjMgMy4wNDM1NiAyMCAzLjA0MzU2QzIzLjMxMzcgMy4wNDM1NiAyNi40OTQ2IDQuMzU5NjcgMjguODI4NCA2LjY5MzI5QzMxLjE2MjIgOS4wMjY5MSAzMi40NzgzIDEyLjIwNzggMzIuNDc4MyAxNS41MjE4QzMyLjQ3ODMgMTguODM1OCAzMS4xNjIyIDIyLjAxNjcgMjguODI4NCAyNC4zNTAzQzI2LjQ5NDYgMjYuNjgzOSAyMy4zMTM3IDI4IDIwIDI4WiIgZmlsbD0iI0Q0RUREMCI+CjxwYXRoIGQ9Ik0yMC4wMDAxIDM1LjY1MjJDMjIuNTc5NyAzNS42NTIyIDI0LjY5NTcgMzMuNTM2MiAyNC42OTU3IDMwLjk1NjVDMjQuNjk1NyAyOC4zNzY5IDIyLjU3OTcgMjYuMjYwOSAyMC4wMDAxIDI2LjI2MDlDMTcuNDIwNCAyNi4yNjA5IDE1LjMwNDQgMjguMzc2OSAxNS4zMDQ0IDMwLjk1NjVDMTUuMzA0NCAzMy41MzYyIDE3LjQyMDQgMzUuNjUyMiAyMC4wMDAxIDM1LjY1MjJaIiBmaWxsPSIjRDRFREQwIj4KPC9zdmc+';
                     }}
                   />
                 </div>

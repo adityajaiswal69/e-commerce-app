@@ -11,7 +11,9 @@ import {
   TrashIcon,
   DocumentArrowDownIcon,
   EyeIcon,
+  PaintBrushIcon,
 } from '@heroicons/react/24/outline';
+import { RemoveFormatting } from 'lucide-react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import toast from 'react-hot-toast';
 import ArtAssetPicker from "@/components/design/ArtAssetPicker";
@@ -217,31 +219,30 @@ export default function DesignToolbar({ onSave, onPreview, className = '' }: Des
 
           <div className="space-y-2">
             <h3 className="text-sm font-semibold text-gray-900 px-1">Add Elements</h3>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-row gap-2 bg-[#f7fafd] rounded-lg p-2 justify-between items-center">
               <button
                 onClick={handleAddText}
-                className="flex items-center gap-2 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors w-full"
+                className="flex flex-col items-center justify-center w-12 h-12 rounded-md border border-transparent hover:bg-gray-100 transition-colors text-gray-700"
+                title="Add Text"
               >
-                <PlusIcon className="w-4 h-4 flex-shrink-0" />
-                <span className="text-sm">Add Text</span>
+                <span className="text-xs mb-1"><RemoveFormatting className="w-5 h-5 mx-auto" /></span>
+                {/* <span className="text-xs font-medium">T</span> */}
               </button>
-
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors w-full"
+                className="flex flex-col items-center justify-center w-12 h-12 rounded-md border border-transparent hover:bg-gray-100 transition-colors text-gray-700"
+                title="Add Image"
               >
-                <PhotoIcon className="w-4 h-4 flex-shrink-0" />
-                <span className="text-sm">Add Image</span>
+                <PhotoIcon className="w-5 h-5 mx-auto mb-1" />
               </button>
-              
               <button
                 onClick={() => setArtPickerOpen(true)}
-                className="flex items-center gap-2 px-3 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors w-full"
+                className="flex flex-col items-center justify-center w-12 h-12 rounded-md border border-transparent hover:bg-gray-100 transition-colors text-gray-700"
+                title="Add Art"
               >
-                <span className="material-icons">brush</span>
-                <span className="text-sm">Add Art</span>
+                <PaintBrushIcon className="w-5 h-5 mx-auto mb-1" />
               </button>
-
+              
               <input
                 ref={fileInputRef}
                 type="file"
@@ -252,10 +253,10 @@ export default function DesignToolbar({ onSave, onPreview, className = '' }: Des
             </div>
           </div>
 
-          <div className="w-full h-px bg-gray-300" />
+          
 
           {/* Quick Text Options */}
-          <div className="flex flex-col gap-2">
+          {/* <div className="flex flex-col gap-2">
             <span className="text-sm font-medium text-gray-700">Quick Add:</span>
             {quickTexts.map((text) => (
               <button
@@ -266,9 +267,9 @@ export default function DesignToolbar({ onSave, onPreview, className = '' }: Des
                 {text}
               </button>
             ))}
-          </div>
+          </div> */}
 
-          <div className="w-full h-px bg-gray-300" />
+          {/* <div className="w-full h-px bg-gray-300" /> */}
 
           {/* Actions */}
           <div className="flex flex-col gap-2">

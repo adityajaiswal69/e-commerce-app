@@ -794,32 +794,7 @@ function SelectionOverlay({
         </div>
       ))}
 
-      {/* Delete button */}
-      <div
-        className="absolute pointer-events-auto hover:scale-110 transition-transform"
-        style={{
-          right: '-12px',
-          top: '-12px',
-          width: '24px',
-          height: '24px',
-          backgroundColor: '#ef4444',
-          border: '2px solid white',
-          borderRadius: '50%',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
-        }}
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete();
-        }}
-      >
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-          <path d="M6 18L18 6M6 6l12 12" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-        </svg>
-      </div>
+      
 
       {/* Toolbar above element */}
       <div
@@ -852,20 +827,7 @@ function SelectionOverlay({
           </svg>
         </button>
 
-        {/* Lock */}
-        <button
-          className="p-2 hover:bg-gray-100 rounded"
-          title="Lock"
-          onClick={(e) => {
-            e.stopPropagation();
-            // Lock functionality can be added here
-          }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-            <path d="M7 11V7a5 5 0 0110 0v4"/>
-          </svg>
-        </button>
+       
 
         {/* Duplicate */}
         <button
@@ -904,22 +866,6 @@ function SelectionOverlay({
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <polyline points="3,6 5,6 21,6"/>
             <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"/>
-          </svg>
-        </button>
-
-        {/* More options */}
-        <button
-          className="p-2 hover:bg-gray-100 rounded"
-          title="More options"
-          onClick={(e) => {
-            e.stopPropagation();
-            // More options menu can be added here
-          }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="12" cy="12" r="1"/>
-            <circle cx="12" cy="5" r="1"/>
-            <circle cx="12" cy="19" r="1"/>
           </svg>
         </button>
       </div>

@@ -15,17 +15,18 @@ export default function ArtAssetPicker({ open, onClose }: ArtAssetPickerProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [categoryAssets, setCategoryAssets] = useState<any[]>([]);
   const [assetsLoading, setAssetsLoading] = useState(false);
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
   if (!open) return null;
 
   const handleCategoryClick = async (categoryId: string) => {
     setSelectedCategory(categoryId);
     setAssetsLoading(true);
-    
+    setSelectedTag(null); // Reset tag filter when changing category
     try {
       // Filter assets by category
-      const filteredAssets = assets.filter(asset => asset.category_id === categoryId);
-      setCategoryAssets(filteredAssets);
+      const filtered = assets.filter(asset => asset.category_id === categoryId);
+      setCategoryAssets(filtered);
     } catch (error) {
       console.error('Error loading category assets:', error);
       setCategoryAssets([]);
@@ -33,6 +34,20 @@ export default function ArtAssetPicker({ open, onClose }: ArtAssetPickerProps) {
       setAssetsLoading(false);
     }
   };
+
+  // Extract unique tags from categoryAssets
+  const uniqueTags = Array.from(
+    new Set(
+      categoryAssets
+        .map(asset => asset.tag)
+        .filter((tag): tag is string => !!tag && tag.trim() !== '')
+    )
+  );
+
+  // Filter assets by selected tag
+  const filteredAssets = selectedTag
+    ? categoryAssets.filter(asset => asset.tag === selectedTag)
+    : categoryAssets;
 
   const handleAssetSelect = (asset: any) => {
     // Add to center of canvas
@@ -131,25 +146,48 @@ export default function ArtAssetPicker({ open, onClose }: ArtAssetPickerProps) {
                   No assets available in this category
                 </div>
               ) : (
-                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {categoryAssets.map((asset) => (
-                    <button
-                      key={asset.id}
-                      onClick={() => handleAssetSelect(asset)}
-                      className="aspect-square border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 p-2 group"
-                      title={asset.name}
-                    >
-                      <img
-                        src={asset.image_url}
-                        alt={asset.name}
-                        className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-200"
-                        onError={(e) => {
-                          e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+PHRleHQgeD0iMzIiIHk9IjM2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOUI5QkE5IiBmb250LXNpemU9IjEwIj5JbWFnZTwvdGV4dD48L3N2Zz4=';
-                        }}
-                      />
-                    </button>
-                  ))}
-                </div>
+                <>
+                  {/* Tag filter bar */}
+                  {uniqueTags.length > 0 && (
+                    <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+                      <button
+                        className={`px-3 py-1 rounded-full border text-sm whitespace-nowrap transition-colors ${selectedTag === null ? 'bg-blue-600 text-white border-blue-600' : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-blue-100'}`}
+                        onClick={() => setSelectedTag(null)}
+                      >
+                        All
+                      </button>
+                      {uniqueTags.map((tag: string) => (
+                        <button
+                          key={tag}
+                          className={`px-3 py-1 rounded-full border text-sm whitespace-nowrap transition-colors ${selectedTag === tag ? 'bg-blue-600 text-white border-blue-600' : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-blue-100'}`}
+                          onClick={() => setSelectedTag(tag)}
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {/* Asset grid */}
+                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    {filteredAssets.map((asset: any) => (
+                      <button
+                        key={asset.id}
+                        onClick={() => handleAssetSelect(asset)}
+                        className="aspect-square border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 p-2 group"
+                        title={asset.name}
+                      >
+                        <img
+                          src={asset.image_url}
+                          alt={asset.name}
+                          className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-200"
+                          onError={(e) => {
+                            e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+PHRleHQgeD0iMzIiIHk9IjM2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOUI5QkE5IiBmb250LXNpemU9IjEwIj5JbWFnZTwvdGV4dD48L3N2Zz4=';
+                          }}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </>
               )}
             </>
           )}

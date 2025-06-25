@@ -19,6 +19,7 @@ interface ArtAsset {
   name: string;
   image_url: string;
   file_type: 'svg' | 'png' | 'jpg' | 'jpeg' | 'webp';
+  tag: string;
   user_id?: string;
   active: boolean;
   created_at: string;
@@ -70,6 +71,7 @@ export function ArtAssetsProvider({ children }: { children: ReactNode }) {
           name,
           image_url,
           file_type,
+          tag,
           user_id,
           active,
           created_at,

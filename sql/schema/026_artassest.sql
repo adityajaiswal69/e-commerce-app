@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS public.art_assets (
   name TEXT NOT NULL,
   image_url TEXT NOT NULL,
   file_type TEXT CHECK (file_type IN ('svg', 'png', 'jpg', 'jpeg', 'webp')),
+  tag TEXT NOT NULL,  
   user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   active BOOLEAN DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())

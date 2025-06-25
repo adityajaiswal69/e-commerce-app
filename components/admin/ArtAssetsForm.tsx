@@ -63,6 +63,23 @@ export default function ArtAssetsForm() {
       .replace(/^-+|-+$/g, '');
   };
 
+  // Helper function to extract file path from URL
+  const extractFilePathFromUrl = (url: string): string | null => {
+    try {
+      const urlObj = new URL(url);
+      const pathSegments = urlObj.pathname.split('/');
+      // Find the segment after 'art-assets' bucket name
+      const bucketIndex = pathSegments.findIndex(segment => segment === 'art-assets');
+      if (bucketIndex !== -1 && bucketIndex < pathSegments.length - 1) {
+        return pathSegments.slice(bucketIndex + 1).join('/');
+      }
+      return null;
+    } catch (err) {
+      console.error('Error extracting file path:', err);
+      return null;
+    }
+  };
+
   // Get current user
   useEffect(() => {
     getCurrentUser();
@@ -177,6 +194,17 @@ export default function ArtAssetsForm() {
     return publicUrl;
   }
 
+  async function deleteFileFromStorage(filePath: string): Promise<void> {
+    const { error } = await supabase.storage
+      .from('art-assets')
+      .remove([filePath]);
+    
+    if (error) {
+      console.error('Error deleting file from storage:', error);
+      // Don't throw error here, as we still want to delete the database record
+    }
+  }
+
   async function handleCreateCategory(e: React.FormEvent) {
     e.preventDefault();
     
@@ -264,10 +292,16 @@ export default function ArtAssetsForm() {
         throw new Error('Invalid file type');
       }
       
-      // Create file path: category_id/uuid.extension
+      // Find the selected category to get its slug/name
+      const selectedCategory = categories.find(cat => cat.id === selectedCategoryId);
+      if (!selectedCategory) {
+        throw new Error('Category not found');
+      }
+      
+      // Create file path using category slug: category_slug/uuid.extension
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `${uuidv4()}.${fileExt}`;
-      const filePath = `${selectedCategoryId}/${fileName}`;
+      const filePath = `${selectedCategory.slug}/${fileName}`;
       
       // Upload file to storage
       const imageUrl = await uploadFileToStorage(selectedFile, filePath);
@@ -315,17 +349,31 @@ export default function ArtAssetsForm() {
     try {
       setError(null);
       
-      // Set asset as inactive instead of deleting
+      // Find the asset to get its image URL
+      const assetToDelete = assets.find(asset => asset.id === assetId);
+      if (!assetToDelete) {
+        throw new Error('Asset not found');
+      }
+      
+      // Extract file path from the image URL
+      const filePath = extractFilePathFromUrl(assetToDelete.image_url);
+      
+      // Delete file from storage bucket first
+      if (filePath) {
+        await deleteFileFromStorage(filePath);
+      }
+      
+      // FIXED: Delete the actual database record instead of just setting active to false
       const { error } = await supabase
         .from("art_assets")
-        .update({ active: false })
+        .delete()
         .eq("id", assetId);
       
       if (error) throw error;
       
       // Remove from UI
       setAssets(prev => prev.filter(asset => asset.id !== assetId));
-      setSuccess("Asset deleted successfully!");
+      setSuccess("Asset and file deleted successfully!");
       
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(null), 3000);

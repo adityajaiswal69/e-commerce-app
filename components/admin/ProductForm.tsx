@@ -15,6 +15,19 @@ const STYLE_OPTIONS = [
   "Minimalist",
   "Athletic",
 ];
+const FABRIC_OPTIONS = [
+  "Cotton",
+  "Polyester",
+  "Linen",
+  "Silk",
+  "Wool",
+  "Denim",
+  "Rayon",
+  "Nylon",
+  "Spandex",
+  "Velvet",
+  "Canvas",
+];
 
 const COLOR_OPTIONS = [
   "Black",
@@ -69,6 +82,7 @@ type FormData = {
   };
   occasions: string[];
   viewImages: Record<ViewType, string>;
+  fabric: string[];
 };
 
 async function deleteProductImage(imageUrl: string) {
@@ -119,10 +133,10 @@ export default function ProductForm({ product }: ProductFormProps) {
       back: product?.back_image_url || "",
       left: product?.left_image_url || "",
       right: product?.right_image_url || ""
-    }
+    },
+    fabric: [],
   });
   
-
 
   // Fetch categories and subcategories
   useEffect(() => {
@@ -179,7 +193,7 @@ export default function ProductForm({ product }: ProductFormProps) {
 
 
   const handleMultiSelect = (
-    field: "style" | "colors" | "occasions",
+    field: "style" | "colors" | "occasions" | "fabric",
     value: string
   ) => {
     setFormData((prev) => ({
@@ -257,7 +271,8 @@ export default function ProductForm({ product }: ProductFormProps) {
         style: formData.style,
         colors: formData.colors,
         sizes: formData.sizes,
-        occasions: formData.occasions
+        occasions: formData.occasions,
+        fabric: formData.fabric
       };
 
       if (product) {
@@ -386,7 +401,7 @@ export default function ProductForm({ product }: ProductFormProps) {
           />
         </div>
 
-        <div>
+        {/* <div>
           <label className="block text-sm font-medium">Stock</label>
           <input
             type="number"
@@ -398,7 +413,7 @@ export default function ProductForm({ product }: ProductFormProps) {
             required
             min="0"
           />
-        </div>
+        </div> */}
         
         {filteredSubcategories.length > 0 && (
           <div>
@@ -436,7 +451,7 @@ export default function ProductForm({ product }: ProductFormProps) {
 
 
 
-      <div>
+      {/* <div>
         <label className="block text-sm font-medium mb-2">Styles</label>
         <div className="flex flex-wrap gap-2">
           {STYLE_OPTIONS.map((style) => (
@@ -454,7 +469,7 @@ export default function ProductForm({ product }: ProductFormProps) {
             </button>
           ))}
         </div>
-      </div>
+      </div> */}
 
       <div>
         <label className="block text-sm font-medium mb-2">Colors</label>
@@ -475,8 +490,7 @@ export default function ProductForm({ product }: ProductFormProps) {
           ))}
         </div>
       </div>
-
-      <div>
+      {/* <div>  
         <label className="block text-sm font-medium mb-2">
           Available Sizes
         </label>
@@ -512,9 +526,28 @@ export default function ProductForm({ product }: ProductFormProps) {
             </div>
           ))}
         </div>
+      </div> */}
+      <div>
+  <label className="block text-sm font-medium mb-2">Fabrics</label>
+  <div className="flex flex-wrap gap-2">
+    {FABRIC_OPTIONS.map((fabric) => (
+      <button
+        key={fabric}
+        type="button"
+        onClick={() => handleMultiSelect("fabric", fabric)}
+        className={`px-4 py-2 rounded-full ${
+          formData.fabric?.includes(fabric)
+            ? "bg-green-600 text-white"
+            : "bg-gray-100 text-gray-700"
+        }`}
+      >
+        {fabric}
+      </button>
+    ))}
+  </div>
       </div>
 
-      <div>
+{/* <div>
         <label className="block text-sm font-medium mb-2">Occasions</label>
         <div className="flex flex-wrap gap-2">
           {OCCASION_OPTIONS.map((occasion) => (
@@ -532,8 +565,7 @@ export default function ProductForm({ product }: ProductFormProps) {
             </button>
           ))}
         </div>
-      </div>
-
+</div> */}
       <div>
         <label className="flex items-center gap-2">
           <input

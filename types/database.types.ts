@@ -90,6 +90,7 @@ export type Product = {
   active: boolean;
   style?: string[];
   colors?: string[];
+  fabric?: string[];
   sizes?: {
     top?: string[];
     bottom?: string[];

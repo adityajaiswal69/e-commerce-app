@@ -22,36 +22,8 @@ interface ExtendedProduct extends Product {
   review_count?: number;
 }
 
-type SizeCategory = "top" | "bottom" | "shoes";
-
-function getSizeCategory(category: string): SizeCategory | null {
-  const categoryMap: Record<string, SizeCategory> = {
-    // Uniform categories
-    'school-uniform': "top",
-    'office-uniform': "top",
-    'hospital-uniform': "top",
-    'chef-uniform': "top",
-    'lab-coat': "top",
-    'apron': "top",
-
-    // Clothing categories
-    tshirt: "top",
-    shirt: "top",
-    jacket: "top",
-    blazer: "top",
-    top: "top",
-
-    pants: "bottom",
-    trousers: "bottom",
-    jeans: "bottom",
-    shorts: "bottom",
-    bottom: "bottom",
-
-    // Removed all shoe-related categories since we don't sell shoes
-  };
-
-  return categoryMap[category.toLowerCase()] || "top"; // Default to "top" instead of null
-}
+// Static size list for all products
+const STATIC_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
 
 export default function ProductPage({
   params,
@@ -69,11 +41,12 @@ export default function ProductPage({
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [showSizeModal, setShowSizeModal] = useState(false);
+  const [sizeQuantities, setSizeQuantities] = useState<Record<string, number>>({});
 
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
-  const [sizeQuantities, setSizeQuantities] = useState<Record<string, number>>({});
 
   useEffect(() => {
     async function fetchData() {
@@ -451,28 +424,32 @@ export default function ProductPage({
               </div>
             )}
 
-            {/* Size Selection with Quantity (Bulk Style) */}
-            {(() => {
-              const sizeCategory = getSizeCategory(product.category);
-              const availableSizes = (product.sizes && sizeCategory && product.sizes[sizeCategory]) || [];
+            {/* Size Chart (always visible) */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900">SIZES</h3>
+             <button
+                className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
+                onClick={() => setShowSizeModal(true)}
+              >
+                Select 
+              </button>
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-600">
+                  Total Quantity: <span className="font-semibold">
+                    {Object.values(sizeQuantities).reduce((sum, qty) => sum + qty, 0)}
+                  </span>
+                </p>
+              </div>
+              
+            </div>
 
-              // Debug logging
-              console.log('🔍 Size Debug Info:', {
-                category: product.category,
-                sizeCategory,
-                productSizes: product.sizes,
-                availableSizes
-              });
-
-              if (availableSizes.length === 0) {
-                return null;
-              }
-
-              return (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900">SIZE</h3>
+            {/* Size Selection Modal */}
+            {showSizeModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+                  <h3 className="text-lg font-semibold mb-4">Select Sizes</h3>
                   <div className="space-y-3">
-                    {availableSizes.map((size) => (
+                    {STATIC_SIZES.map((size) => (
                       <div key={size} className="flex items-center justify-between py-2 border-b border-gray-100">
                         <span className="font-medium text-gray-900 min-w-[40px]">{size}</span>
                         <div className="flex items-center space-x-3">
@@ -508,16 +485,23 @@ export default function ProductPage({
                       </div>
                     ))}
                   </div>
-                  <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600">
-                      Total Quantity: <span className="font-semibold">
-                        {Object.values(sizeQuantities).reduce((sum, qty) => sum + qty, 0)}
-                      </span>
-                    </p>
+                  <div className="flex justify-end gap-2 mt-6">
+                    <button
+                      className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                      onClick={() => setShowSizeModal(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                      onClick={() => setShowSizeModal(false)}
+                    >
+                      Confirm
+                    </button>
                   </div>
                 </div>
-              );
-            })()}
+              </div>
+            )}
 
             {/* Color Selection */}
             {product.colors && product.colors.length > 0 && (

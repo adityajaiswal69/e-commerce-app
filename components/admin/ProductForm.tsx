@@ -301,9 +301,18 @@ export default function ProductForm({ product }: ProductFormProps) {
 
       if (deleteError) throw deleteError;
 
-      // Then delete the associated image
-      if (product.image_url) {
-        await deleteProductImage(product.image_url);
+      // Then delete all associated images
+      const imageFields = [
+        product.image_url,
+        product.front_image_url,
+        product.back_image_url,
+        product.left_image_url,
+        product.right_image_url
+      ];
+      for (const url of imageFields) {
+        if (url) {
+          await deleteProductImage(url);
+        }
       }
 
       router.push("/admin/products");

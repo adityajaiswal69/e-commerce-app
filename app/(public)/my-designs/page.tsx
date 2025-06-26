@@ -94,24 +94,62 @@ export default function MyDesignsPage() {
   }
 
   const handleDeleteDesign = async (designId: string) => {
-    if (!confirm('Are you sure you want to delete this design? This action cannot be undone.')) {
+    const design = designs.find(d => d.id === designId);
+    if (!design) return;
+
+    if (!confirm('Are you sure you want to delete this design and all associated images?')) {
       return;
     }
 
     try {
+      const pathsToDelete: string[] = [];
+
+      // Step 1: Delete preview images from "designs/previews"
+      if (design.preview_images) {
+        for (const [view, url] of Object.entries(design.preview_images)) {
+          const match = url.match(/designs\/(previews\/.*)/);
+          if (match && match[1]) {
+            pathsToDelete.push(match[1]);
+          }
+        }
+      }
+
+      // Step 2: Delete element images from "designs/designs"
+      if (design.elements_by_view) {
+        const elements = Object.values(design.elements_by_view).flat();
+        elements.forEach((el: any) => {
+          if (el.type === 'image' && el.data && el.data.src) {
+            const match = el.data.src.match(/designs\/(designs\/[^"'?]+)/);
+            if (match && match[1]) {
+              pathsToDelete.push(match[1]);
+            }
+          }
+        });
+      }
+
+      // Step 3: Delete all files from Supabase Storage
+      if (pathsToDelete.length > 0) {
+        const { error: storageError } = await supabase.storage
+          .from('designs')
+          .remove(pathsToDelete);
+
+        if (storageError) {
+          console.warn('Storage deletion warning:', storageError.message);
+        }
+      }
+
+      // Step 4: Delete the design row from database
       const { error } = await supabase
         .from('designs')
         .delete()
         .eq('id', designId);
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      setDesigns(prev => prev.filter(design => design.id !== designId));
-      toast.success('Design deleted successfully');
+      setDesigns(prev => prev.filter(d => d.id !== designId));
+      toast.success('Design and associated images deleted successfully');
     } catch (error) {
-      console.error('Error deleting design:', error);
+      console.error('Delete error:', error);
       toast.error('Failed to delete design');
     }
   };

@@ -1,5 +1,4 @@
 import Navbar from "@/components/layout/Navbar";
-import LeftNavBar from "@/components/layout/LeftNavbar";
 import Footer from "@/components/layout/Footer";
 
 interface MainLayoutProps {
@@ -9,7 +8,7 @@ interface MainLayoutProps {
 export default function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50">
-      <LeftNavBar />
+      
       {/* Navbar, Main content, and Footer now take full width since sidebar is hidden by default */}
       <div className="">
         <Navbar />

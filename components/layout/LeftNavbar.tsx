@@ -392,13 +392,13 @@ export default function LeftNavbar() {
       </div>
 
       {/* Left Sidebar Navigation - Hidden by default, shows on toggle */}
-      <nav className={`fixed left-0 top-0 h-full w-64 bg-white border-r shadow-lg transform transition-transform duration-300 ease-in-out z-40 ${
+      <nav className={`fixed left-0 top-0 h-full w-64 bg-gradient-to-b from-white via-[#e9e2a3] to-white shadow-lg transform transition-transform duration-300 ease-in-out z-40'${
         isMenuOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <div className="flex flex-col h-full">
           {/* Logo/Header Section */}
           <div className="p-2 border-b">
-            <Link href="/" className="block">
+                      <Link href="/" className="block">
               <div className="">
                 <Image
                   src="/Logo-3.jpg"
@@ -413,7 +413,7 @@ export default function LeftNavbar() {
           </div>
 
           {/* Navigation Items */}
-          <div className="flex-1 overflow-y-auto py-4">
+          <div className="flex-1 overflow-y-auto py-6">
             <div className="space-y-1 px-2">
               {navigationItems.map((item, index) => renderNavigationItem(item, 0, `nav-${index}`))}
             </div>

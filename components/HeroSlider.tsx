@@ -118,7 +118,7 @@ export default function HeroSlider() {
   };
 
   return (
-    <div className="relative h-[400px] md:h-[500px] lg:h-[600px] w-full overflow-hidden">
+    <div className="relative h-[500px] md:h-[600px] lg:h-[700px] w-full overflow-hidden">
       
       {/* Logo Intro Screen */}
       <AnimatePresence>

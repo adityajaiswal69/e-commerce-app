@@ -1,7 +1,7 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import ProductGrid from "@/components/products/ProductGrid";
 import Link from "next/link";
-import NewsletterForm from "@/components/NewsletterForm";
+import BulkInquiryForm from "@/components/BulkInquiryForm";
 import LogoTicker from "@/components/elements/logoticker";
 import Testimonials from "@/components/sections/Testimonials";
 import HomeRecommendations from "@/components/recommendations/HomeRecommendations";
@@ -40,77 +40,113 @@ const industries = [
     title: "HOTELS &",
     subtitle: "RESORTS",
     description: "Luxury hospitality solutions",
-    image: "/images/industries/hotelANDresort.jpg", // Add your image path here or set to null
+    image: "/images/industries/hotelANDresort.jpg",
     fallbackColor: "from-slate-800 to-slate-600",
-    icon: (
-      <svg className="h-6 w-6 text-[#333333]" fill="currentColor" viewBox="0 0 20 20">
-        <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm12 12V6H4v10h12z" clipRule="evenodd" />
-      </svg>
-    )
   },
   {
     id: 2,
-    title: "AUTOMOTIVE",
-    subtitle: "COMPANIES",
-    description: "Professional automotive solutions",
-    image: "/images/industries/automative.jpg", // No image - will use fallback color
-    fallbackColor: "from-gray-900 to-gray-700",
-    icon: (
-      <svg className="h-6 w-6 text-[#333333]" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-        <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-      </svg>
-    )
+    title: "CASINO",
+    subtitle: "WEAR",
+    description: "Elegant uniforms for casino staff",
+    image: "/images/industries/casino.jpg",
+    fallbackColor: "from-yellow-900 to-yellow-700",
   },
   {
     id: 3,
-    title: "MANUFACTURING",
-    subtitle: "& FACTORIES",
-    description: "Industrial excellence solutions",
-    image: "/images/industries/manufact.jpg", // Add your image path here or set to null
-    fallbackColor: "from-blue-900 to-blue-700",
-    icon: (
-      <svg className="h-6 w-6 text-[#333333]" fill="currentColor" viewBox="0 0 20 20">
-        <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-      </svg>
-    )
+    title: "MEDICAL",
+    subtitle: "FACTORY",
+    description: "Uniforms for pharmaceutical production",
+    image: "/images/industries/medical.jpg",
+    fallbackColor: "from-red-900 to-red-700",
   },
   {
     id: 4,
-    title: "HOSPITALS &",
-    subtitle: "HEALTHCARE",
-    description: "Medical care solutions",
-    image: "/images/industries/Medical.jpg", // No image - will use fallback color
-    fallbackColor: "from-teal-800 to-teal-600",
-    icon: (
-      <svg className="h-6 w-6 text-[#333333]" fill="currentColor" viewBox="0 0 20 20">
-        <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm8 2a1 1 0 11-2 0 1 1 0 012 0z" clipRule="evenodd" />
-      </svg>
-    )
+    title: "SECURITY",
+    subtitle: "",
+    description: "Professional security attire",
+    image: "/images/industries/security.jpg",
+    fallbackColor: "from-gray-800 to-gray-600",
   },
   {
     id: 5,
+    title: "CHEF",
+    subtitle: "WEAR",
+    description: "Premium chef coats and aprons",
+    image: "/images/industries/chef.png",
+    fallbackColor: "from-orange-800 to-orange-600",
+  },
+  {
+    id: 6,
+    title: "CORPORATE",
+    subtitle: "OFFICES",
+    description: "Formal attire for professionals",
+    image: "/images/industries/corporate.png",
+    fallbackColor: "from-blue-900 to-blue-700",
+  },
+  {
+    id: 7,
+    title: "CAFES/",
+    subtitle: "RESTAURANTS/PUBS",
+    description: "Stylish uniforms for food service",
+    image: "/images/industries/cafe.png",
+    fallbackColor: "from-brown-800 to-brown-600",
+  },
+  {
+    id: 8,
+    title: "CATERING",
+    subtitle: "SERVICES",
+    description: "Functional attire for catering staff",
+    image: "/images/industries/catering.jpg",
+    fallbackColor: "from-green-900 to-green-700",
+  },
+  {
+    id: 9,
+    title: "PHARMACEUTICAL",
+    subtitle: "FACTORIES",
+    description: "Sanitized and safe uniforms",
+    image: "/images/industries/pharma.jpg",
+    fallbackColor: "from-purple-900 to-purple-700",
+  },
+  {
+    id: 10,
+    title: "HOSPITAL",
+    subtitle: "ATTIRE",
+    description: "Comfortable and sterile garments",
+    image: "/images/industries/hospital.png",
+    fallbackColor: "from-cyan-800 to-cyan-600",
+  },
+  {
+    id: 11,
     title: "SCHOOLS &",
-    subtitle: "EDUCATIONAL",
-    extraSubtitle: "INSTITUTIONS",
+    subtitle: "INSTITUTIONS",
     description: "Educational excellence solutions",
-    image: "/images/industries/school.jpg", // Add your image path here or set to null
+    image: "/images/industries/school.jpg",
     fallbackColor: "from-indigo-800 to-indigo-600",
-    icon: (
-      <svg className="h-6 w-6 text-[#333333]" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
-      </svg>
-    )
-  }
-];
-
-// Define key features
-const keyFeatures = [
-  "Custom Website Design",
-  "Mobile & SEO Optimization",
-  "Brand Integration",
-  "Fast, Secure & Scalable Development",
-  "Ongoing Support & Maintenance"
+  },
+  {
+    id: 12,
+    title: "TSHIRTS/",
+    subtitle: "HOODIES",
+    description: "Casual wear for all occasions",
+    image: "/images/industries/tshirts.png",
+    fallbackColor: "from-pink-800 to-pink-600",
+  },
+  {
+    id: 13,
+    title: "DESIGNER",
+    subtitle: "APRONS",
+    description: "Trendy and functional aprons",
+    image: "/images/industries/apron.png",
+    fallbackColor: "from-lime-900 to-lime-700",
+  },
+  {
+    id: 14,
+    title: "AUTOMOBILE",
+    subtitle: "",
+    description: "Professional automotive solutions",
+    image: "/images/industries/automative.jpg",
+    fallbackColor: "from-gray-900 to-gray-700",
+  },
 ];
 
   return (
@@ -120,55 +156,122 @@ const keyFeatures = [
         <HeroSlider />
       </section>
       {/* Industries We Serve */}
-<section className="container mx-auto px-4 py-5 md:py-8">
-  <div className="mx-auto max-w-4xl text-center">
-    <h2 className="mb-4 md:mb-6 text-2xl font-bold text-[#333333] md:text-3xl lg:text-4xl">
-      Tailored Solutions for Every Industry
-    </h2>
-    <p className="mb-8 md:mb-12 text-base md:text-lg leading-relaxed text-[#555555]">
-      Our experience spans across industries where precision, trust, and timeless design matter most.
-    </p>
-  </div>
-  
-  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
-    {industries.map((industry, index) => (
-      <div 
-        key={index} 
-        className={`relative h-64 md:h-80 rounded-lg overflow-hidden shadow-lg group cursor-pointer transition-transform hover:scale-105 ${
-          index === 4 ? 'sm:col-span-2 lg:col-span-1' : ''
-        }`}
-      >
-        {/* Background Image or Gradient */}
-        {industry.image ? (
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${industry.image})` }}
-          />
-        ) : (
-          <div className={`absolute inset-0 bg-gradient-to-r ${industry.fallbackColor}`}></div>
-        )}
+    <section className="container mx-auto px-4 py-5 md:py-8">
+      <div className="mx-auto max-w-4xl text-center">
+        <h2 className="mb-4 md:mb-6 text-2xl font-bold text-[#333333] md:text-3xl lg:text-4xl">
+          Tailored Solutions for Every Industry
+        </h2>
+        <p className="mb-8 md:mb-12 text-base md:text-lg leading-relaxed text-[#555555]">
+          Our experience spans across industries where precision, trust, and timeless design matter most.
+        </p>
+      </div>
+      
+      {/* Desktop: Horizontal expanding cards */}
+      <div className="hidden lg:flex gap-2 justify-center items-center h-80 group/container">
+  {industries.map((industry, index) => (
+    <div 
+      key={industry.id} 
+      className={`group relative h-full rounded-xl overflow-hidden shadow-lg cursor-pointer transition-all duration-700 ease-out flex-shrink-0 ${
+        index === 0 
+          ? 'w-80 group-hover/container:w-16 hover:!w-80' 
+          : 'w-16 hover:w-80'
+      }`}
+      style={{
+        backgroundImage: industry.image ? `url(${industry.image})` : undefined,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {/* Fallback gradient if no image */}
+      {!industry.image && (
+        <div className={`absolute inset-0 bg-gradient-to-br ${industry.fallbackColor}`}></div>
+      )}
+      
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black bg-opacity-50 group-hover:bg-opacity-40 transition-opacity duration-700"></div>
+      
+      {/* Shimmer effect on hover */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>
+      
+      {/* Content */}
+      <div className="relative z-10 h-full flex flex-col justify-center items-center text-center p-4">
+        {/* Collapsed state - vertical text */}
+        <div className={`${
+          index === 0 
+            ? 'opacity-0 group-hover/container:opacity-100 group-hover:opacity-0' 
+            : 'group-hover:opacity-0'
+        } transition-opacity duration-300 flex flex-col items-center justify-center h-full`}>
+          <div className="transform rotate-90 origin-center whitespace-nowrap">
+            <h3 className="text-sm font-bold text-white tracking-wider">
+              {industry.title} {industry.subtitle}
+            </h3>
+          </div>
+        </div>
         
-        {/* Dark overlay for better text readability */}
-        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-        
-        {/* Content */}
-        <div className="relative z-10 h-full flex flex-col justify-center items-center text-center p-6">
-          {/* <div className="mb-4 h-12 w-12 rounded-full bg-[#e9e2a3] flex items-center justify-center">
-            {industry.icon}
-          </div> */}
-          <h3 className="text-xl md:text-2xl font-bold text-white mb-2">{industry.title}</h3>
-          <h3 className="text-xl md:text-2xl font-bold text-white">{industry.subtitle}</h3>
-          {industry.extraSubtitle && (
-            <h3 className="text-xl md:text-2xl font-bold text-white">{industry.extraSubtitle}</h3>
-          )}
-          <p className="text-sm text-gray-200 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+        {/* Expanded state - horizontal content */}
+        <div className={`absolute inset-0 ${
+          index === 0 
+            ? 'opacity-100 group-hover/container:opacity-0 group-hover:opacity-100' 
+            : 'opacity-0 group-hover:opacity-100'
+        } transition-all duration-500 delay-200 flex flex-col justify-center items-center text-center p-6`}>
+          <h3 className="text-xl md:text-2xl font-bold text-white mb-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-300">
+            {industry.title}
+          </h3>
+          <h3 className="text-xl md:text-2xl font-bold text-white mb-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-400">
+            {industry.subtitle}
+          </h3>
+          
+          <p className="text-sm text-gray-200 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-600">
             {industry.description}
           </p>
         </div>
       </div>
-    ))}
-  </div>
-</section>
+    </div>
+  ))}
+</div>
+
+      {/* Mobile and Tablet: Traditional grid with hover effects */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:hidden sm:gap-6">
+        {industries.map((industry, index) => (
+          <div 
+            key={industry.id} 
+            className="group relative h-48 md:h-56 rounded-lg overflow-hidden shadow-lg cursor-pointer transition-all duration-500 hover:scale-105 hover:shadow-2xl"
+          >
+            {/* Background Image or Gradient */}
+            {industry.image ? (
+              <div 
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat transform group-hover:scale-110 transition-transform duration-700"
+                style={{ backgroundImage: `url(${industry.image})` }}
+              />
+            ) : (
+              <div className={`absolute inset-0 bg-gradient-to-r ${industry.fallbackColor} transform group-hover:scale-110 transition-transform duration-700`}></div>
+            )}
+            
+            {/* Dark overlay for better text readability */}
+            <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-30 transition-opacity duration-500"></div>
+            
+            {/* Shimmer effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>
+            
+            {/* Content */}
+            <div className="relative z-10 h-full flex flex-col justify-center items-center text-center p-4">
+              
+              <h3 className="text-lg md:text-xl font-bold text-white mb-1 transform group-hover:translate-y-1 transition-transform duration-300">
+                {industry.title}
+              </h3>
+              <h3 className="text-lg md:text-xl font-bold text-white transform group-hover:translate-y-1 transition-transform duration-300">
+                {industry.subtitle}
+              </h3>
+              
+              <p className="text-xs text-gray-200 mt-2 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-500">
+                {industry.description}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
       {/* Top Categories Section */}
       {/* About Us Section */}
       <section className="container mx-auto px-4 py-5 md:py-8">
@@ -185,9 +288,7 @@ const keyFeatures = [
         </div>
       </section>
       {/* Best Selling Products with Category Filtering */}
-      {featuredProducts && featuredProducts.length > 0 && (
-            <BestSellingProducts products={featuredProducts} />
-          )}
+      
 
       {/* View All Products Button */}
       <section className="container mx-auto px-4 py-8 text-center">
@@ -260,10 +361,10 @@ const keyFeatures = [
            
             <LogoTicker />
           </div>
-      <section className="bg-[#f8f6e1] py-5 md:py-10">
+      <section className="py-5 md:py-10">
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-3xl">
-            <NewsletterForm />
+            <BulkInquiryForm />
           </div>
         </div>
       </section>

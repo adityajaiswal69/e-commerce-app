@@ -118,7 +118,11 @@ export default function HeroSlider() {
   };
 
   return (
+<<<<<<< HEAD
     <div className="relative h-[400px] md:h-[600px] lg:h-[700px] w-full overflow-hidden">
+=======
+    <div className="relative h-[400px] md:h-[500px] lg:h-[600px] w-full overflow-hidden">
+>>>>>>> parent of 8058daf (Update HeroSlider.tsx)
       
       {/* Logo Intro Screen */}
       <AnimatePresence>

@@ -41,6 +41,9 @@ export default function ProductPage({
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  // Fabric options and selection (from product table)
+  const [fabrics, setFabrics] = useState<string[]>([]);
+  const [selectedFabrics, setSelectedFabrics] = useState<string[]>([]);
   const [showSizeModal, setShowSizeModal] = useState(false);
   const [sizeQuantities, setSizeQuantities] = useState<Record<string, number>>({});
 
@@ -79,6 +82,15 @@ export default function ProductPage({
         } catch (error) {
           console.log("Product variants table not found or error:", error);
         }
+
+        // Use fabric options from product table
+        let fabricOptions: string[] = [];
+        let selectedFabricValues: string[] = [];
+        if (productData.fabric && Array.isArray(productData.fabric) && productData.fabric.length > 0) {
+          fabricOptions = productData.fabric;
+        }
+        setFabrics(fabricOptions);
+        setSelectedFabrics([]);
 
         // Combine the data
         const enhancedProductData = {
@@ -217,12 +229,7 @@ export default function ProductPage({
     return product?.discount_percentage || 0;
   };
 
-  const getAvailableStock = () => {
-    if (selectedVariant) {
-      return selectedVariant.stock;
-    }
-    return product?.stock || 0;
-  };
+  // Removed getAvailableStock and all stock logic
 
 
 
@@ -283,7 +290,6 @@ export default function ProductPage({
   const currentPrice = getCurrentPrice();
   const originalPrice = getOriginalPrice();
   const discountPercentage = getDiscountPercentage();
-  const availableStock = getAvailableStock();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -367,22 +373,7 @@ export default function ProductPage({
                 )}
               </div>
 
-              {/* Stock Status */}
-              <div className="flex items-center space-x-2">
-                {availableStock > 0 ? (
-                  <>
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <span className="text-sm text-green-600 font-medium">
-                      {availableStock > 10 ? 'In Stock' : `Only ${availableStock} left`}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                    <span className="text-sm text-red-600 font-medium">Out of Stock</span>
-                  </>
-                )}
-              </div>
+              {/* Stock Status removed */}
             </div>
 
             {/* Description */}
@@ -503,6 +494,41 @@ export default function ProductPage({
               </div>
             )}
 
+            {/* Fabric Selection - Multi-select */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900">Fabric</h3>
+              {fabrics.length > 0 ? (
+                <div className="flex flex-wrap gap-3">
+                  {fabrics.map((fabric) => {
+                    const isSelected = selectedFabrics.includes(fabric);
+                    return (
+                      <button
+                        key={fabric}
+                        type="button"
+                        onClick={() => {
+                          setSelectedFabrics((prev) =>
+                            prev.includes(fabric)
+                              ? prev.filter((f) => f !== fabric)
+                              : [...prev, fabric]
+                          );
+                        }}
+                        className={`px-6 py-3 border-2 rounded-lg font-medium transition-all ${
+                          isSelected
+                            ? 'border-blue-600 bg-blue-500 text-white'
+                            : 'border-gray-200 hover:border-gray-300 text-gray-700 bg-gray-100'
+                        }`}
+                      >
+                        {fabric}
+                        
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-gray-500 italic">No fabric options available</div>
+              )}
+            </div>
+
             {/* Color Selection */}
             {product.colors && product.colors.length > 0 && (
               <div className="space-y-4">
@@ -531,10 +557,10 @@ export default function ProductPage({
               <div className="flex space-x-4">
                 <button
                   onClick={handleAddToCart}
-                  disabled={availableStock === 0 || addingToCart}
+                  disabled={addingToCart}
                   className="flex-1 bg-gray-900 text-white py-4 px-8 rounded-lg font-semibold hover:bg-gray-800 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
-                  {addingToCart ? 'Adding...' : availableStock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                  {addingToCart ? 'Adding...' : 'Add to Cart'}
                 </button>
 
                 <button

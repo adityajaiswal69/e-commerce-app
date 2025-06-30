@@ -43,6 +43,7 @@ export type ProductVariant = {
   stock: number;
   size?: string;
   color?: string;
+  fabric?: string[];
   material?: string;
   weight?: number;
   dimensions?: Record<string, any>;

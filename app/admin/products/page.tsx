@@ -34,9 +34,9 @@ export default async function AdminProductsPage() {
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Price
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+              {/* <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Stock
-              </th>
+              </th> */}
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Status
               </th>
@@ -69,7 +69,7 @@ export default async function AdminProductsPage() {
                 <td className="whitespace-nowrap px-6 py-4">
                   ₹{product.price.toFixed(2)}
                 </td>
-                <td className="whitespace-nowrap px-6 py-4">{product.stock}</td>
+                {/* <td className="whitespace-nowrap px-6 py-4">{product.stock}</td> */}
                 <td className="whitespace-nowrap px-6 py-4">
                   <span
                     className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${

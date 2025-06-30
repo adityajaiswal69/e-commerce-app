@@ -167,14 +167,14 @@ const industries = [
       </div>
       
       {/* Desktop: Horizontal expanding cards */}
-      <div className="hidden lg:flex gap-2 justify-center items-center h-80 group/container">
+<div className="hidden lg:flex gap-2 justify-center items-center h-80 group/container">
   {industries.map((industry, index) => (
     <div 
       key={industry.id} 
       className={`group relative h-full rounded-xl overflow-hidden shadow-lg cursor-pointer transition-all duration-700 ease-out flex-shrink-0 ${
         index === 0 
-          ? 'w-80 group-hover/container:w-16 hover:!w-80' 
-          : 'w-16 hover:w-80'
+          ? 'w-72 group-hover/container:w-16 hover:!w-72' 
+          : 'w-16 hover:w-72'
       }`}
       style={{
         backgroundImage: industry.image ? `url(${industry.image})` : undefined,
@@ -272,6 +272,19 @@ const industries = [
         ))}
       </div>
     </section>
+    
+      {/* View All Products Button */}
+      <section className="flex justify-center ">
+        <Link
+          href="/products"
+          className="inline-flex items-center px-8 py-3 bg-[#333333] text-white font-medium rounded-md hover:bg-[#555555] transition-colors duration-300"
+        >
+          View All Products
+          <svg className="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
+        </Link>
+      </section>
       {/* Top Categories Section */}
       {/* About Us Section */}
       <section className="container mx-auto px-4 py-5 md:py-8">
@@ -290,18 +303,6 @@ const industries = [
       {/* Best Selling Products with Category Filtering */}
       
 
-      {/* View All Products Button */}
-      <section className="container mx-auto px-4 py-8 text-center">
-        <Link
-          href="/products"
-          className="inline-flex items-center px-8 py-3 bg-[#333333] text-white font-medium rounded-md hover:bg-[#555555] transition-colors duration-300"
-        >
-          View All Products
-          <svg className="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-          </svg>
-        </Link>
-      </section>
 
       {/* What We Do Section */}
       {/* <section className="bg-[#f8f6e1] px-4 py-12 md:py-16">

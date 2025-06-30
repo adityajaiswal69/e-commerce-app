@@ -302,7 +302,216 @@ const industries = [
       </section>
       {/* Best Selling Products with Category Filtering */}
       
+    {/* Custom Design Tool Section */}
+      <section className="bg-gradient-to-br from-[#f8f6e1] to-[#e9e2a3] px-4 py-12 md:py-16">
+        <div className="container mx-auto">
+          <div className="mx-auto max-w-6xl">
+            {/* Header */}
+            <div className="text-center mb-12 md:mb-16">
+              <h2 className="mb-4 md:mb-6 text-2xl font-bold text-[#333333] md:text-3xl lg:text-4xl">
+                Design Your Vision with Our Advanced Design Tool
+              </h2>
+              <p className="text-base md:text-lg leading-relaxed text-[#555555] max-w-3xl mx-auto">
+                Transform your ideas into reality with our professional design platform. Create custom uniforms, 
+                apparel, and branded merchandise with industry-leading precision and style.
+              </p>
+            </div>
 
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
+              
+              {/* Left Column - Design Tool Preview */}
+              <div className="relative">
+                <div className="bg-white rounded-2xl shadow-2xl p-6 md:p-8 transform hover:scale-105 transition-transform duration-500">
+                  {/* Mock Design Interface */}
+                  <div className="bg-gray-100 rounded-lg p-4 mb-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex space-x-2">
+                        <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+                        <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                        <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                      </div>
+                      <span className="text-xs text-gray-500 font-medium">Professional Design Studio</span>
+                    </div>
+                    
+                    {/* Design Canvas Mockup */}
+                    <div className="bg-white rounded-lg p-4 h-40 md:h-48 flex items-center justify-center border-2 border-dashed border-gray-300">
+                      <div className="text-center">
+                        <div className="w-16 h-16 bg-[#333333] rounded-lg mx-auto mb-3 flex items-center justify-center">
+                          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <p className="text-sm text-gray-600">Your Custom Design Here</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Tool Features */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-[#333333] rounded-full"></div>
+                      <span className="text-xs text-gray-600">Logo Upload</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-[#333333] rounded-full"></div>
+                      <span className="text-xs text-gray-600">Color Picker</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-[#333333] rounded-full"></div>
+                      <span className="text-xs text-gray-600">Text Editor</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-[#333333] rounded-full"></div>
+                      <span className="text-xs text-gray-600">Size Guide</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Floating Elements */}
+                <div className="absolute -top-4 -right-4 bg-[#333333] text-white px-3 py-1 rounded-full text-xs font-medium">
+                  Professional
+                </div>
+                <div className="absolute -bottom-4 -left-4 bg-[#e9e2a3] text-[#333333] px-3 py-1 rounded-full text-xs font-medium">
+                  Easy to Use
+                </div>
+              </div>
+
+              {/* Right Column - Information */}
+              <div className="space-y-6">
+                <div className="bg-white rounded-xl p-6 md:p-8 shadow-lg">
+                  <div className="flex items-start space-x-4">
+                    <div className="flex-shrink-0 w-12 h-12 bg-[#333333] rounded-lg flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-[#333333] mb-2">Innovative Design Platform</h3>
+                      <p className="text-sm text-[#666666] leading-relaxed">
+                        Our cutting-edge design tool empowers you to create professional-grade custom uniforms and apparel. 
+                        With intuitive drag-and-drop functionality, extensive template library, and real-time preview capabilities.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl p-6 md:p-8 shadow-lg">
+                  <div className="flex items-start space-x-4">
+                    <div className="flex-shrink-0 w-12 h-12 bg-[#333333] rounded-lg flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-[#333333] mb-2">Expert Support & Analysis</h3>
+                      <p className="text-sm text-[#666666] leading-relaxed">
+                        Get exclusive access to our design tool by contacting our expert team members. We provide personalized 
+                        guidance, design analysis, and professional recommendations to ensure your vision comes to life perfectly.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl p-6 md:p-8 shadow-lg">
+                  <div className="flex items-start space-x-4">
+                    <div className="flex-shrink-0 w-12 h-12 bg-[#333333] rounded-lg flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-[#333333] mb-2">Seamless Order Process</h3>
+                      <p className="text-sm text-[#666666] leading-relaxed">
+                        Once your design is complete, submit it directly through our platform for instant analysis and quote. 
+                        Our streamlined process ensures quick turnaround times and exceptional quality control.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Key Features Grid */}
+            <div className="mt-12 md:mt-16">
+              <h3 className="text-xl md:text-2xl font-bold text-[#333333] text-center mb-8">
+                Powerful Features for Professional Results
+              </h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="bg-white rounded-lg p-6 text-center shadow-md hover:shadow-lg transition-shadow duration-300">
+                  <div className="w-12 h-12 bg-[#e9e2a3] rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-6 h-6 text-[#333333]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z" />
+                    </svg>
+                  </div>
+                  <h4 className="font-semibold text-[#333333] mb-2">2d Preview</h4>
+                  <p className="text-xs text-[#666666]">Visualize your design in  2d before ordering</p>
+                </div>
+
+                <div className="bg-white rounded-lg p-6 text-center shadow-md hover:shadow-lg transition-shadow duration-300">
+                  <div className="w-12 h-12 bg-[#e9e2a3] rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-6 h-6 text-[#333333]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                  </div>
+                  <h4 className="font-semibold text-[#333333] mb-2">Brand Colors</h4>
+                  <p className="text-xs text-[#666666]">Match your exact brand colors with precision</p>
+                </div>
+
+                <div className="bg-white rounded-lg p-6 text-center shadow-md hover:shadow-lg transition-shadow duration-300">
+                  <div className="w-12 h-12 bg-[#e9e2a3] rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-6 h-6 text-[#333333]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <h4 className="font-semibold text-[#333333] mb-2">Templates</h4>
+                  <p className="text-xs text-[#666666]">Start with industry-specific design templates</p>
+                </div>
+
+                <div className="bg-white rounded-lg p-6 text-center shadow-md hover:shadow-lg transition-shadow duration-300">
+                  <div className="w-12 h-12 bg-[#e9e2a3] rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-6 h-6 text-[#333333]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h4 className="font-semibold text-[#333333] mb-2">Expert Review</h4>
+                  <p className="text-xs text-[#666666]">Get professional feedback on your designs</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Call to Action */}
+            <div className="mt-12 md:mt-16 text-center">
+              <div className="bg-[#333333] rounded-2xl p-8 md:p-12 text-white">
+                <h3 className="text-xl md:text-2xl font-bold mb-4">
+                  Ready to Create Your Custom Design?
+                </h3>
+                <p className="text-[#e9e2a3] mb-6 max-w-2xl mx-auto">
+                  Contact our design specialists to get exclusive access to our professional design tool. 
+                  Transform your brand vision into premium custom apparel with expert guidance every step of the way.
+                </p>
+                
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                  <button className="bg-[#e9e2a3] text-[#333333] px-8 py-3 rounded-lg font-semibold hover:bg-yellow-300 transition-colors duration-300 flex items-center">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    Contact Design Team
+                  </button>
+                  
+                  <div className="flex items-center text-sm text-[#e9e2a3]">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    Exclusive Access Required
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* What We Do Section */}
       {/* <section className="bg-[#f8f6e1] px-4 py-12 md:py-16">

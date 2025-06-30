@@ -50,7 +50,7 @@ export default function ProductManagement({
               </p>
             </div>
             <Link
-              href={`/admin/products/${product.id}`}
+              href={`/admin/products/${product.id}/edit`}
               className="text-sm text-blue-500 hover:text-blue-600"
             >
               Edit →

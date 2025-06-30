@@ -170,7 +170,7 @@ export default async function ProductsPage({
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="mb-8 text-2xl font-bold">{pageTitle}</h1>
+      <h1 className="mb-8 mt-5 text-2xl font-bold">{pageTitle}</h1>
 
       <div className="mb-8">
         <SearchAndFilter

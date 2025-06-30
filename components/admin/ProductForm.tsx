@@ -134,7 +134,7 @@ export default function ProductForm({ product }: ProductFormProps) {
       left: product?.left_image_url || "",
       right: product?.right_image_url || ""
     },
-    fabric: [],
+    fabric: product?.fabric || [],
   });
   
 
@@ -528,23 +528,24 @@ export default function ProductForm({ product }: ProductFormProps) {
         </div>
       </div> */}
       <div>
-  <label className="block text-sm font-medium mb-2">Fabrics</label>
-  <div className="flex flex-wrap gap-2">
-    {FABRIC_OPTIONS.map((fabric) => (
-      <button
-        key={fabric}
-        type="button"
-        onClick={() => handleMultiSelect("fabric", fabric)}
-        className={`px-4 py-2 rounded-full ${
-          formData.fabric?.includes(fabric)
-            ? "bg-green-600 text-white"
-            : "bg-gray-100 text-gray-700"
-        }`}
-      >
-        {fabric}
-      </button>
-    ))}
-  </div>
+        <label className="block text-sm font-medium mb-2">Fabrics</label>
+        <div className="flex flex-wrap gap-2">
+          {FABRIC_OPTIONS.map((fabric) => (
+            <button
+              key={fabric}
+              type="button"
+              onClick={() => handleMultiSelect("fabric", fabric)}
+              className={`px-4 py-2 rounded-full transition-colors duration-150 ${
+                formData.fabric?.includes(fabric)
+                  ? "bg-blue-500 text-white border border-blue-600"
+                  : "bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200"
+              }`}
+            >
+              {fabric}
+              
+            </button>
+          ))}
+        </div>
       </div>
 
 {/* <div>

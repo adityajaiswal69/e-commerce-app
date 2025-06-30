@@ -50,6 +50,7 @@ export default function SearchAndFilter({
     if (subcategory) params.set("subcategory", subcategory);
     if (price) params.set("price", price);
     if (sort) params.set("sort", sort);
+    // Note: We don't preserve the page parameter here, so it resets to page 1 when filters change
 
     const queryString = params.toString();
     router.push(`/products${queryString ? `?${queryString}` : ""}`);
@@ -64,7 +65,7 @@ export default function SearchAndFilter({
           placeholder="Search products..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-md border p-2"
+          className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
       </div>
 
@@ -76,7 +77,7 @@ export default function SearchAndFilter({
             setCategory(e.target.value);
             setSubcategory(""); // Clear subcategory when category changes
           }}
-          className="rounded-md border p-2"
+          className="rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
           <option value="">All Categories</option>
           {categoriesData.map((cat) => (
@@ -90,7 +91,7 @@ export default function SearchAndFilter({
         <select
           value={subcategory}
           onChange={(e) => setSubcategory(e.target.value)}
-          className="rounded-md border p-2"
+          className="rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-400"
           disabled={!category || availableSubcategories.length === 0}
         >
           <option value="">All Subcategories</option>
@@ -105,7 +106,7 @@ export default function SearchAndFilter({
         <select
           value={price}
           onChange={(e) => setPrice(e.target.value)}
-          className="rounded-md border p-2"
+          className="rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
           <option value="">Any Price</option>
           <option value="0-50">Under ₹50</option>
@@ -118,7 +119,7 @@ export default function SearchAndFilter({
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value)}
-          className="rounded-md border p-2"
+          className="rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
           <option value="">Sort By</option>
           <option value="price_asc">Price: Low to High</option>

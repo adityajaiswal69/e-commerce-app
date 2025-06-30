@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import ProductGrid from "@/components/products/ProductGrid";
 import SearchAndFilter from "@/components/products/SearchAndFilter";
+import Pagination from "@/components/products/Pagination";
 import { Metadata } from "next";
 
 type SearchParams = {
@@ -9,7 +10,10 @@ type SearchParams = {
   subcategory?: string;
   price?: string;
   sort?: string;
+  page?: string;
 };
+
+const PRODUCTS_PER_PAGE = 12;
 
 // Helper function to generate page title based on filters
 function generatePageTitle(searchParams: SearchParams): string {
@@ -61,6 +65,10 @@ export default async function ProductsPage({
   const searchParamsData = await searchParams;
   const supabase = createServerSupabaseClient();
 
+  // Get current page (default to 1)
+  const currentPage = parseInt(searchParamsData.page || '1', 10);
+  const offset = (currentPage - 1) * PRODUCTS_PER_PAGE;
+
   // Get categories with subcategories for filter
   const { data: categoriesData } = await supabase
     .from("categories")
@@ -82,15 +90,20 @@ export default async function ProductsPage({
     new Set(productCategories?.map((item) => item.category))
   );
 
-  // Build query
+  // Build base query for counting total products
+  let countQuery = supabase.from("products").select("*", { count: 'exact', head: true }).eq("active", true);
+
+  // Build query for fetching products
   let query = supabase.from("products").select("*").eq("active", true);
 
-  // Apply search
+  // Apply search filters to both queries
   if (searchParamsData.q) {
-    query = query.ilike("name", `%${searchParamsData.q}%`);
+    const searchCondition = `%${searchParamsData.q}%`;
+    query = query.ilike("name", searchCondition);
+    countQuery = countQuery.ilike("name", searchCondition);
   }
 
-  // Apply category and subcategory filters
+  // Apply category and subcategory filters to both queries
   if (searchParamsData.category || searchParamsData.subcategory) {
     if (searchParamsData.subcategory) {
       // Filter by specific subcategory - get products that belong to this subcategory
@@ -103,13 +116,15 @@ export default async function ProductsPage({
 
       if (subcategoryData) {
         query = query.eq("subcategory_id", subcategoryData.id);
+        countQuery = countQuery.eq("subcategory_id", subcategoryData.id);
       } else {
         // If subcategory not found, return empty results
-        query = query.eq("id", "00000000-0000-0000-0000-000000000000");
+        const emptyCondition = "00000000-0000-0000-0000-000000000000";
+        query = query.eq("id", emptyCondition);
+        countQuery = countQuery.eq("id", emptyCondition);
       }
     } else if (searchParamsData.category) {
       // Filter by category - show all products in this category
-      // This includes both direct category products and subcategory products
       const { data: categoryData } = await supabase
         .from("categories")
         .select("id, subcategories(id)")
@@ -122,29 +137,39 @@ export default async function ProductsPage({
 
         if (subcategoryIds.length > 0) {
           // Filter products that either have the main category OR belong to any subcategory
-          query = query.or(`category.eq.${searchParamsData.category},subcategory_id.in.(${subcategoryIds.join(',')})`);
+          const filterCondition = `category.eq.${searchParamsData.category},subcategory_id.in.(${subcategoryIds.join(',')})`;
+          query = query.or(filterCondition);
+          countQuery = countQuery.or(filterCondition);
         } else {
           // No subcategories, just filter by main category
           query = query.eq("category", searchParamsData.category);
+          countQuery = countQuery.eq("category", searchParamsData.category);
         }
       } else {
         // If category not found, return empty results
-        query = query.eq("id", "00000000-0000-0000-0000-000000000000");
+        const emptyCondition = "00000000-0000-0000-0000-000000000000";
+        query = query.eq("id", emptyCondition);
+        countQuery = countQuery.eq("id", emptyCondition);
       }
     }
   }
 
-  // Apply price filter
+  // Apply price filter to both queries
   if (searchParamsData.price) {
     const [min, max] = searchParamsData.price.split("-");
     if (min && max) {
       query = query.gte("price", min).lte("price", max);
+      countQuery = countQuery.gte("price", min).lte("price", max);
     } else if (min === "200+") {
       query = query.gte("price", 200);
+      countQuery = countQuery.gte("price", 200);
     }
   }
 
-  // Apply sorting
+  // Get total count
+  const { count: totalProducts } = await countQuery;
+
+  // Apply sorting and pagination to products query
   if (searchParamsData.sort) {
     switch (searchParamsData.sort) {
       case "price_asc":
@@ -163,7 +188,13 @@ export default async function ProductsPage({
     query = query.order("created_at", { ascending: false });
   }
 
+  // Apply pagination
+  query = query.range(offset, offset + PRODUCTS_PER_PAGE - 1);
+
   const { data: products } = await query;
+
+  // Calculate pagination info
+  const totalPages = Math.ceil((totalProducts || 0) / PRODUCTS_PER_PAGE);
 
   // Generate dynamic page title for display
   const pageTitle = generatePageTitle(searchParamsData).replace(' - Uniformat', '');
@@ -179,7 +210,24 @@ export default async function ProductsPage({
         />
       </div>
 
+      {/* Products count */}
+      <div className="mb-4 text-sm text-gray-600">
+        Showing {products?.length || 0} of {totalProducts || 0} products
+        {currentPage > 1 && ` (Page ${currentPage} of ${totalPages})`}
+      </div>
+
       <ProductGrid products={products || []} />
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-8">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            searchParams={searchParamsData}
+          />
+        </div>
+      )}
     </div>
   );
 }

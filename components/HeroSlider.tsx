@@ -25,7 +25,7 @@ const SLIDER_IMAGES = [
   },
   {
     id: 3,
-    src: "/images/hero/hospital-uniform.jpg",
+    src: "/images/hero/hospital-uniform.jpeg",
     alt: "Hospital Uniforms",
     category: "hospital-uniform",
     title: "Hospital Wear",

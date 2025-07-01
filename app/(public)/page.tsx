@@ -56,7 +56,7 @@ const industries = [
     title: "MEDICAL",
     subtitle: "FACTORY",
     description: "Uniforms for pharmaceutical production",
-    image: "/images/industries/medical.jpg",
+    image: "/images/industries/medi.jpg",
     fallbackColor: "from-red-900 to-red-700",
   },
   {

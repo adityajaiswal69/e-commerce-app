@@ -47,9 +47,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems((prev) => {
       console.log("Current cart items:", prev);
 
-      // Check if item with same productId and size exists
+      // Check if item with same productId, size, color, and fabric exists
       const existingItemIndex = prev.findIndex(
-        (i) => i.productId === item.productId && i.size === item.size
+        (i) =>
+          i.productId === item.productId &&
+          i.size === item.size &&
+          i.color === item.color &&
+          JSON.stringify(i.fabric) === JSON.stringify(item.fabric)
       );
 
       if (existingItemIndex >= 0) {
@@ -64,7 +68,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Add new item with cartItemId and preserve the quantity
-      const cartItemId = `${item.productId}-${item.size}-${Date.now()}`;
+      const cartItemId = `${item.productId}-${item.size}-${item.color || ''}-${(item.fabric || []).join('-')}-${Date.now()}`;
       const newCart = [...prev, { ...item, cartItemId, quantity: item.quantity || 1 }];
       console.log("Added new item, new cart:", newCart);
       return newCart;

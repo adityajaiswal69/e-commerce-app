@@ -11,6 +11,8 @@ type AddToCartButtonProps = {
   category: string;
   name: string;
   image_url: string;
+  color?: string;
+  fabric?: string[];
 };
 
 export default function AddToCartButton({
@@ -20,6 +22,8 @@ export default function AddToCartButton({
   category,
   name,
   image_url,
+  color,
+  fabric,
 }: AddToCartButtonProps) {
   const [loading, setLoading] = useState(false);
   const { addItem } = useCart();
@@ -41,6 +45,8 @@ export default function AddToCartButton({
         category,
         name,
         image_url,
+        color,
+        fabric,
       });
       router.refresh();
     } catch (error) {

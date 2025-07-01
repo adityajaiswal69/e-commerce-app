@@ -15,11 +15,16 @@ export type OrderItem = {
     image?: string;
     image_url?: string;
     size?: string;
+    color?: string;
+    fabric?: string[];
     category?: string;
   };
   category?: string;
   selected_size?: string;
+  color?: string;
+  fabric?: string[];
   product_id?: string;
+  size?: string;
 };
 
 export type Order = {

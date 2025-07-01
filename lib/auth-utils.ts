@@ -7,6 +7,7 @@ type UserProfile = {
   full_name?: string | null;
   avatar_url?: string | null;
   role?: string;
+  design_role?: boolean;
 };
 
 export const getCurrentUser = async (): Promise<{
@@ -32,7 +33,10 @@ export const getCurrentUser = async (): Promise<{
       user: {
         id: session.user.id,
         email: session.user.email,
-        ...profile,
+        full_name: profile?.full_name,
+        avatar_url: profile?.avatar_url,
+        role: profile?.role || 'user',
+        design_role: profile?.design_role || false,
       },
       session,
       error: null,

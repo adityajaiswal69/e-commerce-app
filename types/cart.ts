@@ -7,6 +7,8 @@ export type CartItem = {
   category: string;
   name: string;
   image_url: string;
+  color?: string;
+  fabric?: string[];
 };
 
 export type OrderItem = {
@@ -15,4 +17,6 @@ export type OrderItem = {
   price: number;
   category: string;
   selected_size: string;
+  color?: string;
+  fabric?: string[];
 };

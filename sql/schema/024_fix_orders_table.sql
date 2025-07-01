@@ -47,6 +47,9 @@ BEGIN
             quantity INTEGER NOT NULL DEFAULT 1,
             unit_price DECIMAL(10,2) NOT NULL DEFAULT 0,
             total_price DECIMAL(10,2) NOT NULL DEFAULT 0,
+            size text null,
+            color text null,
+            fabric text[] null,
             product_snapshot JSONB,
             customization_details JSONB,
             created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL

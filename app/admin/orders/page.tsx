@@ -65,13 +65,15 @@ export default function AdminOrdersPage() {
           order_items (
             quantity,
             unit_price,
+            size,
+            color,
+            fabric,
             product_snapshot,
             products (
               id,
               name,
               image_url
             )
-
           )
         `
         )

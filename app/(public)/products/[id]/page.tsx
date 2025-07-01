@@ -256,10 +256,12 @@ export default function ProductPage({
             image_url: selectedVariant?.image_url || product.image_url,
             category: product.category,
             size: size,
-            quantity: qty
+            quantity: qty,
+            color: selectedColor ?? selectedVariant?.color ?? undefined,
+            fabric: selectedFabrics.length > 0 ? selectedFabrics : undefined,
           };
 
-          addItem(cartItem);
+          await addItem(cartItem);
         }
       }
 

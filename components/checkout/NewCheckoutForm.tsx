@@ -91,105 +91,6 @@ export default function CheckoutForm({ onOrderComplete }: CheckoutFormProps) {
     };
   };
 
-  // Fallback order creation for when payment system tables don't exist
-  const createFallbackOrder = async (totals: any): Promise<string | null> => {
-    try {
-      if (!user || !shippingAddress) {
-        throw new Error('Missing required user or address information');
-      }
-
-      // Try different fallback strategies
-      console.log('Attempting fallback order creation...');
-
-      // Strategy 1: Try with minimal required fields
-      let orderData: any = {
-        user_id: user.id,
-        total_amount: Number(totals.totalAmount.toFixed(2)),
-        status: 'pending',
-        payment_method: paymentMethod,
-        created_at: new Date().toISOString(),
-      };
-
-      console.log('Trying minimal order data:', orderData);
-
-      let { data: order, error } = await supabase
-        .from('orders')
-        .insert(orderData)
-        .select()
-        .single();
-
-      // Strategy 2: If that fails, try with address as JSONB
-      if (error) {
-        console.log('Minimal order failed, trying with JSONB addresses...');
-        orderData = {
-          ...orderData,
-          shipping_address: shippingAddress,
-          billing_address: useSameAddress ? shippingAddress : billingAddress,
-          notes: notes || null,
-        };
-
-        const result = await supabase
-          .from('orders')
-          .insert(orderData)
-          .select()
-          .single();
-
-        order = result.data;
-        error = result.error;
-      }
-
-      // Strategy 3: If that fails, try with address as text
-      if (error) {
-        console.log('JSONB addresses failed, trying with text addresses...');
-        orderData = {
-          ...orderData,
-          shipping_address: JSON.stringify(shippingAddress),
-          billing_address: JSON.stringify(useSameAddress ? shippingAddress : billingAddress),
-        };
-
-        const result = await supabase
-          .from('orders')
-          .insert(orderData)
-          .select()
-          .single();
-
-        order = result.data;
-        error = result.error;
-      }
-
-      if (error) {
-        safeErrorLog('All Fallback Strategies Failed', error);
-        const errorMessage = getSafeErrorMessage(error);
-
-        // Provide helpful error message based on error type
-        if (error.code === '42P01') {
-          throw new Error('Orders table does not exist. Please run the database setup script.');
-        } else if (error.code === '42703') {
-          throw new Error('Orders table exists but has different columns. Please update your database schema.');
-        } else if (error.code === '23502') {
-          throw new Error('Missing required fields. Please check your database schema.');
-        } else {
-          throw new Error(`All fallback strategies failed: ${errorMessage}`);
-        }
-      }
-
-      if (!order || !order.id) {
-        throw new Error('Fallback order created but no order data returned');
-      }
-
-      console.log('Fallback order created successfully:', order);
-      return order.id;
-    } catch (err) {
-      console.error('Fallback order creation error:', err);
-
-      if (err instanceof Error) {
-        throw err; // Re-throw to be handled by the calling function
-      } else {
-        throw new Error('Unknown error in fallback order creation');
-      }
-    }
-  };
-
   const createOrder = async (): Promise<string | null> => {
     try {
       if (!shippingAddress || !user) {
@@ -283,21 +184,26 @@ export default function CheckoutForm({ onOrderComplete }: CheckoutFormProps) {
 
       console.log('Order created successfully:', order);
 
-      // Create order items
+      // Create order items - FIXED: Store size, color, fabric in dedicated columns
       const orderItems = items.map(item => ({
         order_id: order.id,
         product_id: item.productId,
-        design_id: null, // Will be added when design functionality is integrated
+        design_id:  null,
         quantity: item.quantity,
         unit_price: Number(item.price.toFixed(2)),
         total_price: Number((item.price * item.quantity).toFixed(2)),
+        // Store in dedicated columns as per database schema
+        size: item.size || null,
+        color: item.color || null,
+        fabric: item.fabric || null, // This will be stored as text[] in PostgreSQL
+        // Store additional product info in snapshot for reference
         product_snapshot: {
           name: item.name,
           image: item.image_url,
-          size: item.size,
           category: item.category,
+          // Don't duplicate size, color, fabric here since they're in dedicated columns
         },
-        customization_details: null, // Will be added when customization is integrated
+        customization_details: item.customization || null,
       }));
 
       console.log('Creating order items:', orderItems);

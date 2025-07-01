@@ -10,6 +10,8 @@ type ProductInfo = {
   name?: string;
   image_url?: string;
   image?: string;
+  category?: string;
+  size?: string;
 };
 
 type OrderDetailsProps = {
@@ -24,6 +26,7 @@ export default function OrderDetails({
   onClose,
 }: OrderDetailsProps) {
   const [status, setStatus] = useState(order.status);
+  const [paymentStatus, setPaymentStatus] = useState(order.payment_status);
   const [loading, setLoading] = useState(false);
   const supabase = createClientComponentClient();
 
@@ -32,7 +35,10 @@ export default function OrderDetails({
     try {
       const { error } = await supabase
         .from("orders")
-        .update({ status })
+        .update({ 
+          status,
+          payment_status: paymentStatus
+        })
         .eq("id", order.id);
 
       if (error) throw error;
@@ -40,8 +46,25 @@ export default function OrderDetails({
       toast.success("Order status updated");
       onUpdate();
     } catch (error) {
-      console.error("Error updating order:", error);
-      toast.error("Failed to update order status");
+      // Better error logging for Supabase errors - avoid circular references
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorDetails = {
+        message: errorMessage,
+        orderId: order.id,
+        newStatus: status,
+        newPaymentStatus: paymentStatus,
+        originalStatus: order.status,
+        originalPaymentStatus: order.payment_status,
+        // Don't include the full error object to avoid circular references
+        errorName: error instanceof Error ? error.name : 'UnknownError',
+        stack: error instanceof Error ? error.stack : undefined
+      };
+      
+      // eslint-disable-next-line no-console
+      console.error("Error updating order:", errorDetails);
+      
+      // More specific error message
+      toast.error(`Update failed: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -71,10 +94,13 @@ export default function OrderDetails({
                   <p className="text-sm text-gray-500">
                     Total: ₹{order.total_amount?.toFixed(2)}
                   </p>
+                  <p className="text-sm text-gray-500">
+                    Payment Status: {order.payment_status}
+                  </p>
 
                   <div className="mt-4">
                     <label className="block text-sm font-medium text-gray-700">
-                      Status
+                      Order Status
                     </label>
                     <select
                       value={status}
@@ -83,10 +109,30 @@ export default function OrderDetails({
                       disabled={loading}
                     >
                       <option value="pending">Pending</option>
-                      <option value="paid">Paid</option>
+                      <option value="confirmed">Confirmed</option>
+                      <option value="processing">Processing</option>
+                      <option value="shipped">Shipped</option>
                       <option value="delivered">Delivered</option>
                       <option value="cancelled">Cancelled</option>
                       <option value="refunded">Refunded</option>
+                    </select>
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Payment Status
+                    </label>
+                    <select
+                      value={paymentStatus}
+                      onChange={(e) => setPaymentStatus(e.target.value)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      disabled={loading}
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="paid">Paid</option>
+                      <option value="failed">Failed</option>
+                      <option value="refunded">Refunded</option>
+                      <option value="partially_refunded">Partially Refunded</option>
                     </select>
                   </div>
 
@@ -120,12 +166,26 @@ export default function OrderDetails({
                               <p className="text-sm text-gray-500">
                                 {item.quantity} × ₹{(item.unit_price || 0).toFixed(2)}
                               </p>
-                              <p className="text-sm text-gray-500">
-                                Category: {item.category}
-                              </p>
-                              <p className="text-sm text-gray-500">
-                                Size: {item.selected_size}
-                              </p>
+                              {productInfo.category && (
+                                <p className="text-sm text-gray-500">
+                                  Category: {productInfo.category}
+                                </p>
+                              )}
+                              {productInfo.size || item.size && (
+                                <p className="text-sm text-gray-500">
+                                  Size: {productInfo.size || item.size}
+                                </p>
+                              )}
+                              {item.color && (
+                                <p className="text-sm text-gray-500">
+                                  Color: {item.color}
+                                </p>
+                              )}
+                              {item.fabric && Array.isArray(item.fabric) && item.fabric.length > 0 && (
+                                <p className="text-sm text-gray-500">
+                                  Fabric: {item.fabric.join(', ')}
+                                </p>
+                              )}
                             </div>
                             <div className="text-right">
                               <p className="text-sm font-medium">
@@ -164,7 +224,7 @@ export default function OrderDetails({
             <button
               type="button"
               onClick={handleStatusUpdate}
-              disabled={loading || status === order.status}
+              disabled={loading || (status === order.status && paymentStatus === order.payment_status)}
               className="inline-flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 sm:ml-3 sm:w-auto sm:text-sm"
             >
               {loading ? "Updating..." : "Update Status"}

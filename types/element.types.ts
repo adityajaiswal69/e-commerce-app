@@ -24,6 +24,7 @@ export interface DesignElement {
   height: number;
   rotation: number;
   data: TextElementData | ImageElementData;
+  note?: string; // Optional note field for design element
 }
 
 export interface ElementUpdate {
@@ -33,4 +34,5 @@ export interface ElementUpdate {
   x?: number;
   y?: number;
   rotation?: number;
+  note?: string;
 }

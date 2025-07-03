@@ -6,7 +6,7 @@ import { getCurrentUser } from '@/lib/auth-utils';
 import { Design, Product } from '@/types/database.types';
 import Image from 'next/image';
 import Link from 'next/link';
-import { PencilIcon, TrashIcon, EyeIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, EyeIcon, ArrowPathIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
 
@@ -19,6 +19,7 @@ export default function MyDesignsPage() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [previewDesign, setPreviewDesign] = useState<DesignWithProduct | null>(null);
+  const [submitLoading, setSubmitLoading] = useState(false);
   const supabase = createClientComponentClient();
 
   // Authentication check
@@ -43,7 +44,7 @@ export default function MyDesignsPage() {
           product:products(*)
         `)
         .eq('user_id', currentUser.id)
-        .order('updated_at', { ascending: false }); // Order by updated_at to show recently updated designs first
+        .order('updated_at', { ascending: false });
 
       if (error) {
         throw error;
@@ -58,14 +59,13 @@ export default function MyDesignsPage() {
     }
   };
 
-  // ✅ FIXED: Move all useEffect hooks to the top, before any conditional returns
+  // Move all useEffect hooks to the top
   useEffect(() => {
     if (isAuthenticated) {
       fetchDesigns();
     }
   }, [supabase, isAuthenticated]);
 
-  // Refresh designs when the page becomes visible (e.g., returning from edit page)
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {
@@ -79,9 +79,6 @@ export default function MyDesignsPage() {
     };
   }, []);
 
-  // ✅ FIXED: All hooks are now called before any conditional returns
-
-  // Show loading state while checking authentication
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -96,6 +93,12 @@ export default function MyDesignsPage() {
   const handleDeleteDesign = async (designId: string) => {
     const design = designs.find(d => d.id === designId);
     if (!design) return;
+
+    // Prevent deletion if design is submitted
+    if (design.submit_design) {
+      toast.error('Cannot delete submitted designs');
+      return;
+    }
 
     if (!confirm('Are you sure you want to delete this design and all associated images?')) {
       return;
@@ -151,6 +154,51 @@ export default function MyDesignsPage() {
     } catch (error) {
       console.error('Delete error:', error);
       toast.error('Failed to delete design');
+    }
+  };
+
+  const handleSubmitDesign = async (designId: string) => {
+    if (!designId) {
+      toast.error('No design selected');
+      return;
+    }
+
+    if (!confirm('Are you sure you want to submit this design? Once submitted, you cannot edit or delete it.')) {
+      return;
+    }
+
+    setSubmitLoading(true);
+    try {
+      console.log('Submitting design:', designId);
+      
+      const { data, error } = await supabase
+        .from('designs')
+        .update({ submit_design: true })
+        .eq('id', designId)
+        .select();
+
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      console.log('Update successful:', data);
+
+      // Update local state
+      setDesigns(prev => prev.map(d => 
+        d.id === designId 
+          ? { ...d, submit_design: true }
+          : d
+      ));
+
+      setPreviewDesign(prev => prev && prev.id === designId ? { ...prev, submit_design: true } : prev);
+      
+      toast.success('Design submitted successfully!');
+    } catch (error) {
+      console.error('Submit error:', error);
+      toast.error('Failed to submit design: ' + (error.message || 'Unknown error'));
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
@@ -229,18 +277,27 @@ export default function MyDesignsPage() {
           {designs.map((design) => (
             <div
               key={design.id}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+              className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow ${
+                design.submit_design ? 'border-2 border-green-200' : ''
+              }`}
             >
               {/* Design Preview */}
               <div className="aspect-square relative bg-gray-100">
+                {design.submit_design && (
+                  <div className="absolute top-2 right-2 z-10">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      Submitted
+                    </span>
+                  </div>
+                )}
                 {design.preview_images?.front ? (
-                    <Image
-                      src={design.preview_images.front}
-                      alt={design.name}
+                  <Image
+                    src={design.preview_images.front}
+                    alt={design.name}
                     fill
                     className="object-cover"
                   />
-                  ) : (
+                ) : (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-gray-400">
                       <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -248,7 +305,7 @@ export default function MyDesignsPage() {
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={1}
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2 2v12a2 2 0 002 2z"
                         />
                       </svg>
                     </div>
@@ -275,7 +332,8 @@ export default function MyDesignsPage() {
                   </span>
                 </div>
 
-                {/* Actions */}                <div className="flex items-center gap-2">
+                {/* Actions */}
+                <div className="flex items-center gap-2">
                   <button
                     onClick={() => setPreviewDesign(design)}
                     className="flex items-center justify-center gap-1 px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200 transition-colors"
@@ -285,25 +343,34 @@ export default function MyDesignsPage() {
                     Preview
                   </button>
 
-                  <Link
-                    href={`/edit/${design.id}`}
-                    className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
-                  >
-                    <PencilIcon className="w-4 h-4" />
-                    Edit
-                  </Link>
-                  
-                  <button
-                    onClick={() => handleDeleteDesign(design.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
-                    title="Delete Design"
-                  >
-                    <TrashIcon className="w-4 h-4" />
-                  </button>
+                  {!design.submit_design ? (
+                    <>
+                      <Link
+                        href={`/edit/${design.id}`}
+                        className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+                      >
+                        <PencilIcon className="w-4 h-4" />
+                        Edit
+                      </Link>
+                      
+                      <button
+                        onClick={() => handleDeleteDesign(design.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                        title="Delete Design"
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </button>
+                    </>
+                  ) : (
+                    <div className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-gray-100 text-gray-500 text-sm rounded cursor-not-allowed">
+                      <span>Submitted - Cannot Edit</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-          ))}        </div>
+          ))}
+        </div>
       )}
 
       {/* Preview Modal */}
@@ -312,7 +379,14 @@ export default function MyDesignsPage() {
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">{previewDesign.name}</h3>
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  {previewDesign.name}
+                  {previewDesign.submit_design && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      Submitted
+                    </span>
+                  )}
+                </h3>
                 <p className="text-sm text-gray-600">Based on: {previewDesign.product.name}</p>
               </div>
               <button
@@ -325,7 +399,7 @@ export default function MyDesignsPage() {
               </button>
             </div>
             
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-160px)]">
               <div className="grid grid-cols-2 gap-6">
                 {previewDesign.preview_images && Object.entries(previewDesign.preview_images).map(([view, url]) => (
                   <div key={view} className="space-y-2">
@@ -346,7 +420,7 @@ export default function MyDesignsPage() {
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 strokeWidth={1}
-                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2 2v12a2 2 0 002 2z"
                               />
                             </svg>
                           </div>
@@ -355,6 +429,37 @@ export default function MyDesignsPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Preview and Submit Section */}
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-600">
+                  {previewDesign.submit_design 
+                    ? 'This design has been submitted and cannot be edited.'
+                    : 'Ready to submit your design? Once submitted, you cannot edit or delete it.'
+                  }
+                </div>
+                {!previewDesign.submit_design && (
+                  <button
+                    onClick={() => handleSubmitDesign(previewDesign.id)}
+                    disabled={submitLoading}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {submitLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        <PaperAirplaneIcon className="w-4 h-4" />
+                        Submit Design
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
           </div>

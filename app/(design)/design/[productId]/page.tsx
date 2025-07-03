@@ -225,6 +225,7 @@ export default function DesignPage({ params }: DesignPageProps) {
         canvas_height: state.canvasHeight,
         preview_images: previews, // Supabase will handle JSONB conversion
         product_view: state.productView,
+        notes: state.notes || null, // 
       };
 
       const { data: design, error: saveError } = await supabase
@@ -308,34 +309,63 @@ export default function DesignPage({ params }: DesignPageProps) {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleBackToProducts}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <ArrowLeftIcon className="w-5 h-5" />
-              Back to Product
-            </button>
-            <div className="h-6 w-px bg-gray-300" />
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900">
-                Customize: {product.name}
-              </h1>
-              <p className="text-sm text-gray-500">
-                Design your custom uniform
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500">
-              {elementCount} element{elementCount !== 1 ? 's' : ''}
-            </span>
+       <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-10 shadow-sm">
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={handleBackToProducts}
+            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <ArrowLeftIcon className="w-5 h-5 mr-2" />
+            Back to My Designs
+          </button>
+          <h1 className="text-xl font-semibold text-gray-900">
+            Create Design
+          </h1>
+        </div>
+        
+        <div className="flex items-center">
+          <div className="flex flex-wrap gap-2">
+            {['front', 'back', 'left', 'right'].map((view) => (
+              <button
+                key={view}
+                onClick={() => dispatch({ type: 'SWITCH_VIEW', payload: view as any })}
+                className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+                  state.productView === view
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'text-gray-600 hover:bg-gray-100'
+                } ${
+                  // Disable button if the view image is not available
+                  view === 'front' && !(product.front_image_url || product.image_url) ||
+                  view === 'back' && !product.back_image_url ||
+                  view === 'left' && !product.left_image_url ||
+                  view === 'right' && !product.right_image_url
+                    ? 'opacity-50 cursor-not-allowed'
+                    : ''
+                }`}
+                disabled={
+                  view === 'front' && !(product.front_image_url || product.image_url) ||
+                  view === 'back' && !product.back_image_url ||
+                  view === 'left' && !product.left_image_url ||
+                  view === 'right' && !product.right_image_url
+                }
+              >
+                {view.charAt(0).toUpperCase() + view.slice(1)}
+              </button>
+            ))}
           </div>
         </div>
-      </div>      {/* Main Content */}
+        
+        <div className="flex items-center space-x-3">
+          
+          <button
+            onClick={handleSaveDesign}
+            disabled={saving}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
+          >
+            {saving ? 'Saving...' : 'Save Design'}
+          </button>
+        </div>
+      </div>
       <div className="flex h-[calc(100vh-80px)]">
         {/* Left Toolbar */}
         <div className="w-[280px] border-r border-gray-200 bg-white shrink-0">

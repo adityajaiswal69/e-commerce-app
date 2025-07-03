@@ -25,6 +25,7 @@ export type CanvasState = {
   isResizing: boolean;
   dragOffset: { x: number; y: number };
   canvasRef: React.RefObject<HTMLCanvasElement | null> | null;
+  notes?: string;
 };
 
 export type CanvasAction =
@@ -47,8 +48,8 @@ export type CanvasAction =
   | { type: 'SET_RESIZING'; payload: boolean }
   | { type: 'SET_DRAG_OFFSET'; payload: { x: number; y: number } }
   | { type: 'SET_CANVAS_REF'; payload: React.RefObject<HTMLCanvasElement | null> }
-  | { type: 'COMMIT_CHANGES' };
-
+  | { type: 'COMMIT_CHANGES' }
+  | { type: 'SET_NOTES'; payload: string };
 const initialState: CanvasState = {
   elements_by_view: {
     front: [],
@@ -71,6 +72,7 @@ const initialState: CanvasState = {
   isResizing: false,
   dragOffset: { x: 0, y: 0 },
   canvasRef: null,
+  notes: '',
 };
 
 function generateId(): string {
@@ -109,6 +111,10 @@ function updateViewElements(
 }
 
 function canvasReducer(state: CanvasState, action: CanvasAction): CanvasState {
+  // Handle notes update directly
+  if (action.type === 'SET_NOTES') {
+    return { ...state, notes: action.payload };
+  }
   const view = state.productView;
   const currentElements = state.elements_by_view[view];
 
@@ -333,6 +339,7 @@ type DesignContextType = {
   capturePreviewImage: () => string | null;
   canUndo: boolean;
   canRedo: boolean;
+  setDesignNote: (note: string) => void;
 };
 
 const DesignContext = createContext<DesignContextType | undefined>(undefined);
@@ -416,6 +423,9 @@ export function DesignProvider({ children }: { children: React.ReactNode }) {
 
   const canUndo = state.historyIndex > 0;
   const canRedo = state.historyIndex < state.history[state.productView].length - 1;
+  const setDesignNote = useCallback((note: string) => {
+  dispatch({ type: 'SET_NOTES', payload: note });
+}, []);
 
   const value: DesignContextType = {
     state,
@@ -439,6 +449,7 @@ export function DesignProvider({ children }: { children: React.ReactNode }) {
     capturePreviewImage,
     canUndo,
     canRedo,
+    setDesignNote,
   };
 
   return (

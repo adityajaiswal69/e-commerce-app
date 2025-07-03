@@ -159,8 +159,11 @@ export type Design = {
     left?: string;
     right?: string;
   };
+  notes?: string | null;
   created_at: string;
   updated_at: string;
+  submit_design?: boolean; // Indicates if the design is ready for submission
+  approve_design?: boolean; // Indicates if the design is approved for production
 };
 
 export type Order = {

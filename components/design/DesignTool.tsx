@@ -36,9 +36,9 @@ function DesignToolContent({ product, isEditing = false, existingDesign }: Desig
     loadDesign,
     clearCanvas,
     capturePreviewImage,
+    setDesignNote,
   } = useDesign();
 
-  // ✅ FIXED: Move useEffect hook BEFORE any conditional returns
   // Initialize design state with existing design data if editing
   useEffect(() => {
     if (isEditing && existingDesign) {
@@ -67,6 +67,9 @@ function DesignToolContent({ product, isEditing = false, existingDesign }: Desig
         }
       });
 
+      // Set notes in context for editing
+      setDesignNote(existingDesign.notes || '');
+
       // Switch back to front view
       switchView('front');
     } else {
@@ -82,12 +85,14 @@ function DesignToolContent({ product, isEditing = false, existingDesign }: Desig
           right: []
         },
         preview_images: {},
+        notes: '',
       });
 
       // Clear the canvas for new design
       clearCanvas();
+      setDesignNote('');
     }
-  }, [isEditing, existingDesign, product.id, switchView, loadDesign, clearCanvas]);
+  }, [isEditing, existingDesign, product.id, switchView, loadDesign, clearCanvas, setDesignNote]);
 
   // ✅ FIXED: All hooks are now called before any conditional returns
 
@@ -129,6 +134,7 @@ function DesignToolContent({ product, isEditing = false, existingDesign }: Desig
       const updatedDesign = {
         ...design,
         elements_by_view: state.elements_by_view,
+        notes: state.notes || '',
       };
 
       // Capture preview images for all views that have elements
@@ -136,33 +142,25 @@ function DesignToolContent({ product, isEditing = false, existingDesign }: Desig
 
       // Always capture the current view
       const currentPreview = capturePreviewImage();
-      console.log('Captured preview for view:', state.productView, 'Preview length:', currentPreview?.length);
-
       if (currentPreview) {
         previewImages[state.productView] = currentPreview;
-        console.log('Updated preview images:', Object.keys(previewImages));
-      } else {
-        console.warn('Failed to capture preview image for current view');
       }
 
-      // For views with elements, we should ideally capture them too
-      // But for now, we'll just update the current view to ensure the preview is fresh
       updatedDesign.preview_images = previewImages;
 
       if (isEditing) {
-        // Update existing design
-        console.log('Updating design with preview_images:', updatedDesign.preview_images);
-
+        // Update existing design, including notes
         const { error } = await supabase
           .from('designs')
           .update({
             name: updatedDesign.name,
             elements_by_view: updatedDesign.elements_by_view,
             preview_images: updatedDesign.preview_images,
+            notes: updatedDesign.notes,
             updated_at: new Date().toISOString(),
           })
           .eq('id', updatedDesign.id)
-          .eq('user_id', (await supabase.auth.getUser()).data.user?.id); // Add user_id check for security
+          .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
 
         if (error) {
           console.error('Database update error:', error);
@@ -174,7 +172,6 @@ function DesignToolContent({ product, isEditing = false, existingDesign }: Desig
           return;
         }
 
-        console.log('Design updated successfully in database');
         toast.success('Design updated successfully');
         router.push('/my-designs');
       } else {
@@ -193,6 +190,7 @@ function DesignToolContent({ product, isEditing = false, existingDesign }: Desig
             user_id: user.user.id,
             elements_by_view: updatedDesign.elements_by_view,
             preview_images: updatedDesign.preview_images,
+            notes: updatedDesign.notes,
           })
           .select()
           .single();
@@ -273,7 +271,8 @@ function DesignToolContent({ product, isEditing = false, existingDesign }: Desig
             Save Design
           </button>
         </div>
-      </div>      {/* Main Content */}
+      </div>      {/* Main Content */} 
+
       <div className="flex flex-1 overflow-hidden">
         {/* Left Toolbar - Always visible */}
         <div className="w-64 bg-white border-r border-gray-200 overflow-y-auto flex flex-col">

@@ -46,6 +46,7 @@ interface DesignToolbarProps {
   className?: string;
 }
 
+
 export default function DesignToolbar({ onSave, onPreview, className = '' }: DesignToolbarProps) {
   const { 
     state, 
@@ -57,13 +58,24 @@ export default function DesignToolbar({ onSave, onPreview, className = '' }: Des
     clearCanvas,
     canUndo, 
     canRedo,
-    switchView 
+    switchView,
+    setDesignNote
   } = useDesign();
-  
+
   const currentElements = state.elements_by_view[state.productView] || [];
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [artPickerOpen, setArtPickerOpen] = React.useState(false);
+  const [designNote, setDesignNoteState] = React.useState(state.notes || '');
 
+  // Sync local state with context state
+  React.useEffect(() => {
+    setDesignNoteState(state.notes || '');
+  }, [state.notes]);
+
+  const handleDesignNoteChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setDesignNoteState(e.target.value);
+    setDesignNote(e.target.value);
+  };
   const handleAddText = () => {
     // Add text in center of canvas
     const centerX = state.canvasWidth / 2 - 100;
@@ -170,6 +182,7 @@ export default function DesignToolbar({ onSave, onPreview, className = '' }: Des
     <ArtAssetsProvider>
       <div className={`bg-white border-r border-gray-200 p-4 h-full flex flex-col justify-between ${className}`}>
         <div className="flex flex-col gap-6">
+          
           {/* View Switcher */}
           {/* <div className="space-y-2">
             <h3 className="text-sm font-semibold text-gray-900 px-1">Views</h3>
@@ -253,7 +266,21 @@ export default function DesignToolbar({ onSave, onPreview, className = '' }: Des
             </div>
           </div>
 
-          
+          {/* Design Note Input */}
+          <div className="space-y-1">
+            <label htmlFor="design-note" className="block text-sm font-medium text-gray-700">
+              Design Note <span className="text-gray-400 font-normal">(optional)</span>
+            </label>
+            <textarea
+              id="design-note"
+              className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm p-2 resize-none"
+              rows={2}
+              placeholder="Add a note for this design (optional)"
+              value={designNote}
+              onChange={handleDesignNoteChange}
+              maxLength={500}
+            />
+          </div>
 
           {/* Quick Text Options */}
           {/* <div className="flex flex-col gap-2">
@@ -272,7 +299,7 @@ export default function DesignToolbar({ onSave, onPreview, className = '' }: Des
           {/* <div className="w-full h-px bg-gray-300" /> */}
 
           {/* Actions */}
-          <div className="flex flex-col gap-2">
+          <div className="flex ">
             <button
               onClick={undo}
               disabled={!canUndo}
@@ -293,6 +320,9 @@ export default function DesignToolbar({ onSave, onPreview, className = '' }: Des
               <span className="text-sm">Redo</span>
             </button>
 
+            
+          </div>
+          <div className="flex ">
             <button
               onClick={handleDeleteSelected}
               disabled={!state.selectedElementId}
@@ -312,11 +342,10 @@ export default function DesignToolbar({ onSave, onPreview, className = '' }: Des
               <span className="text-sm">Clear All</span>
             </button>
           </div>
-
           <div className="w-full h-px bg-gray-300" />
 
           {/* Save and Preview */}
-          <div className="flex flex-col gap-2">
+          {/* <div className="flex flex-col gap-2">
             {onPreview && (
               <button
                 onClick={onPreview}
@@ -336,7 +365,7 @@ export default function DesignToolbar({ onSave, onPreview, className = '' }: Des
                 <span className="text-sm">Save Design</span>
               </button>
             )}
-          </div>
+          </div> */}
         </div>
 
         {/* Status Bar */}
@@ -356,11 +385,12 @@ export default function DesignToolbar({ onSave, onPreview, className = '' }: Des
               </>
             )}
           </div>
-          <div className="flex items-center gap-4">
-            <span>Canvas: {state.canvasWidth} × {state.canvasHeight}</span>
+          
+        </div>
+        <div className="flex items-center gap-4">
+            <span>Canvas:<br /> {state.canvasWidth} × {state.canvasHeight}</span>
             <span>View: {state.productView}</span>
           </div>
-        </div>
       </div>
 
       <ArtAssetPicker open={artPickerOpen} onClose={() => setArtPickerOpen(false)} />

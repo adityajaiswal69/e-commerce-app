@@ -6,14 +6,25 @@ import Link from "next/link";
 import { useCart } from "@/contexts/CartContext";
 import { useState, useEffect, use } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { getCurrentUser } from "@/lib/auth-utils";
 import ReviewSection from "@/components/products/ReviewSection";
 import ProductImageGallery from "@/components/products/ProductImageGallery";
 import { Review } from "@/types/reviews";
 import { Product, ProductVariant, ProductImage, RelatedProduct } from "@/types/database.types";
-import { StarIcon, HeartIcon, ShareIcon, TruckIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
+import { StarIcon, HeartIcon, ShareIcon, TruckIcon, ShieldCheckIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolidIcon, StarIcon as StarSolidIcon } from "@heroicons/react/24/solid";
 import toast from "react-hot-toast";
 
+type UserProfile = {
+  id: string;
+  email?: string;
+  full_name?: string | null;
+  avatar_url?: string | null;
+  role?: string;
+  design_role?: boolean;
+  created_at?: string;
+  raw_user_meta_data?: any;
+};
 interface ExtendedProduct extends Product {
   product_images?: ProductImage[];
   product_variants?: ProductVariant[];
@@ -50,6 +61,39 @@ export default function ProductPage({
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  
+  // User authentication and role state
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showDesignAccessModal, setShowDesignAccessModal] = useState(false);
+
+    // Check user authentication and role
+  useEffect(() => {
+    const checkUserAuth = async () => {
+      try {
+        const { user, error } = await getCurrentUser();
+        if (error) {
+          console.error("Error getting current user:", error);
+          setIsAuthenticated(false);
+          setCurrentUser(null);
+          return;
+        }
+
+        if (user) {
+          setIsAuthenticated(true);
+          setCurrentUser(user);
+        } else {
+          setIsAuthenticated(false);
+          setCurrentUser(null);
+        }
+      } catch (error) {
+        console.error("Error checking authentication:", error);
+        setIsAuthenticated(false);
+        setCurrentUser(null);
+      }
+    };
+      checkUserAuth();
+  }, []);
 
   useEffect(() => {
     async function fetchData() {
@@ -280,7 +324,20 @@ export default function ProductPage({
     setIsWishlisted(!isWishlisted);
     toast.success(isWishlisted ? "Removed from wishlist" : "Added to wishlist");
   };
+  const handleDesignToolAccess = () => {
+    if (!isAuthenticated) {
+      toast.error("Please sign in to access the design tool");
+      return;
+    }
 
+    if (!currentUser?.design_role) {
+      setShowDesignAccessModal(true);
+      return;
+    }
+
+    // User has design role, redirect to design tool
+    window.location.href = `/design/${product?.id}`;
+  };
   if (!product) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -583,15 +640,25 @@ export default function ProductPage({
 
               {/* Customize Design Button */}
               <div className="pt-4">
-                <Link
-                  href={`/design/${product.id}`}
+                <button
+                  onClick={handleDesignToolAccess}
                   className="w-full bg-white text-[#333333] px-8 py-4 rounded-lg font-semibold border-2 border-[#333333] hover:bg-[#f8f6e1] transition-colors flex items-center justify-center"
                 >
                   <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                   Customize This Uniform
-                </Link>
+                  {!isAuthenticated && (
+                    <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                      Sign in required
+                    </span>
+                  )}
+                  {isAuthenticated && !currentUser?.design_role && (
+                    <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                      Membership required
+                    </span>
+                  )}
+                </button>
               </div>
             </div>
 

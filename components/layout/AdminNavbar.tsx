@@ -3,6 +3,23 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
+import { 
+  LayoutDashboard, 
+  ShoppingBag, 
+  CreditCard, 
+  Calendar, 
+  FileText, 
+  BookOpen, 
+  Package, 
+  CheckCircle, 
+  Users, 
+  PencilRuler,
+  ChevronLeft,
+  ChevronDown,
+  User,
+  Eye,
+  LogOut
+} from "lucide-react";
 
 interface AdminNavbarProps {
   children: React.ReactNode;
@@ -37,110 +54,65 @@ export default function AdminNavbar({ children }: AdminNavbarProps) {
     router.push("/sign-in");
   };
 
-  // Navigation items with modern icons
+  // Navigation items with Lucide React icons
   const navigationItems = [
     {
       name: 'Dashboard',
       href: '/admin',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-      )
+      icon: LayoutDashboard
     },
     {
       name: 'Products',
       href: '/admin/products',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-        </svg>
-      )
+      icon: ShoppingBag
     },
     {
       name: 'Payment',
       href: '/admin/payment-settings',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-        </svg>
-      )
+      icon: CreditCard
     },
     {
       name: 'Orders',
       href: '/admin/orders',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-      )
+      icon: Calendar
     },
     {
       name: 'Categories',
       href: '/admin/categories',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      )
+      icon: FileText
     },
     {
       name: 'Subcategories',
       href: '/admin/subcategories',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-        </svg>
-      )
+      icon: BookOpen
     },
     {
       name: 'Cancellations',
       href: '/admin/cancellation-requests',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-        </svg>
-      )
+      icon: Package
     },
     {
       name: 'Art Assets',
       href: '/admin/art-assets',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
-          <path d="M8 12l2 2 4-4" stroke="currentColor" strokeWidth="2" fill="none" />
-        </svg>
-      )
+      icon: CheckCircle
     },
     {
-      name: 'Users Mangement',
+      name: 'Users Management',
       href: '/admin/users',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-       </svg>
-      )
+      icon: Users
+    },
+    {
+      name: 'Designs Management',
+      href: '/admin/submit-design',
+      icon: PencilRuler
     }
   ];
 
   const managementItems = [
-    // {
-    //   name: 'User',
-    //   href: '/admin/users',
-    //   icon: (
-    //     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    //       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-    //     </svg>
-    //   )
-    // },
     {
       name: 'Cancellations',
       href: '/admin/cancellation-requests',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-        </svg>
-      )
+      icon: Package
     }
   ];
 
@@ -164,7 +136,6 @@ export default function AdminNavbar({ children }: AdminNavbarProps) {
             {!isSidebarCollapsed && (
               <div>
                 <h1 className="text-lg font-semibold text-gray-900">Admin Dashboard</h1>
-                
               </div>
             )}
           </div>
@@ -172,9 +143,7 @@ export default function AdminNavbar({ children }: AdminNavbarProps) {
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
           >
-            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
+            <ChevronLeft className="w-4 h-4 text-gray-500" />
           </button>
         </div>
 
@@ -183,24 +152,27 @@ export default function AdminNavbar({ children }: AdminNavbarProps) {
           {/* Main Navigation */}
           <div className="px-3 mb-6">
             <div className="space-y-1">
-              {navigationItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group ${
-                    isActiveLink(item.href)
-                      ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
-                >
-                  <div className={`${isActiveLink(item.href) ? 'text-blue-700' : 'text-gray-400 group-hover:text-gray-600'}`}>
-                    {item.icon}
-                  </div>
-                  {!isSidebarCollapsed && (
-                    <span className="ml-3">{item.name}</span>
-                  )}
-                </Link>
-              ))}
+              {navigationItems.map((item) => {
+                const IconComponent = item.icon;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group ${
+                      isActiveLink(item.href)
+                        ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
+                  >
+                    <IconComponent 
+                      className={`w-5 h-5 ${isActiveLink(item.href) ? 'text-blue-700' : 'text-gray-400 group-hover:text-gray-600'}`} 
+                    />
+                    {!isSidebarCollapsed && (
+                      <span className="ml-3">{item.name}</span>
+                    )}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -221,14 +193,9 @@ export default function AdminNavbar({ children }: AdminNavbarProps) {
               {!isSidebarCollapsed && (
                 <>
                   <span className="ml-3">Admin</span>
-                  <svg
+                  <ChevronDown
                     className={`ml-auto w-4 h-4 transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                  />
                 </>
               )}
             </button>
@@ -236,23 +203,11 @@ export default function AdminNavbar({ children }: AdminNavbarProps) {
             {/* User Dropdown */}
             {isUserMenuOpen && !isSidebarCollapsed && (
               <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
-                {/* <Link
-                  href="/admin/profile"
-                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  Profile
-                </Link> */}
                 <Link
                   href="/"
                   className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                 >
-                  <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
+                  <Eye className="w-4 h-4 mr-3" />
                   View Store
                 </Link>
                 <hr className="my-1 border-gray-200" />
@@ -260,9 +215,7 @@ export default function AdminNavbar({ children }: AdminNavbarProps) {
                   onClick={handleLogout}
                   className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                 >
-                  <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
+                  <LogOut className="w-4 h-4 mr-3" />
                   Logout
                 </button>
               </div>

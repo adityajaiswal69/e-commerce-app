@@ -160,6 +160,7 @@ export type Design = {
     right?: string;
   };
   notes?: string | null;
+  admin_notes?: string | null;
   created_at: string;
   updated_at: string;
   submit_design?: boolean; // Indicates if the design is ready for submission

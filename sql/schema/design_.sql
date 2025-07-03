@@ -13,6 +13,8 @@ create table public.designs (
   notes text null,
   submit_design boolean not null default false,
   approve_design boolean not null default false,
+  reject_design boolean not null default false,
+  admin_notes text null,
   constraint designs_pkey primary key (id),
   constraint designs_product_id_fkey foreign KEY (product_id) references products (id),
   constraint designs_user_id_fkey foreign KEY (user_id) references auth.users (id),
@@ -31,6 +33,8 @@ create table public.designs (
 ) TABLESPACE pg_default;
 
 create index IF not exists designs_submit_design_idx on public.designs using btree (submit_design) TABLESPACE pg_default;
+
+create index IF not exists designs_reject_design_idx on public.designs using btree (reject_design) TABLESPACE pg_default;
 
 create index IF not exists designs_approve_design_idx on public.designs using btree (approve_design) TABLESPACE pg_default;
 

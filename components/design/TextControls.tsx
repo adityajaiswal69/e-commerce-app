@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { AlignCenter, AlignLeft, AlignRight, Bold, Italic } from 'lucide-react';
 import { useDesign } from '@/contexts/DesignContext';
 import { TextElementData } from '@/types/database.types';
 
@@ -67,12 +68,14 @@ export default function TextControls({ className = '' }: TextControlsProps) {
     updateTextData(selectedElement.id, { color });
   };
 
-  const handleFontWeightChange = (weight: 'normal' | 'bold') => {
-    updateTextData(selectedElement.id, { fontWeight: weight });
+  const handleFontWeightToggle = () => {
+    const newWeight = textData.fontWeight === 'bold' ? 'normal' : 'bold';
+    updateTextData(selectedElement.id, { fontWeight: newWeight });
   };
 
-  const handleFontStyleChange = (style: 'normal' | 'italic') => {
-    updateTextData(selectedElement.id, { fontStyle: style });
+  const handleFontStyleToggle = () => {
+    const newStyle = textData.fontStyle === 'italic' ? 'normal' : 'italic';
+    updateTextData(selectedElement.id, { fontStyle: newStyle });
   };
 
   const handleTextAlignChange = (align: 'left' | 'center' | 'right') => {
@@ -95,6 +98,64 @@ export default function TextControls({ className = '' }: TextControlsProps) {
           rows={3}
           placeholder="Enter your text..."
         />
+      </div>
+
+      {/* Font Weight and Style Toggle Buttons */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={handleFontWeightToggle}
+          className={`flex items-center justify-center w-10 h-10 rounded-md border transition-colors ${
+            textData.fontWeight === 'bold'
+              ? 'bg-blue-500 text-white border-blue-500 shadow-sm'
+              : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+          }`}
+          title="Bold"
+        >
+          <Bold size={16} />
+        </button>
+        <button
+          onClick={handleFontStyleToggle}
+          className={`flex items-center justify-center w-10 h-10 rounded-md border transition-colors ${
+            textData.fontStyle === 'italic'
+              ? 'bg-blue-500 text-white border-blue-500 shadow-sm'
+              : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+          }`}
+          title="Italic"
+        >
+          <Italic size={16} />
+        </button>
+        <div className="flex bg-gray-100 rounded-lg p-1">
+          <button
+            onClick={() => handleTextAlignChange('left')}
+            className={` px-1 py-1 rounded text-sm font-medium transition-colors ${
+              textData.textAlign === 'left'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+          <AlignLeft />
+          </button>
+          <button
+            onClick={() => handleTextAlignChange('center')}
+            className={`px-1 py-1 rounded text-sm font-medium transition-colors ${
+              textData.textAlign === 'center'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <AlignCenter />
+          </button>
+          <button
+            onClick={() => handleTextAlignChange('right')}
+            className={`px-1 py-1 rounded text-sm font-medium transition-colors ${
+              textData.textAlign === 'right'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <AlignRight />
+          </button>
+        </div>
       </div>
 
       {/* Font Family */}
@@ -171,102 +232,14 @@ export default function TextControls({ className = '' }: TextControlsProps) {
         </div>
       </div>
 
-      {/* Font Weight and Style */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Font Weight
-          </label>
-          <div className="flex bg-gray-100 rounded-lg p-1">
-            <button
-              onClick={() => handleFontWeightChange('normal')}
-              className={`flex-1 px-3 py-1 rounded text-sm font-medium transition-colors ${
-                textData.fontWeight === 'normal'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Normal
-            </button>
-            <button
-              onClick={() => handleFontWeightChange('bold')}
-              className={`flex-1 px-3 py-1 rounded text-sm font-medium transition-colors ${
-                textData.fontWeight === 'bold'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Bold
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Font Style
-          </label>
-          <div className="flex bg-gray-100 rounded-lg p-1">
-            <button
-              onClick={() => handleFontStyleChange('normal')}
-              className={`flex-1 px-3 py-1 rounded text-sm font-medium transition-colors ${
-                textData.fontStyle === 'normal'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Normal
-            </button>
-            <button
-              onClick={() => handleFontStyleChange('italic')}
-              className={`flex-1 px-3 py-1 rounded text-sm font-medium transition-colors ${
-                textData.fontStyle === 'italic'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Italic
-            </button>
-          </div>
-        </div>
-      </div>
+      
 
       {/* Text Alignment */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Text Alignment
         </label>
-        <div className="flex bg-gray-100 rounded-lg p-1">
-          <button
-            onClick={() => handleTextAlignChange('left')}
-            className={`flex-1 px-3 py-1 rounded text-sm font-medium transition-colors ${
-              textData.textAlign === 'left'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Left
-          </button>
-          <button
-            onClick={() => handleTextAlignChange('center')}
-            className={`flex-1 px-3 py-1 rounded text-sm font-medium transition-colors ${
-              textData.textAlign === 'center'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Center
-          </button>
-          <button
-            onClick={() => handleTextAlignChange('right')}
-            className={`flex-1 px-3 py-1 rounded text-sm font-medium transition-colors ${
-              textData.textAlign === 'right'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Right
-          </button>
-        </div>
+        
       </div>
 
       {/* Size Controls */}

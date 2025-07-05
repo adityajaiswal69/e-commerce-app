@@ -42,6 +42,7 @@ const industries = [
     description: "Luxury hospitality solutions",
     image: "/images/industries/hotelANDresort.jpg",
     fallbackColor: "from-slate-800 to-slate-600",
+    slug: "category=hotel-resorts",
   },
   {
     id: 2,
@@ -50,6 +51,7 @@ const industries = [
     description: "Elegant uniforms for casino staff",
     image: "/images/industries/casino.jpg",
     fallbackColor: "from-yellow-900 to-yellow-700",
+    slug: "category=casino",
   },
   {
     id: 3,
@@ -58,6 +60,7 @@ const industries = [
     description: "Uniforms for pharmaceutical production",
     image: "/images/industries/medi.jpg",
     fallbackColor: "from-red-900 to-red-700",
+    slug: "category=medical-factory",
   },
   {
     id: 4,
@@ -66,6 +69,7 @@ const industries = [
     description: "Professional security attire",
     image: "/images/industries/security.jpg",
     fallbackColor: "from-gray-800 to-gray-600",
+    slug: "category=security-uniforms",
   },
   {
     id: 5,
@@ -74,6 +78,7 @@ const industries = [
     description: "Premium chef coats and aprons",
     image: "/images/industries/chef.png",
     fallbackColor: "from-orange-800 to-orange-600",
+    slug: "category=chef",
   },
   {
     id: 6,
@@ -82,6 +87,7 @@ const industries = [
     description: "Formal attire for professionals",
     image: "/images/industries/corporate.png",
     fallbackColor: "from-blue-900 to-blue-700",
+    slug: "category=corporate-offices",
   },
   {
     id: 7,
@@ -90,6 +96,7 @@ const industries = [
     description: "Stylish uniforms for food service",
     image: "/images/industries/cafe.png",
     fallbackColor: "from-brown-800 to-brown-600",
+    slug: "category=cafes-restaurants-pubs",
   },
   {
     id: 8,
@@ -98,6 +105,7 @@ const industries = [
     description: "Functional attire for catering staff",
     image: "/images/industries/catering.jpg",
     fallbackColor: "from-green-900 to-green-700",
+    slug: "category=catering",
   },
   {
     id: 9,
@@ -106,6 +114,7 @@ const industries = [
     description: "Sanitized and safe uniforms",
     image: "/images/industries/pharma.jpg",
     fallbackColor: "from-purple-900 to-purple-700",
+    slug: "category=pharmaceutical-factories",
   },
   {
     id: 10,
@@ -114,6 +123,7 @@ const industries = [
     description: "Comfortable and sterile garments",
     image: "/images/industries/hospital.png",
     fallbackColor: "from-cyan-800 to-cyan-600",
+    slug: "category=hospital-attire",
   },
   {
     id: 11,
@@ -122,6 +132,7 @@ const industries = [
     description: "Educational excellence solutions",
     image: "/images/industries/school.jpg",
     fallbackColor: "from-indigo-800 to-indigo-600",
+    slug: "category=schools-intitusions",
   },
   {
     id: 12,
@@ -130,6 +141,7 @@ const industries = [
     description: "Casual wear for all occasions",
     image: "/images/industries/tshirts.png",
     fallbackColor: "from-pink-800 to-pink-600",
+    slug: "category=tshirts-hoodies",
   },
   {
     id: 13,
@@ -138,6 +150,7 @@ const industries = [
     description: "Trendy and functional aprons",
     image: "/images/industries/apron.png",
     fallbackColor: "from-lime-900 to-lime-700",
+    slug: "category=+designer-apron",
   },
   {
     id: 14,
@@ -146,6 +159,7 @@ const industries = [
     description: "Professional automotive solutions",
     image: "/images/industries/automative.jpg",
     fallbackColor: "from-gray-900 to-gray-700",
+    slug: "category=automobile",
   },
 ];
 
@@ -169,7 +183,9 @@ const industries = [
       {/* Desktop: Horizontal expanding cards */}
 <div className="hidden lg:flex gap-2 justify-center items-center h-80 group/container">
   {industries.map((industry, index) => (
-    <div 
+   
+    <Link
+      href={`/products?${industry.slug}`}
       key={industry.id} 
       className={`group relative h-full rounded-xl overflow-hidden shadow-lg cursor-pointer transition-all duration-700 ease-out flex-shrink-0 ${
         index === 0 
@@ -227,15 +243,16 @@ const industries = [
           </p>
         </div>
       </div>
-    </div>
+    
+    </Link>
   ))}
 </div>
 
       {/* Mobile and Tablet: Traditional grid with hover effects */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:hidden sm:gap-6">
         {industries.map((industry, index) => (
-          <div 
-            key={industry.id} 
+          <Link
+            href={`/products?${industry.slug}`}
             className="group relative h-48 md:h-56 rounded-lg overflow-hidden shadow-lg cursor-pointer transition-all duration-500 hover:scale-105 hover:shadow-2xl"
           >
             {/* Background Image or Gradient */}
@@ -268,7 +285,7 @@ const industries = [
                 {industry.description}
               </p>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </section>

@@ -58,11 +58,11 @@ const Footer = () => {
           <div className="col-span-1">
             <h3 className="text-lg font-semibold mb-4 text-[#e9e2a3]">Categories</h3>
             <ul className="space-y-2">
-              <li><Link href="/hotel-hospitality" className="text-gray-300 hover:text-white transition-colors">Hotel/Hospitality</Link></li>
-              <li><Link href="/school" className="text-gray-300 hover:text-white transition-colors">School Uniforms</Link></li>
-              <li><Link href="/corporate" className="text-gray-300 hover:text-white transition-colors">Corporate</Link></li>
-              <li><Link href="/hospital-uniform" className="text-gray-300 hover:text-white transition-colors">Hospital</Link></li>
-              <li><Link href="/restaurant-cafe-pub" className="text-gray-300 hover:text-white transition-colors">Restaurant/Cafe</Link></li>
+              <li><Link href="/products?category=hotel-resorts" className="text-gray-300 hover:text-white transition-colors">Hotel/Resort</Link></li>
+              <li><Link href="/products?category=schools-intitusions" className="text-gray-300 hover:text-white transition-colors">School</Link></li>
+              <li><Link href="/products?category=corporate-offices" className="text-gray-300 hover:text-white transition-colors">Corporate</Link></li>
+              <li><Link href="/products?category=hospital-attire" className="text-gray-300 hover:text-white transition-colors">Hospital</Link></li>
+              <li><Link href="/products?category=cafes-restaurants-pubs" className="text-gray-300 hover:text-white transition-colors">Restaurant/Cafe</Link></li>
             </ul>
           </div>
 

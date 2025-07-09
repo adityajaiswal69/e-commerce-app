@@ -15,6 +15,7 @@ import {
   Users, 
   PencilRuler,
   ChevronLeft,
+  StickyNote,
   ChevronDown,
   User,
   Eye,
@@ -105,6 +106,11 @@ export default function AdminNavbar({ children }: AdminNavbarProps) {
       name: 'Designs Management',
       href: '/admin/submit-design',
       icon: PencilRuler
+    },
+    {
+      name: 'All Blogs',
+      href: '/admin/blog-posts',
+      icon: StickyNote
     }
   ];
 

@@ -13,6 +13,8 @@
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.48.1",
+    "@tiptap/react": "^2.25.0",
+    "@tiptap/starter-kit": "^2.25.0",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.15.0",
     "lucide-react": "^0.523.0",

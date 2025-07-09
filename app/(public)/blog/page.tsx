@@ -1,15 +1,35 @@
 "use client";
-import { blogPosts, BlogPostType } from "@/data/blogPosts";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase/client";
 import Link from "next/link";
-import Image from "next/image";
-import { useState } from "react";
-
-// Demo blog data - replace with your actual data source
-
+import { BlogPost } from "@/types/blog";
 
 export default function BlogSection() {
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 6;
+  // use the singleton supabase client
+  
+  useEffect(() => {
+    fetchBlogPosts();
+  }, []);
+
+  const fetchBlogPosts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setBlogPosts(data || []);
+    } catch (error) {
+      console.error("Error fetching blog posts:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   
   const featuredPost = blogPosts.find(post => post.featured);
   const regularPosts = blogPosts.filter(post => !post.featured);
@@ -22,7 +42,6 @@ export default function BlogSection() {
   
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // Scroll to top of blog section
     document.getElementById('blog-section')?.scrollIntoView({ behavior: 'smooth' });
   };
   
@@ -61,6 +80,16 @@ export default function BlogSection() {
     return pages;
   };
 
+  if (loading) {
+    return (
+      <section className="container mx-auto px-4 py-5 md:py-8">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#333333]"></div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="blog-section" className="container mx-auto px-4 py-5 md:py-8">
       <div className="mx-auto max-w-4xl text-center mb-8 md:mb-12">
@@ -81,13 +110,13 @@ export default function BlogSection() {
               <div className="grid grid-cols-1 lg:grid-cols-2 h-auto lg:h-96">
                 {/* Image Section */}
                 <div className="relative overflow-hidden h-64 lg:h-full">
-                  {featuredPost.image ? (
+                  {featuredPost.image_url ? (
                     <div 
                       className="absolute inset-0 bg-cover bg-center bg-no-repeat transform group-hover:scale-110 transition-transform duration-700"
-                      style={{ backgroundImage: `url(${featuredPost.image})` }}
+                      style={{ backgroundImage: `url(${featuredPost.image_url})` }}
                     />
                   ) : (
-                    <div className={`absolute inset-0 bg-gradient-to-br ${featuredPost.fallbackColor} transform group-hover:scale-110 transition-transform duration-700`}></div>
+                    <div className={`absolute inset-0 bg-gradient-to-br ${featuredPost.fallback_color} transform group-hover:scale-110 transition-transform duration-700`}></div>
                   )}
                   
                   {/* Dark overlay */}
@@ -123,7 +152,7 @@ export default function BlogSection() {
                       <span>•</span>
                       <span>{featuredPost.date}</span>
                     </div>
-                    <span className="font-medium">{featuredPost.readTime}</span>
+                    <span className="font-medium">{featuredPost.read_time}</span>
                   </div>
                 </div>
               </div>
@@ -133,142 +162,117 @@ export default function BlogSection() {
       )}
 
       {/* Regular Blog Posts Grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8 md:mb-12">
-        {currentPosts.map((post) => (
-          <div key={post.id} className="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer transition-all duration-500 hover:scale-105 hover:shadow-2xl">
-            <Link href={`/blog/${post.id}`}>
-              <div className="bg-white">
+      {currentPosts.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {currentPosts.map((post) => (
+            <div key={post.id} className="group bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer">
+              <Link href={`/blog/${post.id}`}>
                 {/* Image Section */}
-                <div className="relative h-48 md:h-56 overflow-hidden">
-                  {post.image ? (
+                <div className="relative h-48 overflow-hidden">
+                  {post.image_url ? (
                     <div 
                       className="absolute inset-0 bg-cover bg-center bg-no-repeat transform group-hover:scale-110 transition-transform duration-700"
-                      style={{ backgroundImage: `url(${post.image})` }}
+                      style={{ backgroundImage: `url(${post.image_url})` }}
                     />
                   ) : (
-                    <div className={`absolute inset-0 bg-gradient-to-br ${post.fallbackColor} transform group-hover:scale-110 transition-transform duration-700`}></div>
+                    <div className={`absolute inset-0 bg-gradient-to-br ${post.fallback_color} transform group-hover:scale-110 transition-transform duration-700`}></div>
                   )}
                   
-                  {/* Dark overlay for better text readability */}
+                  {/* Dark overlay */}
                   <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-10 transition-opacity duration-500"></div>
                   
-                  {/* Shimmer effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>
-                  
                   {/* Category Badge */}
-                  <div className="absolute top-3 left-3 z-10">
-                    <span className="bg-white bg-opacity-90 text-[#333333] px-2 py-1 rounded text-xs font-medium">
+                  <div className="absolute top-4 left-4 z-10">
+                    <span className="bg-white text-[#333333] px-3 py-1 rounded-full text-xs font-medium uppercase tracking-wide">
                       {post.category}
                     </span>
                   </div>
                 </div>
                 
                 {/* Content Section */}
-                <div className="p-4 md:p-6">
-                  <h3 className="text-lg md:text-xl font-semibold text-[#333333] mb-2 group-hover:text-[#555555] transition-colors duration-300 line-clamp-2">
+                <div className="p-6">
+                  <h3 className="text-lg font-bold text-[#333333] mb-2 group-hover:text-[#555555] transition-colors duration-300 line-clamp-2">
                     {post.title}
                   </h3>
                   
-                  <p className="text-[#666666] mb-3 text-sm leading-relaxed line-clamp-3">
+                  <p className="text-[#666666] mb-4 text-sm leading-relaxed line-clamp-3">
                     {post.excerpt}
                   </p>
                   
-                  <div className="flex items-center justify-between text-xs text-[#888888] pt-2 border-t border-gray-100">
-                    <div className="flex items-center space-x-1">
+                  <div className="flex items-center justify-between text-xs text-[#888888] mt-auto">
+                    <div className="flex items-center space-x-2">
                       <span className="font-medium">{post.author}</span>
                       <span>•</span>
                       <span>{post.date}</span>
                     </div>
-                    <span className="font-medium">{post.readTime}</span>
+                    <span className="font-medium">{post.read_time}</span>
                   </div>
                 </div>
-              </div>
-            </Link>
-          </div>
-        ))}
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex flex-col items-center space-y-4 mb-8 md:mb-12">
-          {/* Page Info */}
-          <div className="text-sm text-[#666666]">
-            Showing {startIndex + 1}-{Math.min(endIndex, regularPosts.length)} of {regularPosts.length} articles
-          </div>
-          
-          {/* Pagination Controls */}
-          <div className="flex items-center space-x-2">
-            {/* Previous Button */}
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                currentPage === 1
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-white text-[#333333] border border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              Previous
-            </button>
-            
-            {/* Page Numbers */}
-            <div className="flex items-center space-x-1">
-              {getPageNumbers().map((page, index) => (
-                <div key={index}>
-                  {page === '...' ? (
-                    <span className="px-3 py-2 text-sm text-gray-500">...</span>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        if (typeof page === 'number') handlePageChange(page);
-                      }}
-                      className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                        currentPage === page
-                          ? 'bg-[#333333] text-white'
-                          : 'bg-white text-[#333333] border border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  )}
-                </div>
-              ))}
+              </Link>
             </div>
-            
-            {/* Next Button */}
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                currentPage === totalPages
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-white text-[#333333] border border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              Next
-              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
+          ))}
+        </div>
+      )}
+
+      {/* No Posts Message */}
+      {blogPosts.length === 0 && (
+        <div className="text-center py-12">
+          <div className="text-[#666666] text-lg">
+            No blog posts available at the moment. Check back soon for new content!
           </div>
         </div>
       )}
 
-      {/* View All Blog Posts Button */}
-      <div className="flex justify-center">
-        <Link
-          href="/blog"
-          className="inline-flex items-center px-8 py-3 bg-[#333333] text-white font-medium rounded-md hover:bg-[#555555] transition-colors duration-300"
-        >
-          View All Articles
-          <svg className="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-          </svg>
-        </Link>
-      </div>
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center mt-12 space-x-2">
+          {/* Previous Button */}
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+              currentPage === 1
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-white text-[#333333] border border-gray-300 hover:bg-[#333333] hover:text-white hover:border-[#333333]'
+            }`}
+          >
+            Previous
+          </button>
+          
+          {/* Page Numbers */}
+          {getPageNumbers().map((page, index) => (
+            <div key={index}>
+              {page === '...' ? (
+                <span className="px-4 py-2 text-[#666666]">...</span>
+              ) : (
+                <button
+                  onClick={() => handlePageChange(page as number)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                    currentPage === page
+                      ? 'bg-[#333333] text-white'
+                      : 'bg-white text-[#333333] border border-gray-300 hover:bg-[#333333] hover:text-white hover:border-[#333333]'
+                  }`}
+                >
+                  {page}
+                </button>
+              )}
+            </div>
+          ))}
+          
+          {/* Next Button */}
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+              currentPage === totalPages
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-white text-[#333333] border border-gray-300 hover:bg-[#333333] hover:text-white hover:border-[#333333]'
+            }`}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </section>
   );
 }

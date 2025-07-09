@@ -1,88 +1,68 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 
 // Demo blog data - replace with your actual data source
-const blogPosts = [
-  {
-    id: 1,
-    title: "The Future of Professional Uniforms: Trends Shaping 2025",
-    excerpt: "Discover how sustainable materials, smart fabrics, and innovative designs are revolutionizing the uniform industry. From moisture-wicking technologies to eco-friendly production methods.",
-    image: "/images/blog/uniform-trends-2025.jpg",
-    fallbackColor: "from-blue-900 to-blue-700",
-    category: "Industry Trends",
-    author: "Sarah Johnson",
-    date: "June 25, 2025",
-    readTime: "5 min read",
-    featured: true
-  },
-  {
-    id: 2,
-    title: "How to Choose the Perfect Chef Coat for Your Kitchen",
-    excerpt: "A comprehensive guide to selecting chef coats that combine comfort, durability, and style. Learn about fabric choices, fit considerations, and maintenance tips.",
-    image: "/images/blog/chef-coat-guide.jpg",
-    fallbackColor: "from-orange-800 to-orange-600",
-    category: "Buyer's Guide",
-    author: "Michael Chen",
-    date: "June 22, 2025",
-    readTime: "7 min read",
-    featured: false
-  },
-  {
-    id: 3,
-    title: "Corporate Uniform Psychology: Dressing for Success",
-    excerpt: "Explore how the right corporate attire influences employee confidence, customer perception, and brand identity. Backed by psychological research and case studies.",
-    image: "/images/blog/corporate-psychology.jpg",
-    fallbackColor: "from-gray-800 to-gray-600",
-    category: "Business Insights",
-    author: "Dr. Emily Rodriguez",
-    date: "June 20, 2025",
-    readTime: "6 min read",
-    featured: false
-  },
-  {
-    id: 4,
-    title: "Sustainable Uniforms: Our Commitment to the Environment",
-    excerpt: "Learn about our eco-friendly manufacturing processes, sustainable materials, and how we're reducing our carbon footprint while maintaining quality standards.",
-    image: "/images/blog/sustainable-uniforms.jpg",
-    fallbackColor: "from-green-900 to-green-700",
-    category: "Sustainability",
-    author: "Alex Thompson",
-    date: "June 18, 2025",
-    readTime: "4 min read",
-    featured: false
-  },
-  {
-    id: 5,
-    title: "Hospital Uniform Innovations: Safety Meets Comfort",
-    excerpt: "Discover the latest innovations in medical uniforms, including antimicrobial treatments, ergonomic designs, and advanced fabric technologies for healthcare professionals.",
-    image: "/images/blog/medical-innovations.jpg",
-    fallbackColor: "from-cyan-800 to-cyan-600",
-    category: "Healthcare",
-    author: "Dr. James Wilson",
-    date: "June 15, 2025",
-    readTime: "8 min read",
-    featured: false
-  },
-  {
-    id: 6,
-    title: "Custom Embroidery vs. Heat Transfer: Which is Right for You?",
-    excerpt: "Compare different customization methods for your uniforms. We break down the pros, cons, durability, and cost considerations of each approach.",
-    image: "/images/blog/customization-methods.jpg",
-    fallbackColor: "from-purple-900 to-purple-700",
-    category: "Customization",
-    author: "Lisa Park",
-    date: "June 12, 2025",
-    readTime: "5 min read",
-    featured: false
-  }
-];
+
 
 export default function BlogSection() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 6;
+  
   const featuredPost = blogPosts.find(post => post.featured);
   const regularPosts = blogPosts.filter(post => !post.featured);
+  
+  // Calculate pagination
+  const totalPages = Math.ceil(regularPosts.length / postsPerPage);
+  const startIndex = (currentPage - 1) * postsPerPage;
+  const endIndex = startIndex + postsPerPage;
+  const currentPosts = regularPosts.slice(startIndex, endIndex);
+  
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top of blog section
+    document.getElementById('blog-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
+  
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    
+    return pages;
+  };
 
   return (
-    <section className="container mx-auto px-4 py-5 md:py-8">
+    <section id="blog-section" className="container mx-auto px-4 py-5 md:py-8">
       <div className="mx-auto max-w-4xl text-center mb-8 md:mb-12">
         <h2 className="mb-4 md:mb-6 text-2xl font-bold text-[#333333] md:text-3xl lg:text-4xl">
           Insights & Stories from the Industry
@@ -93,8 +73,8 @@ export default function BlogSection() {
         </p>
       </div>
 
-      {/* Featured Blog Post */}
-      {featuredPost && (
+      {/* Featured Blog Post - Only show on first page */}
+      {featuredPost && currentPage === 1 && (
         <div className="mb-8 md:mb-12">
           <div className="group relative overflow-hidden rounded-xl shadow-lg cursor-pointer transition-all duration-500 hover:shadow-2xl">
             <Link href={`/blog/${featuredPost.id}`}>
@@ -154,7 +134,7 @@ export default function BlogSection() {
 
       {/* Regular Blog Posts Grid */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8 md:mb-12">
-        {regularPosts.map((post) => (
+        {currentPosts.map((post) => (
           <div key={post.id} className="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer transition-all duration-500 hover:scale-105 hover:shadow-2xl">
             <Link href={`/blog/${post.id}`}>
               <div className="bg-white">
@@ -208,6 +188,75 @@ export default function BlogSection() {
         ))}
       </div>
 
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex flex-col items-center space-y-4 mb-8 md:mb-12">
+          {/* Page Info */}
+          <div className="text-sm text-[#666666]">
+            Showing {startIndex + 1}-{Math.min(endIndex, regularPosts.length)} of {regularPosts.length} articles
+          </div>
+          
+          {/* Pagination Controls */}
+          <div className="flex items-center space-x-2">
+            {/* Previous Button */}
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                currentPage === 1
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-[#333333] border border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Previous
+            </button>
+            
+            {/* Page Numbers */}
+            <div className="flex items-center space-x-1">
+              {getPageNumbers().map((page, index) => (
+                <div key={index}>
+                  {page === '...' ? (
+                    <span className="px-3 py-2 text-sm text-gray-500">...</span>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        if (typeof page === 'number') handlePageChange(page);
+                      }}
+                      className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                        currentPage === page
+                          ? 'bg-[#333333] text-white'
+                          : 'bg-white text-[#333333] border border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+            
+            {/* Next Button */}
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                currentPage === totalPages
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-[#333333] border border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              Next
+              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* View All Blog Posts Button */}
       <div className="flex justify-center">
         <Link
@@ -222,4 +271,4 @@ export default function BlogSection() {
       </div>
     </section>
   );
-}   
+}

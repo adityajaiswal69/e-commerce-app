@@ -1,5 +1,5 @@
 "use client";
-
+import { blogPosts, BlogPostType } from "@/data/blogPosts";
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";

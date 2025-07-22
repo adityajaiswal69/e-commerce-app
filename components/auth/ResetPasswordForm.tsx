@@ -1,12 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 
 export default function ResetPasswordForm() {
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check for error message from URL parameters
+    const error = searchParams.get("error");
+    if (error) {
+      setMessage(error);
+    }
+  }, [searchParams]);
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -15,7 +25,7 @@ export default function ResetPasswordForm() {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/update-password`,
+        redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
       });
 
       if (error) throw error;
@@ -29,7 +39,11 @@ export default function ResetPasswordForm() {
 
   return (
     <form onSubmit={handleReset} className="space-y-4">
-      {message && <div className="text-blue-500">{message}</div>}
+      {message && (
+        <div className={`${message.includes("error") || message.includes("expired") || message.includes("invalid") ? "text-red-500" : "text-blue-500"}`}>
+          {message}
+        </div>
+      )}
       <div>
         <label htmlFor="email" className="block text-sm font-medium">
           Email

@@ -52,12 +52,12 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
-  // Special case for update-password
-  if (
-    req.nextUrl.pathname.startsWith("/auth/update-password") &&
-    !req.nextUrl.searchParams.has("code")
-  ) {
-    return NextResponse.redirect(new URL("/sign-in", req.url));
+  // Special case for update-password - allow access if user has a session (from password reset flow)
+  if (req.nextUrl.pathname.startsWith("/auth/update-password")) {
+    // If no session and no code parameter, redirect to sign-in
+    if (!session && !req.nextUrl.searchParams.has("code")) {
+      return NextResponse.redirect(new URL("/sign-in", req.url));
+    }
   }
 
   return res;

@@ -13,11 +13,30 @@ export default function UpdatePasswordForm() {
   useEffect(() => {
     // Check if we have a session after recovery flow
     const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) {
-        setError("Invalid or expired password reset link");
+      try {
+        const {
+          data: { session },
+          error: sessionError
+        } = await supabase.auth.getSession();
+
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          setError("Authentication error. Please try again.");
+          setTimeout(() => {
+            router.push("/reset-password");
+          }, 2000);
+          return;
+        }
+
+        if (!session) {
+          setError("Invalid or expired password reset link");
+          setTimeout(() => {
+            router.push("/reset-password");
+          }, 2000);
+        }
+      } catch (error) {
+        console.error("Error checking session:", error);
+        setError("Failed to verify authentication. Please try again.");
         setTimeout(() => {
           router.push("/reset-password");
         }, 2000);
@@ -33,15 +52,23 @@ export default function UpdatePasswordForm() {
     setError(null);
 
     try {
+      // Verify we still have a valid session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setError("Session expired. Please request a new password reset link.");
+        return;
+      }
+
       const { error } = await supabase.auth.updateUser({
         password,
       });
 
       if (error) throw error;
 
-      // Show success message
+      // Show success message and redirect
       router.push("/sign-in?message=Password updated successfully");
     } catch (error) {
+      console.error("Password update error:", error);
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
       setLoading(false);

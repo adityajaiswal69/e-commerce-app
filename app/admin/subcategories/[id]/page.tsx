@@ -8,7 +8,7 @@ export default async function EditSubcategoryPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { data: subcategory } = await supabase
     .from("subcategories")
     .select("*")

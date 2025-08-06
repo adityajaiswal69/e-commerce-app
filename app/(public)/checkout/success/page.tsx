@@ -7,7 +7,7 @@ export default async function SuccessPage({
   searchParams: Promise<{ session_id?: string; order_id?: string }>;
 }) {
   const { session_id, order_id } = await searchParams;
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   // Verify the order exists and is paid
   let order = null;

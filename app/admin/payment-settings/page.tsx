@@ -2,7 +2,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import PaymentSettingsForm from "@/components/admin/PaymentSettingsForm";
 
 export default async function PaymentSettingsPage() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const { data: paymentSettings } = await supabase
     .from("payment_settings")

@@ -8,7 +8,7 @@ export default async function EditBlogPostPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { data: blogPost } = await supabase
     .from("blog_posts")
     .select("*")

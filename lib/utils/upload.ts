@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase/client";
 import { v4 as uuidv4 } from "uuid";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClientComponentClient } from "@/lib/supabase/client";
 import { logError } from "./error-logger";
 
 interface UploadOptions {

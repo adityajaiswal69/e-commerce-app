@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClientComponentClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { StarIcon } from "@heroicons/react/24/solid";
 import { formatDistanceToNow } from "date-fns";

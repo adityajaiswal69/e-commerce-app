@@ -28,6 +28,9 @@ create index IF not exists idx_blog_posts_date on public.blog_posts using btree 
 
 create index IF not exists idx_blog_posts_image_bucket on public.blog_posts using btree (image_bucket) TABLESPACE pg_default;
 
+create trigger trigger_delete_blog_image BEFORE DELETE on blog_posts for EACH row
+execute FUNCTION delete_blog_image_on_post_delete ();
+
 create trigger update_blog_posts_updated_at BEFORE
 update on blog_posts for EACH row
 execute FUNCTION update_updated_at_column ();

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClientComponentClient } from "@/lib/supabase/client";
 import { Database } from "@/types/database.types";
 
 type Category = {

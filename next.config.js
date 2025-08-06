@@ -1,9 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: [
-      "rondorjwptmquhpjnfje.supabase.co",
-      "pymuowzbfwsmxgufyogc.supabase.co"
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'rondorjwptmquhpjnfje.supabase.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'pymuowzbfwsmxgufyogc.supabase.co',
+      },
     ],
   },
   webpack: (config, { isServer }) => {

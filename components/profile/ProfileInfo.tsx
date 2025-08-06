@@ -41,7 +41,7 @@ export default function ProfileInfo({ user }: { user: User }) {
     setMessage(null);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(user.email!, {
-        redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+        redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL || window.location.origin}/auth/callback?type=recovery`,
       });
       if (error) throw error;
       setMessage("Password reset link sent to your email");

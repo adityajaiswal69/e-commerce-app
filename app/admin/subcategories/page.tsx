@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import { FiPlus, FiEdit2 } from "react-icons/fi";
@@ -23,22 +22,22 @@ type Subcategory = {
 };
 
 export default async function SubcategoriesPage() {
-  const supabase = createServerComponentClient({ cookies });
+  const supabase = await createServerSupabaseClient();
   
   // Check if user is authenticated and is admin
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  
-  if (!session) {
-    redirect("/auth/login?callbackUrl=/admin/subcategories");
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/sign-in");
   }
-  
+
   // Fetch user profile to check role
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", session.user.id)
+    .eq("id", user.id)
     .single();
     
   if (!profile || profile.role !== "admin") {

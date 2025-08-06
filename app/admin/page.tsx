@@ -7,7 +7,7 @@ import ProductManagement from "@/components/admin/ProductManagement";
 import type { Order } from "@/types/orders";
 
 export default async function AdminDashboard() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   try {
     // Check if user is authenticated

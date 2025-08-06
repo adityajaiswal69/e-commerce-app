@@ -63,7 +63,7 @@ export default async function ProductsPage({
   searchParams: Promise<SearchParams>;
 }) {
   const searchParamsData = await searchParams;
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   // Get current page (default to 1)
   const currentPage = parseInt(searchParamsData.page || '1', 10);

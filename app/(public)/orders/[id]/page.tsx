@@ -9,7 +9,7 @@ interface OrderDetailsPageProps {
 
 export default async function OrderDetailsPage({ params }: OrderDetailsPageProps) {
   const { id } = await params;
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   // Get current user
   const { data: { user } } = await supabase.auth.getUser();

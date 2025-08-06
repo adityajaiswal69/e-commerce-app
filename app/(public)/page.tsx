@@ -11,7 +11,7 @@ import Image from "next/image";
 import HeroSlider from "@/components/HeroSlider";
 
 export default async function HomePage() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   // Fetch featured products (latest 8 active products)
   const { data: featuredProducts } = await supabase
@@ -250,8 +250,9 @@ const industries = [
 
       {/* Mobile and Tablet: Traditional grid with hover effects */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:hidden sm:gap-6">
-        {industries.map((industry, index) => (
+        {industries.map((industry) => (
           <Link
+            key={industry.id}
             href={`/products?${industry.slug}`}
             className="group relative h-48 md:h-56 rounded-lg overflow-hidden shadow-lg cursor-pointer transition-all duration-500 hover:scale-105 hover:shadow-2xl"
           >

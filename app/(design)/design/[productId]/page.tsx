@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { notFound } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClientComponentClient } from '@/lib/supabase/client';
 import { Product, DesignElement, TextElementData } from '@/types/database.types';
 import { useDesign } from '@/contexts/DesignContext';
 import DesignCanvas from '@/components/design/DesignCanvas';

@@ -14,7 +14,7 @@ import {
   PaintBrushIcon,
 } from '@heroicons/react/24/outline';
 import { RemoveFormatting } from 'lucide-react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClientComponentClient } from '@/lib/supabase/client';
 import toast from 'react-hot-toast';
 import ArtAssetPicker from "@/components/design/ArtAssetPicker";
 import { ArtAssetsProvider } from "@/contexts/ArtAssetsContext";

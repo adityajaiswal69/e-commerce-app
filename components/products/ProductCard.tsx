@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Product } from "@/types/database.types";
 import { StarIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClientComponentClient } from "@/lib/supabase/client";
 
 type ProductCardProps = {
   product: Product;

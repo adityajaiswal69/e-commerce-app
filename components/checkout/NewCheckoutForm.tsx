@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClientComponentClient } from "@/lib/supabase/client";
 import { useCart } from "@/contexts/CartContext";
 import { useRouter } from "next/navigation";
 import { Address, PaymentProvider } from "@/types/payment.types";

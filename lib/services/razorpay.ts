@@ -11,7 +11,7 @@ import {
 let razorpayInstance: Razorpay | null = null;
 
 async function getRazorpaySettings(): Promise<RazorpaySettings | null> {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   
   const { data: settings, error } = await supabase
     .from('payment_settings')

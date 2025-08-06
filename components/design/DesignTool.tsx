@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClientComponentClient } from '@/lib/supabase/client';
 import { Design, Product } from '@/types/database.types';
 import { TextElementData, ImageElementData, ElementUpdate } from '@/types/element.types';
 import DesignCanvas from './DesignCanvas';
 import DesignToolbar from './DesignToolbar';
-import { useDesign, DesignProvider } from '@/contexts/DesignContext';
+import { useDesign } from '@/contexts/DesignContext';
 import { EyeIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
@@ -333,11 +333,7 @@ function DesignToolContent({ product, isEditing = false, existingDesign }: Desig
   );
 }
 
-// Main component that provides the context
+// Main component - context is provided by layout
 export default function DesignTool(props: DesignToolProps) {
-  return (
-    <DesignProvider>
-      <DesignToolContent {...props} />
-    </DesignProvider>
-  );
+  return <DesignToolContent {...props} />;
 }

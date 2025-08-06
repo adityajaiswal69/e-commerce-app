@@ -758,7 +758,7 @@ function SelectionOverlay({
       {/* Control handles */}
       {controlHandles.map((handle, index) => (
         <div
-          key={index}
+          key={`${element.id}-control-${handle.action}-${index}`}
           className="absolute pointer-events-auto hover:scale-110 transition-transform"
           style={{
             left: handle.x,

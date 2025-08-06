@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/contexts/CartContext";
 import { useState, useEffect, use } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClientComponentClient } from "@/lib/supabase/client";
 import { getCurrentUser } from "@/lib/auth-utils";
 import ReviewSection from "@/components/products/ReviewSection";
 import ProductImageGallery from "@/components/products/ProductImageGallery";

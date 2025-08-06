@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 export default async function AdminBlogPostsPage() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { data: blogPosts } = await supabase
     .from("blog_posts")
     .select("*")

@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 export default async function AdminProductsPage() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { data: products } = await supabase
     .from("products")
     .select("*")

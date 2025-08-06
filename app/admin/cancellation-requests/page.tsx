@@ -2,7 +2,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import CancellationRequestsClient from "@/components/admin/CancellationRequestsClient";
 
 export default async function CancellationRequestsPage() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   console.log('🔍 Fetching cancellation requests...');
 

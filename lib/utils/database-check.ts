@@ -1,7 +1,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 export async function checkPaymentSystemTables() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   
   const results = {
     orders: false,
@@ -68,7 +68,7 @@ export async function checkPaymentSystemTables() {
 }
 
 export async function createPaymentSystemTables() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   
   try {
     // This would typically be done through migrations

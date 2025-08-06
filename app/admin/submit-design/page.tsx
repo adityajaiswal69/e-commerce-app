@@ -1,6 +1,6 @@
 "use client";
 
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClientComponentClient } from "@/lib/supabase/client";
 import { Database, Design, Product } from "@/types/database.types";
 import { useEffect, useState } from "react";
 import { getCurrentUser } from "@/lib/auth-utils";

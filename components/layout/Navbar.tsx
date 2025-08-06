@@ -7,7 +7,7 @@ import Image from "next/image";
 import CompactCart from "@/components/cart/CompactCart";
 import { useCart } from "@/contexts/CartContext";
 import { getCurrentUser, signOut } from "@/lib/auth-utils";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClientComponentClient } from "@/lib/supabase/client";
 import { Database } from "@/types/database.types";
 import { ChevronRight } from "lucide-react";
 

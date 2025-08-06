@@ -4,7 +4,7 @@ import Link from "next/link";
 import { formatDate, formatCurrency } from "@/lib/utils/format";
 
 export default async function OrdersPage() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   // Get current user
   const { data: { user } } = await supabase.auth.getUser();

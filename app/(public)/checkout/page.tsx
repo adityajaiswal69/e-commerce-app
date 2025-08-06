@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClientComponentClient } from "@/lib/supabase/client";
 import { useCart } from "@/contexts/CartContext";
 import CheckoutForm from "@/components/checkout/NewCheckoutForm";
 import CheckoutErrorBoundary from "@/components/checkout/CheckoutErrorBoundary";

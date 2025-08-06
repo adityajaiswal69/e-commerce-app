@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClientComponentClient } from "@/lib/supabase/client";
 import Image from "next/image";
 import { toast } from "react-hot-toast";
 import type { Order } from "@/types/orders";

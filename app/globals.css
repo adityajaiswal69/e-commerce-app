@@ -7,8 +7,45 @@
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */
   }
-  
+
   .hide-scrollbar::-webkit-scrollbar {
     display: none; /* Chrome, Safari and Opera */
   }
+}
+
+/* TipTap Editor Styles */
+.ProseMirror {
+  outline: none;
+}
+
+.ProseMirror a {
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
+  /* Add some padding to make link boundaries clearer */
+  padding: 1px 2px;
+  border-radius: 2px;
+  background-color: rgba(37, 99, 235, 0.05);
+}
+
+.ProseMirror a:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+  background-color: rgba(37, 99, 235, 0.1);
+}
+
+/* Style for when link is selected/focused */
+.ProseMirror a.ProseMirror-selectednode {
+  background-color: rgba(37, 99, 235, 0.2);
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+/* Placeholder styling */
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #9ca3af;
+  pointer-events: none;
+  height: 0;
 }

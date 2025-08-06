@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import TipTapEditor from '@/components/TipTapEditor';
 import { BlogPost } from '@/types/blog';
+import { v4 as uuidv4 } from 'uuid';
 
 interface BlogPostFormProps {
   blogPost?: BlogPost;
@@ -27,9 +28,13 @@ export default function BlogPostForm({ blogPost }: BlogPostFormProps) {
   
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tagInput, setTagInput] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   // Populate form data when editing
@@ -48,6 +53,11 @@ export default function BlogPostForm({ blogPost }: BlogPostFormProps) {
         image_url: blogPost.image_url || '',
         fallback_color: blogPost.fallback_color || 'from-blue-500 to-purple-600',
       });
+
+      // Set image preview for existing blog post
+      if (blogPost.image_url) {
+        setImagePreview(blogPost.image_url);
+      }
     }
   }, [blogPost]);
 
@@ -85,17 +95,85 @@ export default function BlogPostForm({ blogPost }: BlogPostFormProps) {
     }));
   };
 
+  // Handle image file selection
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Upload image to Supabase storage
+  const uploadImage = async (file: File): Promise<string> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${uuidv4()}.${fileExt}`;
+      const filePath = fileName; // Just the filename, not blog-images/filename
+
+      console.log('Uploading file:', { fileName, filePath, fileSize: file.size });
+
+      const { data, error: uploadError } = await supabase.storage
+        .from('blog-images')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error('Upload error details:', uploadError);
+
+        // Provide specific error messages for common issues
+        if (uploadError.message.includes('Bucket not found')) {
+          throw new Error('Storage bucket not found. Please set up the blog-images bucket first.');
+        } else if (uploadError.message.includes('Duplicate')) {
+          throw new Error('A file with this name already exists. Please try again.');
+        } else {
+          throw new Error(`Upload failed: ${uploadError.message}`);
+        }
+      }
+
+      console.log('Upload successful:', data);
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('blog-images')
+        .getPublicUrl(filePath);
+
+      console.log('Generated public URL:', publicUrl);
+      return publicUrl;
+    } catch (error) {
+      console.error('Error in uploadImage function:', error);
+      throw error;
+    }
+  };
+
+
+
   // Extract filename from image URL for storage deletion
   const extractFilenameFromUrl = (url: string): string | null => {
     try {
       // Handle Supabase storage URLs
+      if (url.includes('/storage/v1/object/public/blog-images/')) {
+        const parts = url.split('/storage/v1/object/public/blog-images/');
+        if (parts.length > 1) {
+          return parts[1]; // Returns just the filename
+        }
+      }
+
+      // Handle other Supabase storage URLs
       if (url.includes('/storage/v1/object/public/')) {
         const parts = url.split('/storage/v1/object/public/');
         if (parts.length > 1) {
-          return parts[1]; // Returns bucket/filename
+          const pathParts = parts[1].split('/');
+          if (pathParts.length > 1) {
+            return pathParts.slice(1).join('/'); // Remove bucket name, return filename
+          }
         }
       }
-      
+
       // Handle direct URLs - extract filename from path
       const urlObj = new URL(url);
       const pathname = urlObj.pathname;
@@ -132,14 +210,19 @@ export default function BlogPostForm({ blogPost }: BlogPostFormProps) {
 
   const handleDelete = async () => {
     if (!blogPost) return;
-    
+
     setDeleting(true);
     setError(null);
 
     try {
-      // Delete associated image from storage first
+      // Try to delete associated image from storage first (but don't fail if it errors)
       if (blogPost.image_url) {
-        await deleteImageFromStorage(blogPost.image_url);
+        try {
+          await deleteImageFromStorage(blogPost.image_url);
+        } catch (imageError) {
+          console.warn('Failed to delete image from storage:', imageError);
+          // Continue with blog post deletion even if image deletion fails
+        }
       }
 
       // Delete blog post from database
@@ -148,13 +231,17 @@ export default function BlogPostForm({ blogPost }: BlogPostFormProps) {
         .delete()
         .eq('id', blogPost.id);
 
-      if (deleteError) throw deleteError;
+      if (deleteError) {
+        console.error('Database deletion error:', deleteError);
+        throw new Error(`Failed to delete blog post: ${deleteError.message}`);
+      }
 
       // Redirect to blog posts list
       router.push('/admin/blog-posts');
     } catch (err) {
       console.error('Error deleting blog post:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred while deleting');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred while deleting the blog post';
+      setError(errorMessage);
     } finally {
       setDeleting(false);
       setShowDeleteConfirm(false);
@@ -167,10 +254,57 @@ export default function BlogPostForm({ blogPost }: BlogPostFormProps) {
     setError(null);
 
     try {
+      let imageUrl = formData.image_url;
+
+      // Handle image upload if a new file is selected
+      if (imageFile) {
+        setUploading(true);
+
+        try {
+          // If updating and there's an existing image, delete it first
+          if (blogPost && blogPost.image_url) {
+            try {
+              await deleteImageFromStorage(blogPost.image_url);
+            } catch (deleteError) {
+              console.warn('Failed to delete old image:', deleteError);
+              // Continue with upload even if deletion fails
+            }
+          }
+
+          // Upload new image
+          imageUrl = await uploadImage(imageFile);
+          console.log('Image uploaded successfully:', imageUrl);
+        } catch (uploadError) {
+          console.error('Image upload failed:', uploadError);
+          setUploading(false);
+
+          // If upload fails, continue without image but warn user
+          if (uploadError instanceof Error && uploadError.message.includes('Bucket not found')) {
+            setError('Image upload failed: Storage bucket not set up. Please contact administrator. Saving post without image.');
+            imageUrl = ''; // Save without image
+          } else {
+            throw new Error(`Image upload failed: ${uploadError instanceof Error ? uploadError.message : 'Unknown error'}`);
+          }
+        }
+
+        setUploading(false);
+      }
+
+      // Validate required fields
+      if (!formData.title.trim()) {
+        throw new Error('Title is required');
+      }
+      if (!formData.excerpt.trim()) {
+        throw new Error('Excerpt is required');
+      }
+
       const blogPostData = {
         ...formData,
+        image_url: imageUrl,
         updated_at: new Date().toISOString(),
       };
+
+      console.log('Saving blog post data:', blogPostData);
 
       if (blogPost) {
         // Update existing post
@@ -179,22 +313,30 @@ export default function BlogPostForm({ blogPost }: BlogPostFormProps) {
           .update(blogPostData)
           .eq('id', blogPost.id);
 
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error('Database update error:', updateError);
+          throw new Error(`Failed to update blog post: ${updateError.message}`);
+        }
       } else {
         // Create new post
         const { error: insertError } = await supabase
           .from('blog_posts')
           .insert([blogPostData]);
 
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.error('Database insert error:', insertError);
+          throw new Error(`Failed to create blog post: ${insertError.message}`);
+        }
       }
 
       router.push('/admin/blog-posts');
     } catch (err) {
       console.error('Error saving blog post:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred while saving the blog post';
+      setError(errorMessage);
     } finally {
       setLoading(false);
+      setUploading(false);
     }
   };
 
@@ -316,17 +458,63 @@ export default function BlogPostForm({ blogPost }: BlogPostFormProps) {
         </div>
 
         <div>
-          <label htmlFor="image_url" className="block text-sm font-medium text-gray-700 mb-2">
-            Image URL (Optional)
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Blog Image
           </label>
-          <input
-            type="url"
-            id="image_url"
-            name="image_url"
-            value={formData.image_url}
-            onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+
+          {/* Current image preview */}
+          {(imagePreview || formData.image_url) && (
+            <div className="mb-4">
+              <img
+                src={imagePreview || formData.image_url}
+                alt="Blog preview"
+                className="w-full max-w-md h-48 object-cover rounded-lg border border-gray-300"
+              />
+            </div>
+          )}
+
+          {/* File input */}
+          <div className="flex items-center space-x-4">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageSelect}
+              accept="image/*"
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              disabled={uploading}
+              title={uploading ? 'Uploading image...' : 'Select an image file to upload'}
+            >
+              {uploading ? 'Uploading...' : 'Choose Image'}
+            </button>
+
+            {/* Manual URL input as fallback */}
+            <div className="flex-1">
+              <input
+                type="url"
+                name="image_url"
+                value={formData.image_url}
+                onChange={handleInputChange}
+                placeholder="Or enter image URL manually"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          {imageFile && (
+            <p className="mt-2 text-sm text-gray-600">
+              Selected: {imageFile.name}
+            </p>
+          )}
+
+          <p className="mt-2 text-xs text-gray-500">
+            Note: If image upload fails, the blog post will be saved without an image.
+            Make sure the storage bucket is set up properly.
+          </p>
         </div>
 
         <div>
@@ -375,7 +563,7 @@ export default function BlogPostForm({ blogPost }: BlogPostFormProps) {
               type="text"
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleTagAdd())}
+              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleTagAdd())}
               placeholder="Add a tag..."
               className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />

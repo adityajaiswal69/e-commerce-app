@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClientComponentClient } from "@/lib/supabase/client";
 import { CancellationRequest } from "@/types/payment.types";
 import { formatDate, formatCurrency } from "@/lib/utils/format";
 import toast from "react-hot-toast";

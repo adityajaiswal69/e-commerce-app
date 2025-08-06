@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClientComponentClient } from "@/lib/supabase/client";
 import { Order, OrderItem, CancellationRequest, CancellationReason } from "@/types/payment.types";
 import CancelOrderModal from "./CancelOrderModal";
 import { formatDate, formatCurrency } from "@/lib/utils/format";

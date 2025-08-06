@@ -4,8 +4,11 @@ import OrderHistory from "@/components/profile/OrderHistory";
 import ProfileSettings from "@/components/profile/ProfileSettings";
 import StylePreferences from "@/components/profile/StylePreferences";
 
+// Force dynamic rendering to prevent static generation issues
+export const dynamic = 'force-dynamic';
+
 export default async function ProfilePage() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const {
     data: { user },

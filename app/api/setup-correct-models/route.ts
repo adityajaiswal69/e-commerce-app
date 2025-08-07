@@ -103,45 +103,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Stability AI models (with CORRECT engine IDs and dimensions)
+    // Stability AI models (ONLY working engines)
     if (stabilityProvider) {
       modelsToCreate.push(
         {
           provider_id: stabilityProvider.id,
           model_id: 'stable-diffusion-xl-1024-v1-0',
-          display_name: 'SDXL 1024 (Stability AI)',
-          description: 'High resolution Stable Diffusion XL - requires 1024x1024 or larger dimensions',
-          tags: ['xl', 'high-res', 'stability'],
+          display_name: 'SDXL 1024 v1.0 (Stability AI)',
+          description: 'High resolution Stable Diffusion XL - Working model',
+          tags: ['xl', 'high-res', 'stability', 'working'],
           is_enabled: true,
           is_default: false,
           model_settings: {
             width: 1024,
             height: 1024,
             steps: 30,
-            cfg_scale: 7.5,
-            allowed_dimensions: [
-              [1024, 1024], [1152, 896], [1216, 832], [1344, 768],
-              [1536, 640], [640, 1536], [768, 1344], [832, 1216], [896, 1152]
-            ]
+            cfg_scale: 7.5
           }
         },
         {
           provider_id: stabilityProvider.id,
           model_id: 'stable-diffusion-xl-1024-v0-9',
           display_name: 'SDXL 1024 v0.9 (Stability AI)',
-          description: 'Stable Diffusion XL v0.9 - requires 1024x1024 or larger dimensions',
-          tags: ['xl', 'stable', 'stability'],
+          description: 'Stable Diffusion XL v0.9 - Alternative working model',
+          tags: ['xl', 'stable', 'stability', 'working'],
           is_enabled: true,
           is_default: false,
           model_settings: {
             width: 1024,
             height: 1024,
             steps: 30,
-            cfg_scale: 7.5,
-            allowed_dimensions: [
-              [1024, 1024], [1152, 896], [1216, 832], [1344, 768],
-              [1536, 640], [640, 1536], [768, 1344], [832, 1216], [896, 1152]
-            ]
+            cfg_scale: 7.5
           }
         }
       );

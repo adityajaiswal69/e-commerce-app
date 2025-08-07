@@ -159,18 +159,34 @@ async function generateWithSelectedModel(model: any, prompt: string, params: any
 
   console.log(`Generating with provider: ${provider.name} (${provider.provider_key})`);
 
-  // Generate based on provider type - all providers are equally supported
-  switch (provider.provider_key) {
-    case 'huggingface':
-      return await generateWithHuggingFace(model, prompt, params, userId);
-    case 'openai':
-      return await generateWithOpenAI(model, prompt, params, userId);
-    case 'replicate':
-      return await generateWithReplicate(model, prompt, params, userId);
-    case 'stability':
-      return await generateWithStability(model, prompt, params, userId);
-    default:
-      throw new Error(`Unsupported provider: ${provider.provider_key}`);
+  try {
+    // Generate based on provider type - all providers are equally supported
+    switch (provider.provider_key) {
+      case 'huggingface':
+        return await generateWithHuggingFace(model, prompt, params, userId);
+      case 'openai':
+        return await generateWithOpenAI(model, prompt, params, userId);
+      case 'replicate':
+        return await generateWithReplicate(model, prompt, params, userId);
+      case 'stability':
+        return await generateWithStability(model, prompt, params, userId);
+      default:
+        throw new Error(`Unsupported provider: ${provider.provider_key}`);
+    }
+  } catch (error: any) {
+    // Provide user-friendly error messages
+    if (error.message.includes('timeout') || error.message.includes('overloaded') || error.message.includes('524')) {
+      throw new Error(`${provider.name} servers are currently busy. Please try again in a few minutes.`);
+    } else if (error.message.includes('401') || error.message.includes('Invalid')) {
+      throw new Error(`API configuration issue with ${provider.name}. Please check your settings.`);
+    } else if (error.message.includes('429') || error.message.includes('rate limit')) {
+      throw new Error(`Rate limit reached for ${provider.name}. Please wait a moment before trying again.`);
+    } else if (error.message.includes('500') || error.message.includes('502') || error.message.includes('503')) {
+      throw new Error(`${provider.name} is experiencing technical difficulties. Please try again later.`);
+    }
+
+    // Re-throw the original error if it's already user-friendly
+    throw error;
   }
 }
 
@@ -179,11 +195,13 @@ async function generateWithSelectedModel(model: any, prompt: string, params: any
  */
 async function generateWithHuggingFace(model: any, prompt: string, params: any, userId: string): Promise<string> {
   const provider = model.ai_providers;
-  const apiUrl = `${provider.base_url}/models/${model.model_id}`;
+  const apiUrl = `${provider.base_url}/${model.model_id}`;
 
   try {
     console.log(`Generating with Hugging Face: ${model.model_id}`);
+    console.log(`API URL: ${apiUrl}`);
     console.log(`Prompt: ${prompt}`);
+    console.log(`API Token present: ${!!provider.api_token}`);
 
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -262,6 +280,8 @@ async function generateWithOpenAI(model: any, prompt: string, params: any, userI
   try {
     console.log(`Generating with OpenAI: ${model.model_id}`);
     console.log(`Prompt: ${prompt}`);
+    console.log(`API Token present: ${!!provider.api_token}`);
+    console.log(`Base URL: ${provider.base_url}`);
 
     const response = await fetch(`${provider.base_url}/images/generations`, {
       method: 'POST',
@@ -339,6 +359,7 @@ async function generateWithReplicate(model: any, prompt: string, params: any, us
   try {
     console.log(`Generating with Replicate: ${model.model_id}`);
     console.log(`Prompt: ${prompt}`);
+    console.log(`API Token present: ${!!provider.api_token}`);
 
     // Create prediction
     const response = await fetch(`${provider.base_url}/predictions`, {
@@ -453,31 +474,46 @@ async function generateWithStability(model: any, prompt: string, params: any, us
 
     console.log(`Using dimensions: ${width}x${height} for model: ${model.model_id}`);
 
-    const response = await fetch(`${provider.base_url}/generation/${model.model_id}/text-to-image`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${provider.api_token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({
-        text_prompts: [
-          {
-            text: prompt,
-            weight: 1
-          },
-          {
-            text: params.negative_prompt || "blurry, low quality, distorted",
-            weight: -1
-          }
-        ],
-        cfg_scale: params.guidance_scale || model.model_settings?.cfg_scale || 7.5,
-        height: height,
-        width: width,
-        steps: params.num_inference_steps || model.model_settings?.steps || 30,
-        samples: 1,
-      }),
-    });
+    // Add timeout and retry logic for better reliability
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+
+    let response;
+    try {
+      response = await fetch(`${provider.base_url}/generation/${model.model_id}/text-to-image`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${provider.api_token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          text_prompts: [
+            {
+              text: prompt,
+              weight: 1
+            },
+            {
+              text: params.negative_prompt || "blurry, low quality, distorted",
+              weight: -1
+            }
+          ],
+          cfg_scale: params.guidance_scale || model.model_settings?.cfg_scale || 7.5,
+          height: height,
+          width: width,
+          steps: params.num_inference_steps || model.model_settings?.steps || 30,
+          samples: 1,
+        }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        throw new Error('Request timed out. Stability AI servers may be overloaded. Please try again in a few minutes.');
+      }
+      throw error;
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -485,12 +521,28 @@ async function generateWithStability(model: any, prompt: string, params: any, us
 
       if (response.status === 401) {
         throw new Error('Invalid Stability AI API token. Please check your configuration.');
+      } else if (response.status === 404) {
+        throw new Error(`Stability AI model "${model.model_id}" not found. This model may no longer be available.`);
+      } else if (response.status === 524) {
+        throw new Error('Stability AI servers are currently overloaded. Please try again in a few minutes.');
+      } else if (response.status >= 500) {
+        throw new Error('Stability AI servers are experiencing issues. Please try again later.');
+      } else if (response.status === 429) {
+        throw new Error('Rate limit exceeded. Please wait a moment before trying again.');
       } else {
-        throw new Error(`Stability AI API error: ${response.status} - ${errorText}`);
+        throw new Error(`Stability AI API error: ${response.status} - Please try again later.`);
       }
     }
 
-    const result = await response.json();
+    let result;
+    try {
+      result = await response.json();
+    } catch (parseError) {
+      const responseText = await response.text();
+      console.error('Failed to parse Stability AI response as JSON:', responseText);
+      throw new Error('Stability AI returned invalid response format. Please try again.');
+    }
+
     const imageData = result.artifacts?.[0]?.base64;
 
     if (!imageData) {

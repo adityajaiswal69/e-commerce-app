@@ -75,7 +75,33 @@ export default function AIProvidersPage() {
       });
 
       if (response.ok) {
+        const result = await response.json();
         await fetchProviders();
+
+        // Auto-validate models if API token was added/updated
+        if (formData.api_token && (editingProvider || result.provider)) {
+          const providerId = editingProvider?.id || result.provider.id;
+          toast.success(`Provider ${editingProvider ? 'updated' : 'created'} successfully. Validating models...`);
+
+          try {
+            const validateResponse = await fetch('/api/admin/ai-providers/auto-validate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ provider_id: providerId })
+            });
+
+            const validateResult = await validateResponse.json();
+            if (validateResult.success) {
+              toast.success(`✅ Validated ${validateResult.models_tested?.length || 0} models`);
+            }
+          } catch (validateError) {
+            console.error('Auto-validation failed:', validateError);
+            toast(`⚠️ Provider saved but auto-validation failed`, { icon: '⚠️' });
+          }
+        } else {
+          toast.success(`Provider ${editingProvider ? 'updated' : 'created'} successfully`);
+        }
+
         setShowAddModal(false);
         setEditingProvider(null);
         setFormData({
@@ -85,7 +111,6 @@ export default function AIProvidersPage() {
           api_token: '',
           is_active: false
         });
-        toast.success(`Provider ${editingProvider ? 'updated' : 'created'} successfully`);
       } else {
         const error = await response.json();
         toast.error(error.error || 'Failed to save provider');

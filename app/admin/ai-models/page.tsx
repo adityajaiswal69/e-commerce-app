@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, CheckCircleIcon, ExclamationTriangleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { AIModel, AIProvider } from '@/types/database.types';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
@@ -10,11 +10,31 @@ export default function AIModelsPage() {
   const [models, setModels] = useState<AIModel[]>([]);
   const [providers, setProviders] = useState<AIProvider[]>([]);
   const [loading, setLoading] = useState(true);
+  const [validating, setValidating] = useState<string[]>([]);
+  const [validationStatuses, setValidationStatuses] = useState<Map<string, any>>(new Map());
 
   useEffect(() => {
     fetchModels();
     fetchProviders();
+    fetchValidationStatuses();
   }, []);
+
+  const fetchValidationStatuses = async () => {
+    try {
+      const response = await fetch('/api/admin/ai-models/validation-status');
+      const data = await response.json();
+
+      if (data.success) {
+        const statusMap = new Map();
+        data.models.forEach((model: any) => {
+          statusMap.set(model.id, model.validation);
+        });
+        setValidationStatuses(statusMap);
+      }
+    } catch (error) {
+      console.error('Error fetching validation statuses:', error);
+    }
+  };
 
   const fetchModels = async () => {
     try {
@@ -103,6 +123,133 @@ export default function AIModelsPage() {
     }
   };
 
+  const validateModel = async (modelId: string) => {
+    setValidating(prev => [...prev, modelId]);
+
+    try {
+      const response = await fetch('/api/admin/ai-models/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model_ids: [modelId] })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const result = data.results[0];
+        if (result.status === 'working') {
+          toast.success(`Model validated: ${result.message}`);
+        } else if (result.status === 'warning') {
+          toast(`Warning: ${result.message}`, { icon: '⚠️' });
+        } else {
+          toast.error(`Error: ${result.message}`);
+        }
+        await fetchValidationStatuses(); // Refresh validation statuses
+      } else {
+        toast.error('Validation failed');
+      }
+    } catch (error) {
+      console.error('Error validating model:', error);
+      toast.error('Failed to validate model');
+    } finally {
+      setValidating(prev => prev.filter(id => id !== modelId));
+    }
+  };
+
+  const validateAllModels = async () => {
+    const modelIds = models.map(m => m.id);
+    setValidating(modelIds);
+
+    try {
+      const response = await fetch('/api/admin/ai-models/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model_ids: modelIds })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(`Validated ${data.summary.total} models: ${data.summary.working} working, ${data.summary.errors} errors`);
+        await fetchValidationStatuses();
+      } else {
+        toast.error('Validation failed');
+      }
+    } catch (error) {
+      console.error('Error validating models:', error);
+      toast.error('Failed to validate models');
+    } finally {
+      setValidating([]);
+    }
+  };
+
+  const getValidationStatusIcon = (model: AIModel) => {
+    const validationData = validationStatuses.get(model.id);
+    const status = validationData?.status;
+    const isValidating = validating.includes(model.id);
+
+    if (isValidating) {
+      return <ClockIcon className="w-4 h-4 text-blue-500 animate-spin" />;
+    }
+
+    switch (status) {
+      case 'working':
+        return <CheckCircleIcon className="w-4 h-4 text-green-500" />;
+      case 'warning':
+        return <ExclamationTriangleIcon className="w-4 h-4 text-yellow-500" />;
+      case 'error':
+        return <XCircleIcon className="w-4 h-4 text-red-500" />;
+      default:
+        return <ClockIcon className="w-4 h-4 text-gray-400" />;
+    }
+  };
+
+  const getValidationStatusText = (model: AIModel) => {
+    const validationData = validationStatuses.get(model.id);
+    const status = validationData?.status;
+    const message = validationData?.message;
+    const isValidating = validating.includes(model.id);
+
+    if (isValidating) return 'Testing...';
+
+    // Show specific messages based on status
+    switch (status) {
+      case 'working':
+        return message || 'Model is working correctly';
+      case 'warning':
+        return message || 'Model has warnings';
+      case 'error':
+        return message || 'Model has errors';
+      default:
+        return 'Not tested';
+    }
+  };
+
+  const getValidationStatusColor = (model: AIModel) => {
+    const validationData = validationStatuses.get(model.id);
+    const status = validationData?.status;
+    const isValidating = validating.includes(model.id);
+
+    if (isValidating) return 'text-blue-600';
+
+    switch (status) {
+      case 'working': return 'text-green-600';
+      case 'warning': return 'text-yellow-600';
+      case 'error': return 'text-red-600';
+      default: return 'text-gray-500';
+    }
+  };
+
+  const getValidationError = (model: AIModel) => {
+    const validationData = validationStatuses.get(model.id);
+    return validationData?.error_details;
+  };
+
+  const getValidationLastTested = (model: AIModel) => {
+    const validationData = validationStatuses.get(model.id);
+    return validationData?.last_tested;
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -119,6 +266,18 @@ export default function AIModelsPage() {
           <p className="text-gray-600">Manage AI models and providers for art generation</p>
         </div>
         <div className="flex gap-3">
+          <button
+            onClick={validateAllModels}
+            disabled={validating.length > 0}
+            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {validating.length > 0 ? (
+              <ClockIcon className="w-4 h-4 animate-spin" />
+            ) : (
+              <CheckCircleIcon className="w-4 h-4" />
+            )}
+            {validating.length > 0 ? 'Testing Models...' : 'Test All Models'}
+          </button>
           <Link
             href="/admin/ai-models/providers"
             className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
@@ -152,6 +311,9 @@ export default function AIModelsPage() {
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Validation
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Default
@@ -214,6 +376,33 @@ export default function AIModelsPage() {
                       }`}
                     />
                   </button>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center gap-2">
+                    {getValidationStatusIcon(model)}
+                    <div className="flex flex-col">
+                      <span className={`text-sm font-medium ${getValidationStatusColor(model)}`}>
+                        {getValidationStatusText(model)}
+                      </span>
+                      {getValidationError(model) && (
+                        <span className="text-xs text-red-600 mt-1 max-w-xs" title={getValidationError(model)}>
+                          {getValidationError(model)}
+                        </span>
+                      )}
+                      {getValidationLastTested(model) && (
+                        <span className="text-xs text-gray-400 mt-1">
+                          Tested: {new Date(getValidationLastTested(model)!).toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => validateModel(model.id)}
+                      disabled={validating.includes(model.id)}
+                      className="text-xs text-blue-600 hover:text-blue-800 disabled:opacity-50 ml-2 px-2 py-1 border border-blue-300 rounded hover:bg-blue-50"
+                    >
+                      {validating.includes(model.id) ? 'Testing...' : 'Test'}
+                    </button>
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {model.is_default ? (

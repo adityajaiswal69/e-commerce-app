@@ -137,7 +137,8 @@ export default function AIModelsPage() {
 
       {/* Models Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -163,35 +164,37 @@ export default function AIModelsPage() {
           <tbody className="bg-white divide-y divide-gray-200">
             {models.map((model) => (
               <tr key={model.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div>
-                    <div className="text-sm font-medium text-gray-900">
+                <td className="px-6 py-4">
+                  <div className="max-w-xs">
+                    <div className="text-sm font-medium text-gray-900 truncate">
                       {model.display_name}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 truncate">
                       {model.model_id}
                     </div>
                     {model.description && (
-                      <div className="text-xs text-gray-400 mt-1">
+                      <div className="text-xs text-gray-400 mt-1 line-clamp-2">
                         {model.description}
                       </div>
                     )}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
-                    {model.ai_providers?.name || 'Unknown'}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {model.ai_providers?.provider_key}
+                <td className="px-6 py-4">
+                  <div className="max-w-xs">
+                    <div className="text-sm text-gray-900 truncate">
+                      {model.ai_providers?.name || 'Unknown'}
+                    </div>
+                    <div className="text-xs text-gray-500 truncate">
+                      {model.ai_providers?.provider_key}
+                    </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex flex-wrap gap-1">
+                <td className="px-6 py-4">
+                  <div className="flex flex-wrap gap-1 max-w-xs">
                     {model.tags.map((tag, index) => (
                       <span
                         key={index}
-                        className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                        className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 whitespace-nowrap"
                       >
                         {tag}
                       </span>
@@ -246,6 +249,7 @@ export default function AIModelsPage() {
             ))}
           </tbody>
         </table>
+        </div>
 
         {models.length === 0 && (
           <div className="text-center py-12">

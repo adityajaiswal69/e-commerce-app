@@ -138,7 +138,7 @@ export default function AdminNavbar({ children }: AdminNavbarProps) {
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
-      <div className={`bg-white shadow-lg transition-all duration-300 ${isSidebarCollapsed ? 'w-16' : 'w-64'} flex flex-col`}>
+      <div className={`bg-white shadow-lg transition-all duration-300 ${isSidebarCollapsed ? 'w-16' : 'w-64'} flex flex-col relative z-40`}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <div className="flex items-center space-x-3">
@@ -214,7 +214,7 @@ export default function AdminNavbar({ children }: AdminNavbarProps) {
 
             {/* User Dropdown */}
             {isUserMenuOpen && !isSidebarCollapsed && (
-              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
+              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                 <Link
                   href="/"
                   className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
@@ -242,8 +242,8 @@ export default function AdminNavbar({ children }: AdminNavbarProps) {
         
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto bg-gray-50 p-6">
-          <div className="max-w-7xl mx-auto">
+        <main className="flex-1 overflow-y-auto bg-gray-50 p-6 relative">
+          <div className="max-w-7xl mx-auto relative z-10">
             {children}
           </div>
         </main>

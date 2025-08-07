@@ -355,6 +355,10 @@ export function DesignProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'ADD_IMAGE', payload: { x, y, src, width, height } });
   }, []);
 
+  const addAIArt = useCallback((x: number, y: number, src: string, width: number, height: number, metadata?: any) => {
+    dispatch({ type: 'ADD_IMAGE', payload: { x, y, src, width, height, metadata } });
+  }, []);
+
   const selectElement = useCallback((id: string | null) => {
     dispatch({ type: 'SELECT_ELEMENT', payload: id });
   }, []);
@@ -432,6 +436,7 @@ export function DesignProvider({ children }: { children: React.ReactNode }) {
     dispatch,
     addText,
     addImage,
+    addAIArt,
     selectElement,
     updateElement,
     deleteElement,

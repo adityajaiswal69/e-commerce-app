@@ -3,21 +3,23 @@
 import React, { useRef } from 'react';
 import { useDesign } from '@/contexts/DesignContext';
 import { DesignElement } from '@/types/database.types';
-import { 
-  PlusIcon, 
-  PhotoIcon, 
-  ArrowUturnLeftIcon, 
+import {
+  PlusIcon,
+  PhotoIcon,
+  ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
   TrashIcon,
   DocumentArrowDownIcon,
   EyeIcon,
   PaintBrushIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
 import { RemoveFormatting } from 'lucide-react';
 import { createClientComponentClient } from '@/lib/supabase/client';
 import toast from 'react-hot-toast';
 import ArtAssetPicker from "@/components/design/ArtAssetPicker";
 import { ArtAssetsProvider } from "@/contexts/ArtAssetsContext";
+import AIArtGenerator from './AIArtGenerator';
 
 async function uploadDesignImage(file: File): Promise<string> {
   const supabase = createClientComponentClient();
@@ -65,6 +67,7 @@ export default function DesignToolbar({ onSave, onPreview, className = '' }: Des
   const currentElements = state.elements_by_view[state.productView] || [];
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [artPickerOpen, setArtPickerOpen] = React.useState(false);
+  const [aiArtOpen, setAiArtOpen] = React.useState(false);
   const [designNote, setDesignNoteState] = React.useState(state.notes || '');
 
   // Sync local state with context state
@@ -255,6 +258,13 @@ export default function DesignToolbar({ onSave, onPreview, className = '' }: Des
               >
                 <PaintBrushIcon className="w-5 h-5 mx-auto mb-1" />
               </button>
+              <button
+                onClick={() => setAiArtOpen(true)}
+                className="flex flex-col items-center justify-center w-12 h-12 rounded-md border border-transparent hover:bg-gray-100 transition-colors text-gray-700"
+                title="AI Art Generator"
+              >
+                <SparklesIcon className="w-5 h-5 mx-auto mb-1" />
+              </button>
               
               <input
                 ref={fileInputRef}
@@ -394,6 +404,7 @@ export default function DesignToolbar({ onSave, onPreview, className = '' }: Des
       </div>
 
       <ArtAssetPicker open={artPickerOpen} onClose={() => setArtPickerOpen(false)} />
+      <AIArtGenerator isOpen={aiArtOpen} onClose={() => setAiArtOpen(false)} />
     </ArtAssetsProvider>
   );
 }

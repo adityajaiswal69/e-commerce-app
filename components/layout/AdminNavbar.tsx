@@ -3,23 +3,24 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { 
-  LayoutDashboard, 
-  ShoppingBag, 
-  CreditCard, 
-  Calendar, 
-  FileText, 
-  BookOpen, 
-  Package, 
-  CheckCircle, 
-  Users, 
+import {
+  LayoutDashboard,
+  ShoppingBag,
+  CreditCard,
+  Calendar,
+  FileText,
+  BookOpen,
+  Package,
+  CheckCircle,
+  Users,
   PencilRuler,
   ChevronLeft,
   StickyNote,
   ChevronDown,
   User,
   Eye,
-  LogOut
+  LogOut,
+  Sparkles
 } from "lucide-react";
 
 interface AdminNavbarProps {
@@ -96,6 +97,11 @@ export default function AdminNavbar({ children }: AdminNavbarProps) {
       name: 'Art Assets',
       href: '/admin/art-assets',
       icon: CheckCircle
+    },
+    {
+      name: 'AI Models',
+      href: '/admin/ai-models',
+      icon: Sparkles
     },
     {
       name: 'Users Management',

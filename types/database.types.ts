@@ -167,6 +167,46 @@ export type Design = {
   approve_design?: boolean; // Indicates if the design is approved for production
 };
 
+export type AIArt = {
+  id: string;
+  user_id: string;
+  prompt: string;
+  image_url: string;
+  svg_url?: string;
+  original_image_url?: string;
+  generation_params: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AIProvider = {
+  id: string;
+  name: string;
+  provider_key: string;
+  base_url?: string;
+  is_active: boolean;
+  api_token?: string;
+  settings: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AIModel = {
+  id: string;
+  provider_id: string;
+  model_id: string;
+  display_name: string;
+  description?: string;
+  tags: string[];
+  thumbnail_url?: string;
+  is_enabled: boolean;
+  is_default: boolean;
+  model_settings: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+  ai_providers?: AIProvider; // For joined queries
+};
+
 export type Order = {
   id: string;
   user_id: string;
@@ -273,6 +313,21 @@ export type Database = {
         Row: PaymentTransaction;
         Insert: Omit<PaymentTransaction, "id" | "created_at" | "updated_at">;
         Update: Partial<Omit<PaymentTransaction, "id" | "created_at" | "updated_at">>;
+      };
+      ai_art: {
+        Row: AIArt;
+        Insert: Omit<AIArt, "id" | "created_at" | "updated_at">;
+        Update: Partial<Omit<AIArt, "id" | "created_at" | "updated_at">>;
+      };
+      ai_providers: {
+        Row: AIProvider;
+        Insert: Omit<AIProvider, "id" | "created_at" | "updated_at">;
+        Update: Partial<Omit<AIProvider, "id" | "created_at" | "updated_at">>;
+      };
+      ai_models: {
+        Row: AIModel;
+        Insert: Omit<AIModel, "id" | "created_at" | "updated_at" | "ai_providers">;
+        Update: Partial<Omit<AIModel, "id" | "created_at" | "updated_at" | "ai_providers">>;
       };
     };
   };

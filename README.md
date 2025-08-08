@@ -10,6 +10,7 @@ A modern e-commerce application built with Next.js 14, Supabase, and Tailwind CS
 - 🛒 Shopping cart functionality
 - 👤 User authentication and profiles
 - 💳 Secure checkout process
+- 🎨 Custom design tool with background removal
 
 ## Tech Stack
 
@@ -45,6 +46,7 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
 STRIPE_SECRET_KEY=your_stripe_secret_key
 STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
+REMOVE_BG_API_KEY=your_remove_bg_api_key
 ```
 
 4. Run the development server:

@@ -10,6 +10,15 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'pymuowzbfwsmxgufyogc.supabase.co',
       },
+      {
+        protocol: 'https',
+        hostname: 'pub-3626123a908346a7a8be8d9295f44e26.r2.dev',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.jsdelivr.net',
+      },
+
     ],
   },
   webpack: (config, { isServer }) => {

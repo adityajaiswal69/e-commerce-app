@@ -122,6 +122,8 @@ async function testModel(model: any, provider: any): Promise<Partial<ValidationR
       return await testOpenAI(model, provider);
     case 'replicate':
       return await testReplicate(model, provider);
+    case 'modelabs':
+      return await testModelabs(model, provider);
     default:
       return {
         status: 'error',
@@ -323,6 +325,87 @@ async function testReplicate(model: any, provider: any): Promise<Partial<Validat
     return {
       status: 'working',
       message: 'Model is ready to use'
+    };
+
+  } catch (error) {
+    return {
+      status: 'error',
+      message: 'Connection failed',
+      error_details: error instanceof Error ? error.message : 'Network error'
+    };
+  }
+}
+
+async function testModelabs(model: any, provider: any): Promise<Partial<ValidationResult>> {
+  try {
+    const apiUrl = `${provider.base_url}/images/text2img`;
+
+    // Test with a simple request
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        key: provider.api_token,
+        model_id: model.model_id,
+        prompt: "test image generation",
+        width: "512",
+        height: "512",
+        samples: "1",
+        num_inference_steps: "20",
+        safety_checker: "no",
+        enhance_prompt: "yes",
+        guidance_scale: 7.5,
+        scheduler: "UniPCMultistepScheduler"
+      }),
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      return {
+        status: 'error',
+        message: 'Invalid API token',
+        error_details: 'Modelabs API token is invalid or expired'
+      };
+    }
+
+    if (response.status === 404) {
+      return {
+        status: 'error',
+        message: 'Model not found',
+        error_details: `Modelabs model '${model.model_id}' does not exist or is not accessible`
+      };
+    }
+
+    if (response.status === 429) {
+      return {
+        status: 'warning',
+        message: 'Rate limit exceeded',
+        error_details: 'Modelabs API rate limit reached, try again later'
+      };
+    }
+
+    if (response.status === 402) {
+      return {
+        status: 'error',
+        message: 'Insufficient credits',
+        error_details: 'Modelabs account has insufficient credits'
+      };
+    }
+
+    if (response.ok) {
+      return {
+        status: 'working',
+        message: 'Model is ready to use'
+      };
+    }
+
+    // Handle other error cases
+    const errorText = await response.text();
+    return {
+      status: 'error',
+      message: 'Validation failed',
+      error_details: `Modelabs API error: ${response.status} - ${errorText}`
     };
 
   } catch (error) {

@@ -76,6 +76,15 @@ export async function GET(request: NextRequest) {
           }
           break;
 
+        case 'modelabs':
+          if (provider.base_url !== 'https://modelslab.com/api/v6') {
+            result.issues.push(`Incorrect base URL: ${provider.base_url}, should be: https://modelslab.com/api/v6`);
+          }
+          if (!provider.api_token) {
+            result.issues.push('Missing API token');
+          }
+          break;
+
         case 'stability':
           if (provider.base_url !== 'https://api.stability.ai/v1') {
             result.issues.push(`Incorrect base URL: ${provider.base_url}, should be: https://api.stability.ai/v1`);

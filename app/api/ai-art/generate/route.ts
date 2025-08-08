@@ -170,6 +170,8 @@ async function generateWithSelectedModel(model: any, prompt: string, params: any
         return await generateWithReplicate(model, prompt, params, userId);
       case 'stability':
         return await generateWithStability(model, prompt, params, userId);
+      case 'modelabs':
+        return await generateWithModelabs(model, prompt, params, userId);
       default:
         throw new Error(`Unsupported provider: ${provider.provider_key}`);
     }
@@ -577,6 +579,86 @@ async function generateWithStability(model: any, prompt: string, params: any, us
 
   } catch (error) {
     console.error('Error in generateWithStability:', error);
+    throw error;
+  }
+}
+
+/**
+ * Generate with Modelabs API
+ */
+async function generateWithModelabs(model: any, prompt: string, params: any, userId: string): Promise<string> {
+  const provider = model.ai_providers;
+  const apiUrl = `${provider.base_url}/images/text2img`;
+
+  try {
+    console.log(`Generating with Modelabs: ${model.model_id}`);
+    console.log(`API URL: ${apiUrl}`);
+    console.log(`Prompt: ${prompt}`);
+    console.log(`API Token present: ${!!provider.api_token}`);
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        key: provider.api_token,
+        model_id: model.model_id,
+        prompt: prompt,
+        negative_prompt: params.negative_prompt || "blurry, low quality, distorted, deformed",
+        width: (params.width || model.model_settings?.width || 512).toString(),
+        height: (params.height || model.model_settings?.height || 512).toString(),
+        samples: "1",
+        num_inference_steps: (params.num_inference_steps || model.model_settings?.num_inference_steps || 30).toString(),
+        safety_checker: model.model_settings?.safety_checker || "no",
+        enhance_prompt: model.model_settings?.enhance_prompt || "yes",
+        guidance_scale: params.guidance_scale || model.model_settings?.guidance_scale || 7.5,
+        scheduler: model.model_settings?.scheduler || "UniPCMultistepScheduler",
+        tomesd: "yes",
+        use_karras_sigmas: "yes",
+        clip_skip: "2"
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Modelabs API error:', response.status, errorText);
+
+      if (response.status === 401 || response.status === 403) {
+        throw new Error('Invalid API token. Please check your Modelabs configuration.');
+      } else if (response.status === 402) {
+        throw new Error('Insufficient credits. Please check your Modelabs account balance.');
+      } else if (response.status === 429) {
+        throw new Error('Rate limit exceeded. Please wait a moment before trying again.');
+      } else if (response.status === 404) {
+        throw new Error(`Model "${model.model_id}" not found on Modelabs.`);
+      } else {
+        throw new Error(`Modelabs API error: ${response.status} - ${errorText}`);
+      }
+    }
+
+    const result = await response.json();
+
+    // Modelabs returns different response formats, handle both
+    let imageUrl = null;
+    if (result.output && Array.isArray(result.output) && result.output.length > 0) {
+      imageUrl = result.output[0];
+    } else if (result.image_url) {
+      imageUrl = result.image_url;
+    } else if (result.images && Array.isArray(result.images) && result.images.length > 0) {
+      imageUrl = result.images[0];
+    }
+
+    if (!imageUrl) {
+      console.error('No image URL in Modelabs response:', result);
+      throw new Error('No image URL received from Modelabs API');
+    }
+
+    console.log('Successfully generated Modelabs image:', imageUrl);
+    return imageUrl;
+
+  } catch (error) {
+    console.error('Error in generateWithModelabs:', error);
     throw error;
   }
 }

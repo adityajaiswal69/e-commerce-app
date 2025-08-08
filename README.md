@@ -1,4 +1,4 @@
-# E-commerce App with Next.js and Supabase
+#  E-commerce App with Next.js and Supabase
 
 A modern e-commerce application built with Next.js 14, Supabase, and Tailwind CSS.
 

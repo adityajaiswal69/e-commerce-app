@@ -43,6 +43,7 @@ This folder contains the complete, updated database schema for the e-commerce un
 ### Additional Tables (24-25)
 - `24_blog_posts.sql` - Blog posts for the website
 - `25_removed_background_logs.sql` - Background removal tracking
+- `26_background_removal_settings.sql` - Background removal providers, active selection, and RLS
 
 ## 🚀 Installation Order
 

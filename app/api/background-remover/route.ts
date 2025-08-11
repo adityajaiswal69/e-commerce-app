@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+// Using anon client only + SQL function with SECURITY DEFINER to fetch credentials safely
 import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request: NextRequest) {
@@ -23,43 +24,73 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get the remove.bg API key from environment variables
-    const apiKey = process.env.REMOVE_BG_API_KEY;
-    
-    if (!apiKey) {
+    // Determine active provider and key via SQL function (SECURITY DEFINER)
+    const supabase = await createServerSupabaseClient();
+    const { data: creds, error: credsError } = await supabase
+      .rpc('get_active_background_removal_credentials');
+    if (credsError) {
+      return NextResponse.json({ error: 'Failed to load background removal settings' }, { status: 500 });
+    }
+    const provider = Array.isArray(creds) && creds.length > 0 ? creds[0] as any : null;
+    if (!provider) {
       return NextResponse.json(
-        { error: 'Remove.bg API key not configured. Please add REMOVE_BG_API_KEY to your environment variables.' },
+        { error: 'Background remover is not configured. Please enable a provider and set API key in admin.' },
         { status: 500 }
       );
     }
+    const providerKey = provider.provider as 'removebg' | 'stability';
 
-    // Call remove.bg API
-    const removeBgResponse = await fetch('https://api.remove.bg/v1.0/removebg', {
-      method: 'POST',
-      headers: {
-        'X-Api-Key': apiKey,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        image_url: imageUrl,
-        size: 'auto'
-      }),
-    });
+    let processedImageBuffer: ArrayBuffer;
+    if (providerKey === 'removebg') {
+      const removeBgResponse = await fetch('https://api.remove.bg/v1.0/removebg', {
+        method: 'POST',
+        headers: {
+          'X-Api-Key': provider.api_key as string,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ image_url: imageUrl, size: 'auto' }),
+      });
+      if (!removeBgResponse.ok) {
+        const errorText = await removeBgResponse.text();
+        console.error('Remove.bg API error:', errorText);
+        return NextResponse.json({ error: 'Failed to remove background' }, { status: removeBgResponse.status });
+      }
+      processedImageBuffer = await removeBgResponse.arrayBuffer();
+    } else {
+      // Stability AI background removal (multipart with image bytes)
+      const imageFetch = await fetch(imageUrl);
+      if (!imageFetch.ok) {
+        return NextResponse.json({ error: 'Failed to fetch source image' }, { status: 400 });
+      }
+      const srcContentType = imageFetch.headers.get('content-type') || '';
+      if (!srcContentType.startsWith('image/')) {
+        return NextResponse.json({ error: 'Source URL is not an image' }, { status: 400 });
+      }
+      const inputBuffer = await imageFetch.arrayBuffer();
+      const ext = srcContentType.includes('png') ? 'png' : srcContentType.includes('jpeg') || srcContentType.includes('jpg') ? 'jpg' : 'png';
+      const form = new FormData();
+      form.append('image', new Blob([inputBuffer], { type: srcContentType || 'image/png' }), `input.${ext}`);
+      // Output as PNG per Stability docs
+      form.append('output_format', 'png');
 
-    if (!removeBgResponse.ok) {
-      const errorText = await removeBgResponse.text();
-      console.error('Remove.bg API error:', errorText);
-      return NextResponse.json(
-        { error: 'Failed to remove background' },
-        { status: removeBgResponse.status }
-      );
+      const stabilityResponse = await fetch('https://api.stability.ai/v2beta/stable-image/edit/remove-background', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${provider.api_key as string}`,
+          Accept: 'image/*',
+        },
+        body: form,
+      });
+      if (!stabilityResponse.ok) {
+        const contentType = stabilityResponse.headers.get('content-type') || '';
+        const errorText = contentType.includes('application/json') ? JSON.stringify(await stabilityResponse.json()) : await stabilityResponse.text();
+        console.error('Stability AI API error:', errorText);
+        return NextResponse.json({ error: `Stability AI error: ${errorText}` }, { status: stabilityResponse.status });
+      }
+      processedImageBuffer = await stabilityResponse.arrayBuffer();
     }
-
-    // Get the processed image as buffer
-    const processedImageBuffer = await removeBgResponse.arrayBuffer();
     
-    // Create server-side Supabase client with service role
-    const supabase = await createServerSupabaseClient();
+    // Reuse server Supabase client for upload and logging
     
     // Get current user for logging
     const { data: { user }, error: authError } = await supabase.auth.getUser();

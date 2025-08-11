@@ -74,6 +74,11 @@ export default function AdminNavbar({ children }: AdminNavbarProps) {
       icon: CreditCard
     },
     {
+      name: 'Background Removal',
+      href: '/admin/background-removal-settings',
+      icon: Sparkles
+    },
+    {
       name: 'Orders',
       href: '/admin/orders',
       icon: Calendar

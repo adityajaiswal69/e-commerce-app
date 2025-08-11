@@ -322,6 +322,7 @@ type DesignContextType = {
   dispatch: React.Dispatch<CanvasAction>;
   addText: (x: number, y: number, text?: string) => void;
   addImage: (x: number, y: number, src: string, width: number, height: number) => void;
+  addAIArt: (x: number, y: number, src: string, width: number, height: number, metadata?: any) => void;
   selectElement: (id: string | null) => void;
   updateElement: (id: string, updates: Partial<DesignElement>) => void;
   deleteElement: (id: string) => void;

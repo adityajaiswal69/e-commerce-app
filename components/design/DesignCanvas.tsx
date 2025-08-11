@@ -838,7 +838,7 @@ function SelectionOverlay({
             // Duplicate functionality
             const newElement = {
               ...element,
-              id: Math.random().toString(36).substring(2, 11),
+              id: `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`,
               x: element.x + 20,
               y: element.y + 20,
             };

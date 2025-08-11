@@ -180,29 +180,32 @@ export default function ProductPage({
 
         // Fetch related products
         try {
-          const { data: relatedData } = await supabase
-            .from("related_products")
-            .select(`
-              related_product_id,
-              products!related_product_id (
-                id,
-                name,
-                price,
-                image_url,
-                category
-              )
-            `)
-            .eq("product_id", id)
-            .limit(4);
+          // Prefer products from the same category as fallback if no explicit relations
+          const { data: explicit } = await supabase
+            .from('related_products')
+            .select(`related_product_id, products:related_product_id ( id, name, price, image_url, category )`)
+            .eq('product_id', id)
+            .order('display_order', { ascending: true })
+            .limit(8);
 
-          if (relatedData) {
-            const related = relatedData
-              .map((item: any) => item.products)
-              .filter(Boolean);
-            setRelatedProducts(related);
+          let related: any[] = [];
+          if (explicit && explicit.length > 0) {
+            related = explicit.map((r: any) => r.products).filter(Boolean);
+          } else {
+            // Fallback: same category, exclude current product
+            const { data: fallback } = await supabase
+              .from('products')
+              .select('id, name, price, image_url, category')
+              .eq('category', productData.category)
+              .neq('id', id)
+              .limit(8);
+            related = fallback || [];
           }
+
+          setRelatedProducts(related.slice(0, 4));
         } catch (error) {
-          console.log("Related products table not found or error:", error);
+          console.log('Related products fetch error:', error);
+          setRelatedProducts([]);
         }
 
         // Fetch reviews with user info
@@ -739,12 +742,12 @@ export default function ProductPage({
                         }}
                       />
                     </div>
-                    <div className="p-4">
+                   <div className="p-4">
                       <h3 className="font-medium text-gray-900 group-hover:text-gray-600 transition-colors">
                         {relatedProduct.name}
                       </h3>
                       <p className="text-sm text-gray-500 capitalize">{relatedProduct.category}</p>
-                      <p className="mt-2 font-bold text-gray-900">${relatedProduct.price.toFixed(2)}</p>
+                       <p className="mt-2 font-bold text-gray-900">₹{Number(relatedProduct.price).toFixed(2)}</p>
                     </div>
                   </div>
                 </Link>

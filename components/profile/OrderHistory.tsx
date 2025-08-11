@@ -10,7 +10,8 @@ type OrderItem = {
   id: string;
   product_id: string;
   quantity: number;
-  price: number | null;
+  unit_price?: number | null;
+  total_price?: number | null;
   product: {
     name: string;
     image_url: string;
@@ -20,7 +21,7 @@ type OrderItem = {
 type Order = {
   id: string;
   created_at: string;
-  total: number | null;
+  total_amount?: number | null;
   status: string;
   order_items: OrderItem[];
 };
@@ -178,7 +179,7 @@ export default function OrderHistory({ orders }: OrderHistoryProps) {
                 </p>
               </div>
               <div className="text-right">
-                <p className="font-medium">${(order.total || 0).toFixed(2)}</p>
+                <p className="font-medium">₹{(order.total_amount || 0).toFixed(2)}</p>
                 <p className="text-sm capitalize text-gray-500">
                   {order.status}
                 </p>
@@ -202,7 +203,7 @@ export default function OrderHistory({ orders }: OrderHistoryProps) {
                   <div>
                     <p className="font-medium">{item.product.name}</p>
                     <p className="text-sm text-gray-500">
-                      {item.quantity} × ${(item.price || 0).toFixed(2)}
+                      {item.quantity} × ${((item.unit_price ?? item.total_price ?? 0) as number).toFixed(2)}
                     </p>
                   </div>
                   <button

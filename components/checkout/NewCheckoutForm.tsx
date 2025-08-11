@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Address, PaymentProvider } from "@/types/payment.types";
 import toast from "react-hot-toast";
 import AddressForm from "./AddressForm";
+import SavedAddressSelector from "./SavedAddressSelector";
 import PaymentMethodSelector from "./PaymentMethodSelector";
 import OrderSummary from "./OrderSummary";
 import DatabaseSetupError from "./DatabaseSetupError";
@@ -397,6 +398,7 @@ export default function CheckoutForm({ onOrderComplete }: CheckoutFormProps) {
       {/* Shipping Address */}
       <div>
         <h3 className="text-lg font-medium text-gray-900 mb-4">Shipping Address</h3>
+        <SavedAddressSelector type="shipping" onSelect={setShippingAddress} />
         <AddressForm
           address={shippingAddress}
           onChange={setShippingAddress}
@@ -422,6 +424,7 @@ export default function CheckoutForm({ onOrderComplete }: CheckoutFormProps) {
         {!useSameAddress && (
           <>
             <h3 className="text-lg font-medium text-gray-900 mb-4">Billing Address</h3>
+            <SavedAddressSelector type="billing" onSelect={setBillingAddress} />
             <AddressForm
               address={billingAddress}
               onChange={setBillingAddress}

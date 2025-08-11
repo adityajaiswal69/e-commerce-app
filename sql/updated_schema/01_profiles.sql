@@ -5,10 +5,13 @@
 -- =====================================================
 
 -- Profiles table (extends auth.users)
+-- Create profiles table
 CREATE TABLE IF NOT EXISTS public.profiles (
   id uuid REFERENCES auth.users(id) PRIMARY KEY,
   full_name TEXT,
   role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
+  avatar_url TEXT,
+  address JSONB DEFAULT '{}'::jsonb,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -63,5 +66,7 @@ COMMENT ON TABLE public.profiles IS 'User profiles extending auth.users with add
 COMMENT ON COLUMN public.profiles.id IS 'References auth.users(id) - the user ID';
 COMMENT ON COLUMN public.profiles.full_name IS 'User full name';
 COMMENT ON COLUMN public.profiles.role IS 'User role: user or admin';
+COMMENT ON COLUMN public.profiles.avatar_url IS 'Public URL to the user''s avatar image';
+COMMENT ON COLUMN public.profiles.address IS 'Default address object for the user profile';
 COMMENT ON COLUMN public.profiles.created_at IS 'Timestamp when profile was created';
-COMMENT ON COLUMN public.profiles.updated_at IS 'Timestamp when profile was last updated'; 
+COMMENT ON COLUMN public.profiles.updated_at IS 'Timestamp when profile was last updated';

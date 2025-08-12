@@ -438,14 +438,14 @@ export default function AdminUsersPage() {
         </ul>
       </div>
 
-      <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+      {/* <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
         <h3 className="text-sm font-medium text-yellow-800 mb-2">Database Setup Required:</h3>
         <div className="text-sm text-yellow-700 space-y-2">
           <p>To access email and metadata, you need to create a database function:</p>
           
           <p>Alternative: Set up RLS policies to allow admin access to auth.users table directly.</p>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

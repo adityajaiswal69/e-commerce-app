@@ -187,9 +187,9 @@ export default function OrderHistory({ orders }: OrderHistoryProps) {
             </div>
 
             <div className="space-y-4">
-              {order.order_items.map((item) => (
+              {order.order_items.map((item, itemIndex) => (
                 <div
-                  key={`${order.id}-${item.product_id}`}
+                  key={`${order.id}-${item.product_id}-${itemIndex}`}
                   className="flex items-center gap-4"
                 >
                   <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">

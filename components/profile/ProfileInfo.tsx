@@ -288,8 +288,8 @@ export default function ProfileInfo({ user }: { user: User }) {
         <div className="rounded-lg border bg-white p-6">
           <h3 className="text-lg font-semibold mb-4">Saved Addresses</h3>
           <div className="space-y-4">
-            {addresses.map((addr) => (
-              <div key={addr.id} className="border rounded-md p-4">
+            {addresses.map((addr, index) => (
+              <div key={addr.id || `address-${index}`} className="border rounded-md p-4">
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="font-medium">{addr.label || 'Home'}</p>

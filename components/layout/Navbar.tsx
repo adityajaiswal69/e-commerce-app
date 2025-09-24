@@ -372,7 +372,7 @@ export default function Navbar() {
                         className={`block py-3 px-4 text-sm font-medium rounded-md transition-colors ${
                           isActive(item.href)
                             ? "bg-[#333333] text-[#e9e2a3] border-r-2 border-[#e9e2a3]"
-                            : "text-gray-700 hover:bg-[#333333] hover:text-[#D4AF37]"
+                            : "text-gray-700 hover:bg-[#333333] hover:text-[#FFFF]"
                         }`}
                         onClick={() => setIsMenuOpen(false)}
                       >
@@ -409,7 +409,7 @@ export default function Navbar() {
                             <Link
                               key={`subnav-${index}-${subIdx}`}
                               href={getProductFilterUrl(sub)}
-                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#333333] hover:text-[#D4AF37] whitespace-nowrap"
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#333333] hover:text-white whitespace-nowrap"
                               onClick={() => {
                                 setIsMenuOpen(false);
                                 setHoveredCategory(null);
@@ -430,7 +430,7 @@ export default function Navbar() {
                             <Link
                               key={`mobilesubnav-${index}-${subIdx}`}
                               href={getProductFilterUrl(sub)}
-                              className="block py-2 px-2 text-sm text-gray-700 hover:bg-[#333333] hover:text-[#D4AF37] rounded"
+                              className="block py-2 px-2 text-sm text-gray-700 hover:bg-[#333333] hover:text-white rounded"
                               onClick={() => {
                                 setIsMenuOpen(false);
                                 setOpenMobileDropdown(null);

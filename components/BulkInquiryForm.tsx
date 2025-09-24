@@ -146,7 +146,7 @@ export default function BulkInquiryForm() {
           <h2 className="mb-3 text-xl font-bold text-white sm:mb-4 sm:text-2xl lg:text-3xl">
             Bulk Inquiry Form
           </h2>
-          <p className="mb-6 text-sm text-[#e9e2a3] sm:mb-8 sm:text-base lg:mb-10 lg:text-lg">
+          <p className="mb-6 text-sm text-[white] sm:mb-8 sm:text-base lg:mb-10 lg:text-lg">
             Get in touch with us for bulk orders and special pricing
           </p>
         </div>
@@ -157,7 +157,7 @@ export default function BulkInquiryForm() {
             {/* Name and Business Name Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-[#e9e2a3] mb-2">
+                <label htmlFor="name" className="block text-sm font-medium text-[white] mb-2">
                   Full Name *
                 </label>
                 <input
@@ -166,14 +166,14 @@ export default function BulkInquiryForm() {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="w-full rounded-md border-2 border-[#6C6F7D] bg-white p-3 text-sm text-[#2E3138] placeholder-[#6C6F7D] focus:border-[#e9e2a3] focus:outline-none focus:ring-2 focus:ring-[#e9e2a3]/20"
+                  className="w-full rounded-md border-2 border-[#6C6F7D] bg-white p-3 text-sm text-[#2E3138] placeholder-[#6C6F7D] focus:border-[white] focus:outline-none focus:ring-2 focus:ring-[white]/20"
                   placeholder="Enter your full name"
                   required
                 />
               </div>
               
               <div>
-                <label htmlFor="businessName" className="block text-sm font-medium text-[#e9e2a3] mb-2">
+                <label htmlFor="businessName" className="block text-sm font-medium text-[white] mb-2">
                   Business Name *
                 </label>
                 <input
@@ -182,7 +182,7 @@ export default function BulkInquiryForm() {
                   name="businessName"
                   value={formData.businessName}
                   onChange={handleInputChange}
-                  className="w-full rounded-md border-2 border-[#6C6F7D] bg-white p-3 text-sm text-[#2E3138] placeholder-[#6C6F7D] focus:border-[#e9e2a3] focus:outline-none focus:ring-2 focus:ring-[#e9e2a3]/20"
+                  className="w-full rounded-md border-2 border-[#6C6F7D] bg-white p-3 text-sm text-[#2E3138] placeholder-[#6C6F7D] focus:border-[white] focus:outline-none focus:ring-2 focus:ring-[white]/20"
                   placeholder="Enter your business name"
                   required
                 />
@@ -192,7 +192,7 @@ export default function BulkInquiryForm() {
             {/* Contact and Email Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="contactNo" className="block text-sm font-medium text-[#e9e2a3] mb-2">
+                <label htmlFor="contactNo" className="block text-sm font-medium text-[white] mb-2">
                   Contact Number *
                 </label>
                 <input
@@ -201,14 +201,14 @@ export default function BulkInquiryForm() {
                   name="contactNo"
                   value={formData.contactNo}
                   onChange={handleInputChange}
-                  className="w-full rounded-md border-2 border-[#6C6F7D] bg-white p-3 text-sm text-[#2E3138] placeholder-[#6C6F7D] focus:border-[#e9e2a3] focus:outline-none focus:ring-2 focus:ring-[#e9e2a3]/20"
+                  className="w-full rounded-md border-2 border-[#6C6F7D] bg-white p-3 text-sm text-[#2E3138] placeholder-[#6C6F7D] focus:border-[white] focus:outline-none focus:ring-2 focus:ring-[white]/20"
                   placeholder="Enter your contact number"
                   required
                 />
               </div>
               
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-[#e9e2a3] mb-2">
+                <label htmlFor="email" className="block text-sm font-medium text-[white] mb-2">
                   Email Address *
                 </label>
                 <input
@@ -217,7 +217,7 @@ export default function BulkInquiryForm() {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full rounded-md border-2 border-[#6C6F7D] bg-white p-3 text-sm text-[#2E3138] placeholder-[#6C6F7D] focus:border-[#e9e2a3] focus:outline-none focus:ring-2 focus:ring-[#e9e2a3]/20"
+                  className="w-full rounded-md border-2 border-[#6C6F7D] bg-white p-3 text-sm text-[#2E3138] placeholder-[#6C6F7D] focus:border-[white] focus:outline-none focus:ring-2 focus:ring-[white]/20"
                   placeholder="Enter your email address"
                   required
                 />
@@ -227,7 +227,7 @@ export default function BulkInquiryForm() {
             {/* Category and Subcategory Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="category" className="block text-sm font-medium text-[#e9e2a3] mb-2">
+                <label htmlFor="category" className="block text-sm font-medium text-[white] mb-2">
                   Category *
                 </label>
                 <select
@@ -235,7 +235,7 @@ export default function BulkInquiryForm() {
                   name="category"
                   value={formData.category}
                   onChange={handleInputChange}
-                  className="w-full rounded-md border-2 border-[#6C6F7D] bg-white p-3 text-sm text-[#2E3138] focus:border-[#e9e2a3] focus:outline-none focus:ring-2 focus:ring-[#e9e2a3]/20"
+                  className="w-full rounded-md border-2 border-[#6C6F7D] bg-white p-3 text-sm text-[#2E3138] focus:border-[white] focus:outline-none focus:ring-2 focus:ring-[white]/20"
                   required
                   disabled={loading}
                 >
@@ -251,7 +251,7 @@ export default function BulkInquiryForm() {
               {/* Only show subcategory if there are filtered subcategories for the selected category */}
               {filteredSubcategories.length > 0 && (
                 <div>
-                  <label htmlFor="subcategory" className="block text-sm font-medium text-[#e9e2a3] mb-2">
+                  <label htmlFor="subcategory" className="block text-sm font-medium text-[white] mb-2">
                     Subcategory *
                   </label>
                   <select
@@ -259,7 +259,7 @@ export default function BulkInquiryForm() {
                     name="subcategory"
                     value={formData.subcategory}
                     onChange={handleInputChange}
-                    className="w-full rounded-md border-2 border-[#6C6F7D] bg-white p-3 text-sm text-[#2E3138] focus:border-[#e9e2a3] focus:outline-none focus:ring-2 focus:ring-[#e9e2a3]/20"
+                    className="w-full rounded-md border-2 border-[#6C6F7D] bg-white p-3 text-sm text-[#2E3138] focus:border-[white] focus:outline-none focus:ring-2 focus:ring-[white]/20"
                     required
                     disabled={loading}
                   >
@@ -279,7 +279,7 @@ export default function BulkInquiryForm() {
               <button
                 type="submit"
                 disabled={submitLoading || loading}
-                className="px-8 py-3 text-sm font-medium text-[#333333] bg-[#e9e2a3] border border-[#333333] rounded-md hover:bg-[#f8f6e1] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-8 py-3 text-sm font-medium text-[#333333] bg-[white] border border-[#333333] rounded-md hover:bg-[#f8f6e1] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitLoading ? "Submitting..." : "Submit Inquiry"}
               </button>

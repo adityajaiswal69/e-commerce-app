@@ -29,7 +29,7 @@ const LogoTicker: React.FC = () => {
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
             Our Valued Clients
           </h2>
-          <p className="text-[#e9e2a3] max-w-2xl mx-auto">
+          <p className="text-[#dcdcdc] max-w-2xl mx-auto">
             Trusted by leading brands and organizations across various industries
           </p>
         </div>

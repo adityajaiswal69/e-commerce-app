@@ -62,7 +62,7 @@ const Testimonials: React.FC = () => {
     dots: true,
     infinite: true,
     speed: 1000,
-    slidesToShow: 2,
+    slidesToShow: 3,
     slidesToScroll: 1,
     autoplay: true,
     autoplaySpeed: 5000,
@@ -79,18 +79,18 @@ const Testimonials: React.FC = () => {
     ],
     customPaging: (i: number) => (
       <div 
-        className={`h-1.5 rounded-full mx-1 transition-all duration-300 ${i === currentSlide ? 'w-6 bg-[#e9e2a3]' : 'w-2 bg-gray-300'}`}
+        className={`h-1.5 rounded-full mx-1 transition-all duration-300 ${i === currentSlide ? 'w-6 bg-[#333333]' : 'w-2 bg-gray-300'}`}
       />
     ),
     appendDots: (dots: React.ReactNode) => (
       <div className="mt-8">
-        <ul className="flex justify-center">{dots}</ul>
+        <ul className="flex justify-center ">{dots}</ul>
       </div>
     ),
   };
 
   return (
-    <section className="py-5 md:py-10 bg-gray-50">
+    <section className="py-5 md:py-10 bg-gradient-to-br from-[#F0F0F0] to-[#DCDCDC]">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 md:mb-16">
           <h2 className="text-2xl md:text-4xl font-bold text-[#333333] mb-4">
@@ -101,7 +101,7 @@ const Testimonials: React.FC = () => {
           </p>
         </div>
 
-        <div className="relative">
+        <div className="relative ">
           <Slider {...settings} className="testimonial-slider">
             {TESTIMONIALS.map((testimonial) => (
               <div key={testimonial.id} className="px-3">

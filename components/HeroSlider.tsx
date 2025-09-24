@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const SLIDER_IMAGES = [
   {
     id: 1,
-    src: "/images/hero/hotel.jpg",
+    src: "/images/hero/hotel.png",
     alt: "Hotel & Hospitality ",
     category: "hotel-hospitality",
     title: "Hotel & Hospitality",
@@ -17,15 +17,15 @@ const SLIDER_IMAGES = [
   },
   {
     id: 2,
-    src: "/images/hero/school2.jpg",
+    src: "/images/hero/school3.png ",
     alt: "School ",
     category: "school",
-    title: "School/ Institution",
+    title: "School & Institution",
     description: "Quality uniforms for educational excellence"
   },
   {
     id: 3,
-    src: "/images/hero/hospital-uniform.jpeg",
+    src: "/images/hero/healthcare.png",
     alt: "Hospital Uniforms",
     category: "hospital-uniform",
     title: "Hospital Wear",
@@ -33,7 +33,7 @@ const SLIDER_IMAGES = [
   },
   {
     id: 4,
-    src: "/images/hero/corporate.jpg",
+    src: "/images/hero/corporate.png",
     alt: "Corporate ",
     category: "corporate",
     title: "Corporate Wear",
@@ -41,7 +41,7 @@ const SLIDER_IMAGES = [
   },
   {
     id: 5,
-    src: "/images/hero/restaurant.jpg",
+    src: "/images/hero/restaurant.png",
     alt: "Cafes and Pubs Uniforms",
     category: "restaurant-cafe-pub",
     title: "Cafes/Restaurants/Pubs",
@@ -66,9 +66,9 @@ const SLIDER_IMAGES = [
    {
     id: 8,
     src: "/images/hero/automobile.png",
-    alt: "Automobile Uniforms",
-    category: "automobile",
-    title: "Automobile",
+    alt: "Automotive Industry",
+    category: "automotive-industry",
+    title: "Automotive Industry",
     description: "Functional and durable uniforms for automotive workers."
   },
   {
@@ -146,7 +146,7 @@ export default function HeroSlider() {
                 alt="Uniformat Logo"
                 width={400}
                 height={150}
-                className="mx-auto bg-[#e9e2a3]/95 p-4 rounded-lg shadow-2xl"
+                className="mx-auto bg-white/95 p-4 rounded-lg shadow-2xl"
                 priority
               />
               
@@ -168,7 +168,7 @@ export default function HeroSlider() {
                       repeat: Infinity,
                       delay: 0
                     }}
-                    className="w-2 h-2 bg-[#e9e2a3] rounded-full"
+                    className="w-2 h-2 bg-white rounded-full"
                   />
                   <motion.div
                     animate={{ 
@@ -180,7 +180,7 @@ export default function HeroSlider() {
                       repeat: Infinity,
                       delay: 0.2
                     }}
-                    className="w-2 h-2 bg-[#e9e2a3] rounded-full"
+                    className="w-2 h-2 bg-[#ffffff] rounded-full"
                   />
                   <motion.div
                     animate={{ 
@@ -192,7 +192,7 @@ export default function HeroSlider() {
                       repeat: Infinity,
                       delay: 0.4
                     }}
-                    className="w-2 h-2 bg-[#e9e2a3] rounded-full"
+                    className="w-2 h-2 bg-[#ffffff] rounded-full"
                   />
                 </div>
               </motion.div>
@@ -225,7 +225,7 @@ export default function HeroSlider() {
                     src={slide.src}
                     alt={slide.alt}
                     fill
-                    className="object-cover"
+                    className="object-cover object-[center_top]"
                     priority={index === 0 || index === 1}
                     loading={index < 2 ? "eager" : "lazy"}
                     sizes="100vw"
@@ -288,7 +288,7 @@ export default function HeroSlider() {
                   onClick={() => goToSlide(index)}
                   className={`h-3 rounded-full transition-all duration-300 ${
                     index === currentIndex 
-                      ? "bg-[#e9e2a3] w-8 shadow-lg" 
+                      ? "bg-[#ffffff] w-8 shadow-lg" 
                       : "bg-white/60 hover:bg-white/90 w-3"
                   }`}
                   aria-label={`Go to slide ${index + 1}`}

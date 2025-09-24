@@ -392,7 +392,7 @@ export default function LeftNavbar() {
       </div>
 
       {/* Left Sidebar Navigation - Hidden by default, shows on toggle */}
-      <nav className={`fixed left-0 top-0 h-full w-64 bg-gradient-to-b from-white via-[#e9e2a3] to-white shadow-lg transform transition-transform duration-300 ease-in-out z-40'${
+      <nav className={`fixed left-0 top-0 h-full w-64 bg-gradient-to-b from-white via-[#747474] to-white shadow-lg transform transition-transform duration-300 ease-in-out z-40'${
         isMenuOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <div className="flex flex-col h-full">

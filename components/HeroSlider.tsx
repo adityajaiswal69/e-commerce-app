@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const SLIDER_IMAGES = [
   {
     id: 1,
-    src: "/images/hero/new/7.png",
+    src: "/images/hero/new/71.png",
     alt: "Hotel & Hospitality ",
     category: "hotel-hospitality",
     title: "Hotel & Hospitality",
@@ -17,7 +17,7 @@ const SLIDER_IMAGES = [
   },
   {
     id: 2,
-    src: "/images/hero/new/5.png ",
+    src: "/images/hero/new/444.png ",
     alt: "School ",
     category: "school",
     title: "School & Institution",
@@ -49,7 +49,7 @@ const SLIDER_IMAGES = [
   },
   {
     id: 6,
-    src: "/images/hero/new/2.png",
+    src: "/images/hero/new/21.png",
     alt: "Casino Wear",
     category: "casino",
     title: "Casino Wear",
@@ -57,7 +57,7 @@ const SLIDER_IMAGES = [
   },
   {
     id: 7,
-    src: "/images/hero/new/4.png",
+    src: "/images/hero/new/41.png",
     alt: "Designer Aprons",
     category: "designer-apron",
     title: "Designer Apron",
@@ -65,7 +65,7 @@ const SLIDER_IMAGES = [
   },
    {
     id: 8,
-    src: "/images/hero/new/3.png",
+    src: "/images/hero/new/5666.png",
     alt: "Automotive Industry",
     category: "automotive-industry",
     title: "Automotive Industry",

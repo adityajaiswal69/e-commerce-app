@@ -18,7 +18,7 @@ export default function CartPage() {
     return (
       <div className="max-w-2xl mx-auto py-16 px-4 text-center">
         <h2 className="text-2xl font-bold">Your cart is empty</h2>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-text-secondary">
           Add some items to your cart to continue shopping.
         </p>
       </div>
@@ -59,11 +59,11 @@ export default function CartPage() {
               <div className="flex-1">
                 <h3 className="font-medium">{item.name}</h3>
                 <div className="mt-1 space-y-1">
-                  <p className="text-sm text-gray-600">Size: {item.size}</p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-text-secondary">Size: {item.size}</p>
+                  <p className="text-sm text-text-secondary">
                     Category: {item.category}
                   </p>
-                  <p className="text-gray-600">₹{item.price.toFixed(2)}</p>
+                  <p className="text-text-secondary">₹{item.price.toFixed(2)}</p>
                 </div>
 
                 <div className="flex items-center gap-2 mt-2">

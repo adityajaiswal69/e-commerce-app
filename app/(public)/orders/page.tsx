@@ -40,13 +40,13 @@ export default async function OrdersPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'confirmed': return 'bg-blue-100 text-blue-800';
-      case 'processing': return 'bg-purple-100 text-purple-800';
-      case 'shipped': return 'bg-indigo-100 text-indigo-800';
-      case 'delivered': return 'bg-green-100 text-green-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      case 'refunded': return 'bg-gray-100 text-gray-800';
+      case 'pending': return 'bg-status-pending text-status-pending-text';
+      case 'confirmed': return 'bg-status-confirmed text-status-confirmed-text';
+      case 'processing': return 'bg-status-processing text-status-processing-text';
+      case 'shipped': return 'bg-status-shipped text-status-shipped-text';
+      case 'delivered': return 'bg-status-delivered text-status-delivered-text';
+      case 'cancelled': return 'bg-status-cancelled text-status-cancelled-text';
+      case 'refunded': return 'bg-status-refunded text-status-refunded-text';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -55,8 +55,8 @@ export default async function OrdersPage() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-3xl font-bold text-text-primary">My Orders</h1>
+          <p className="mt-2 text-text-secondary">
             Track and manage your orders
           </p>
         </div>

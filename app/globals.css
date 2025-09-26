@@ -2,6 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    /* Brand Color System */
+    --primary-dark: #333333;
+    --secondary-dark: #555555;
+
+    /* Text Colors */
+    --text-primary: #333333;
+    --text-primary-light: #FFFFFF;
+    --text-secondary: #555555;
+    --text-tertiary: #666666;
+
+    /* Background Colors */
+    --bg-light: #F0F0F0;
+    --bg-light-end: #DCDCDC;
+    --bg-dark: #333333;
+    --bg-white: #FFFFFF;
+    --bg-accent: #e9e9e6;
+
+    /* Legacy support */
+    --background: #FFFFFF;
+    --foreground: #333333;
+  }
+}
+
 @layer utilities {
   .hide-scrollbar {
     -ms-overflow-style: none; /* IE and Edge */
@@ -19,25 +44,25 @@
 }
 
 .ProseMirror a {
-  color: #2563eb;
+  color: var(--primary-dark);
   text-decoration: underline;
   cursor: pointer;
   /* Add some padding to make link boundaries clearer */
   padding: 1px 2px;
   border-radius: 2px;
-  background-color: rgba(37, 99, 235, 0.05);
+  background-color: rgba(51, 51, 51, 0.05);
 }
 
 .ProseMirror a:hover {
-  color: #1d4ed8;
+  color: var(--secondary-dark);
   text-decoration: underline;
-  background-color: rgba(37, 99, 235, 0.1);
+  background-color: rgba(51, 51, 51, 0.1);
 }
 
 /* Style for when link is selected/focused */
 .ProseMirror a.ProseMirror-selectednode {
-  background-color: rgba(37, 99, 235, 0.2);
-  outline: 2px solid #2563eb;
+  background-color: rgba(51, 51, 51, 0.2);
+  outline: 2px solid var(--primary-dark);
   outline-offset: 1px;
 }
 
@@ -45,7 +70,7 @@
 .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
-  color: #9ca3af;
+  color: var(--text-tertiary);
   pointer-events: none;
   height: 0;
 }

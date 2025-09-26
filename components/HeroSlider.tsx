@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const SLIDER_IMAGES = [
   {
     id: 1,
-    src: "/images/hero/hotel.png",
+    src: "/images/hero/new/7.png",
     alt: "Hotel & Hospitality ",
     category: "hotel-hospitality",
     title: "Hotel & Hospitality",
@@ -17,7 +17,7 @@ const SLIDER_IMAGES = [
   },
   {
     id: 2,
-    src: "/images/hero/school3.png ",
+    src: "/images/hero/new/5.png ",
     alt: "School ",
     category: "school",
     title: "School & Institution",
@@ -25,7 +25,7 @@ const SLIDER_IMAGES = [
   },
   {
     id: 3,
-    src: "/images/hero/healthcare.png",
+    src: "/images/hero/new/8.png",
     alt: "Hospital Uniforms",
     category: "hospital-uniform",
     title: "Hospital Wear",
@@ -33,7 +33,7 @@ const SLIDER_IMAGES = [
   },
   {
     id: 4,
-    src: "/images/hero/corporate.png",
+    src: "/images/hero/new/9.png",
     alt: "Corporate ",
     category: "corporate",
     title: "Corporate Wear",
@@ -41,7 +41,7 @@ const SLIDER_IMAGES = [
   },
   {
     id: 5,
-    src: "/images/hero/restaurant.png",
+    src: "/images/hero/new/6.png",
     alt: "Cafes and Pubs Uniforms",
     category: "restaurant-cafe-pub",
     title: "Cafes/Restaurants/Pubs",
@@ -49,7 +49,7 @@ const SLIDER_IMAGES = [
   },
   {
     id: 6,
-    src: "/images/hero/casino.png",
+    src: "/images/hero/new/2.png",
     alt: "Casino Wear",
     category: "casino",
     title: "Casino Wear",
@@ -57,7 +57,7 @@ const SLIDER_IMAGES = [
   },
   {
     id: 7,
-    src: "/images/hero/apron.png",
+    src: "/images/hero/new/4.png",
     alt: "Designer Aprons",
     category: "designer-apron",
     title: "Designer Apron",
@@ -65,7 +65,7 @@ const SLIDER_IMAGES = [
   },
    {
     id: 8,
-    src: "/images/hero/automobile.png",
+    src: "/images/hero/new/3.png",
     alt: "Automotive Industry",
     category: "automotive-industry",
     title: "Automotive Industry",
@@ -73,7 +73,7 @@ const SLIDER_IMAGES = [
   },
   {
   id: 9,
-  src: "/images/hero/chef.png",
+  src: "/images/hero/new/1.png",
   alt: "Chef Uniforms",
   category: "chef",
   title: "Chef Wear",
@@ -225,7 +225,7 @@ export default function HeroSlider() {
                     src={slide.src}
                     alt={slide.alt}
                     fill
-                    className="object-cover object-[center_top]"
+                    className="object-cover object-[50%_30%]"
                     priority={index === 0 || index === 1}
                     loading={index < 2 ? "eager" : "lazy"}
                     sizes="100vw"

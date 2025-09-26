@@ -132,7 +132,7 @@ export default function BlogPostPage() {
           </p>
           <Link 
             href="/blog" 
-            className="inline-flex items-center px-6 py-3 bg-[#333333] text-white font-medium rounded-md hover:bg-[#555555] transition-colors duration-300"
+            className="inline-flex items-center px-6 py-3 bg-foreground text-text-primary-light font-medium rounded-md hover:bg-[#555555] transition-colors duration-300"
           >
             Back to Blog
           </Link>
@@ -160,7 +160,7 @@ export default function BlogPostPage() {
         <div className="relative container mx-auto px-4 py-20">
           <div className="max-w-4xl mx-auto text-center text-white">
             <div className="mb-4">
-              <span className="inline-block bg-[#e9e2a3] text-[#333333] px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wide">
+              <span className="inline-block bg-foreground text-text-primary-light px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wide">
                 {post.category}
               </span>
             </div>

@@ -211,7 +211,7 @@ export default async function ProductsPage({
       </div>
 
       {/* Products count */}
-      <div className="mb-4 text-sm text-gray-600">
+      <div className="mb-4 text-sm text-text-secondary">
         Showing {products?.length || 0} of {totalProducts || 0} products
         {currentPage > 1 && ` (Page ${currentPage} of ${totalPages})`}
       </div>

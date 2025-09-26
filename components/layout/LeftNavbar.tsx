@@ -346,7 +346,7 @@ export default function LeftNavbar() {
                 value={searchQuery}
                 onChange={handleSearchInputChange}
                 placeholder="Search products..."
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#e9e2a3] focus:border-transparent bg-white shadow-lg"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent bg-white shadow-lg"
                 autoFocus={mobileSearchOpen}
               />
             </form>
@@ -439,7 +439,7 @@ export default function LeftNavbar() {
                           />
                         </div>
                       ) : (
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#333333] text-[#e9e2a3]">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#333333] text-[#ffffff]">
                           {getInitial(user.full_name)}
                         </div>
                       )}
@@ -500,7 +500,7 @@ export default function LeftNavbar() {
                 ) : (
                   <Link
                     href="/sign-in"
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-[#333333] text-[#e9e2a3] hover:bg-gray-800 transition-colors"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-[#333333] text-text-primary-light hover:bg-gray-800 transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <LogInIcon />

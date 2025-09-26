@@ -6,25 +6,25 @@ import { Phone, Mail, MapPin, Clock, Send, MessageCircle, User, Building2 } from
 
 const contactInfo = [
   {
-    icon: <Phone className="w-6 h-6 text-[#e9e2a3]" />,
+    icon: <Phone className="w-6 h-6 text-bg-accent" />,
     title: "Phone",
     details: ["+91 98765 43210", "+91 87654 32109"],
     description: "Call us during business hours"
   },
   {
-    icon: <Mail className="w-6 h-6 text-[#e9e2a3]" />,
+    icon: <Mail className="w-6 h-6 text-bg-accent" />,
     title: "Email",
     details: ["info@Uniformat.com", "sales@Uniformat.com"],
     description: "Get a response within 24 hours"
   },
   {
-    icon: <MapPin className="w-6 h-6 text-[#e9e2a3]" />,
+    icon: <MapPin className="w-6 h-6 text-bg-accent" />,
     title: "Location",
     details: ["123 Business District", "Mumbai, Maharashtra 400001"],
     description: "Visit our manufacturing facility"
   },
   {
-    icon: <Clock className="w-6 h-6 text-[#e9e2a3]" />,
+    icon: <Clock className="w-6 h-6 text-bg-accent" />,
     title: "Business Hours",
     details: ["Mon - Fri: 9:00 AM - 6:00 PM", "Sat: 9:00 AM - 2:00 PM"],
     description: "Sunday closed"
@@ -79,15 +79,15 @@ export default function ContactPage() {
   return (
     <div className="space-y-8 sm:space-y-12 md:space-y-16 py-0">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-[#333333] to-[#555555] text-white py-16 md:py-24">
+      <section className="relative bg-gradient-to-br from-primary-dark to-secondary-dark text-white py-16 md:py-24">
         <div className="absolute inset-0 bg-black bg-opacity-20"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-6 text-white">
               Contact Us
             </h1>
-            <p className="text-lg md:text-xl text-[#e9e2a3] leading-relaxed max-w-3xl mx-auto">
-              Ready to transform your brand identity? Let's discuss your uniform needs 
+            <p className="text-lg md:text-xl text-bg-accent leading-relaxed max-w-3xl mx-auto">
+              Ready to transform your brand identity? Let's discuss your uniform needs
               and create something extraordinary together.
             </p>
           </div>
@@ -97,10 +97,10 @@ export default function ContactPage() {
       {/* Contact Information Cards */}
       <section className="container mx-auto px-4 py-5 md:py-8">
         <div className="mx-auto max-w-4xl text-center mb-8 md:mb-12">
-          <h2 className="mb-4 md:mb-6 text-2xl font-bold text-[#333333] md:text-3xl lg:text-4xl">
+          <h2 className="mb-4 md:mb-6 text-2xl font-bold text-text-primary md:text-3xl lg:text-4xl">
             Get in Touch
           </h2>
-          <p className="text-base md:text-lg leading-relaxed text-[#555555]">
+          <p className="text-base md:text-lg leading-relaxed text-text-secondary">
             Multiple ways to reach us. Choose what works best for you.
           </p>
         </div>
@@ -108,23 +108,23 @@ export default function ContactPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
           {contactInfo.map((info, index) => (
             <div key={index} className="group">
-              <div className="bg-white rounded-xl shadow-md hover:shadow-xl p-6 md:p-8 text-center transition-all duration-500 hover:scale-105 border-t-4 border-[#e9e2a3]">
+              <div className="bg-white rounded-xl shadow-md hover:shadow-xl p-6 md:p-8 text-center transition-all duration-500 hover:scale-105 border-t-4 border-bg-accent">
                 <div className="flex justify-center">
-                  <div className="rounded-full p-3 bg-[#333333] mb-4">
+                  <div className="rounded-full p-3 bg-primary-dark mb-4">
                     {info.icon}
                   </div>
                 </div>
-                <h3 className="text-lg md:text-xl font-bold text-[#333333] mb-3">
+                <h3 className="text-lg md:text-xl font-bold text-text-primary mb-3">
                   {info.title}
                 </h3>
                 <div className="space-y-1 mb-2">
                   {info.details.map((detail, idx) => (
-                    <p key={idx} className="text-sm md:text-base text-[#555555] font-medium">
+                    <p key={idx} className="text-sm md:text-base text-text-secondary font-medium">
                       {detail}
                     </p>
                   ))}
                 </div>
-                <p className="text-xs md:text-sm text-[#666666]">
+                <p className="text-xs md:text-sm text-text-tertiary">
                   {info.description}
                 </p>
               </div>
@@ -134,7 +134,7 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Form & Services Section */}
-      <section className="bg-[#f8f6e1] px-4 py-8 md:py-12">
+      <section className="bg-gradient-to-br from-bg-light to-bg-light-end px-4 py-8 md:py-12">
         <div className="container mx-auto">
           <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
             {/* Contact Form */}
@@ -160,7 +160,7 @@ export default function ContactPage() {
                         value={formData.name}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#e9e2a3] focus:border-[#e9e2a3] transition-colors duration-300"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#181817] focus:border-[#e9e2a3] transition-colors duration-300"
                         placeholder="Enter your full name"
                       />
                     </div>
@@ -175,7 +175,7 @@ export default function ContactPage() {
                         value={formData.email}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#e9e2a3] focus:border-[#e9e2a3] transition-colors duration-300"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#1a1919] focus:border-[#e9e2a3] transition-colors duration-300"
                         placeholder="Enter your email"
                       />
                     </div>
@@ -192,7 +192,7 @@ export default function ContactPage() {
                         name="phone"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#e9e2a3] focus:border-[#e9e2a3] transition-colors duration-300"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#1d1d1d] focus:border-[#e9e2a3] transition-colors duration-300"
                         placeholder="Enter your phone number"
                       />
                     </div>
@@ -206,7 +206,7 @@ export default function ContactPage() {
                         name="company"
                         value={formData.company}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#e9e2a3] focus:border-[#e9e2a3] transition-colors duration-300"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#1d1d1d] focus:border-[#e9e2a3] transition-colors duration-300"
                         placeholder="Enter your company name"
                       />
                     </div>
@@ -220,7 +220,7 @@ export default function ContactPage() {
                       name="service"
                       value={formData.service}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#e9e2a3] focus:border-[#e9e2a3] transition-colors duration-300"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#1b1b1b] focus:border-[#e9e2a3] transition-colors duration-300"
                     >
                       <option value="">Select a service</option>
                       {services.map((service, index) => (
@@ -239,7 +239,7 @@ export default function ContactPage() {
                       onChange={handleInputChange}
                       required
                       rows={5}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#e9e2a3] focus:border-[#e9e2a3] transition-colors duration-300 resize-vertical"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#1b1b1b] focus:border-[#e9e2a3] transition-colors duration-300 resize-vertical"
                       placeholder="Tell us about your uniform requirements..."
                     ></textarea>
                   </div>
@@ -266,7 +266,7 @@ export default function ContactPage() {
                   <div className="space-y-3">
                     {services.map((service, index) => (
                       <div key={index} className="flex items-center gap-3 group">
-                        <div className="flex-shrink-0 w-2 h-2 bg-[#e9e2a3] rounded-full group-hover:scale-150 transition-transform duration-300"></div>
+                        <div className="flex-shrink-0 w-2 h-2 bg-[#858585] rounded-full group-hover:scale-150 transition-transform duration-300"></div>
                         <p className="text-base text-[#555555] group-hover:text-[#333333] transition-colors duration-300">
                           {service}
                         </p>
@@ -293,7 +293,7 @@ export default function ContactPage() {
                 {/* Quick Contact */}
                 <div className="bg-[#333333] rounded-xl shadow-lg p-6 md:p-8 text-white">
                   <h3 className="text-xl font-bold mb-4">Quick Response</h3>
-                  <p className="text-[#e9e2a3] mb-4">
+                  <p className="text-[white] mb-4">
                     Need immediate assistance? Call us directly for urgent inquiries.
                   </p>
                   <div className="space-y-2">

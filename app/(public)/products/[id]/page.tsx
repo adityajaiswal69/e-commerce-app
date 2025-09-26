@@ -645,7 +645,7 @@ export default function ProductPage({
               <div className="pt-4">
                 <button
                   onClick={handleDesignToolAccess}
-                  className="w-full bg-white text-[#333333] px-8 py-4 rounded-lg font-semibold border-2 border-[#333333] hover:bg-[#f8f6e1] transition-colors flex items-center justify-center"
+                  className="w-full bg-white text-text-primary px-8 py-4 rounded-lg font-semibold border-2 border-primary-dark hover:bg-bg-accent transition-colors flex items-center justify-center"
                 >
                   <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />

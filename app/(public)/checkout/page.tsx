@@ -32,7 +32,7 @@ export default function CheckoutPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading checkout...</p>
+          <p className="mt-4 text-text-secondary">Loading checkout...</p>
         </div>
       </div>
     );
@@ -42,8 +42,8 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     return (
       <div className="max-w-2xl mx-auto py-16 px-4 text-center">
-        <h2 className="text-2xl font-bold text-gray-900">Your cart is empty</h2>
-        <p className="mt-2 text-gray-600">
+        <h2 className="text-2xl font-bold text-text-primary">Your cart is empty</h2>
+        <p className="mt-2 text-text-secondary">
           Add some items to your cart before proceeding to checkout.
         </p>
         <div className="mt-6">
@@ -65,8 +65,8 @@ export default function CheckoutPage() {
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Checkout</h1>
-        <p className="mt-2 text-gray-600">
+        <h1 className="text-2xl font-bold text-text-primary">Checkout</h1>
+        <p className="mt-2 text-text-secondary">
           Complete your order by providing your shipping details and payment information.
         </p>
       </div>
